@@ -9,13 +9,22 @@
 -- ============================================================
 
 -- ----------------------------------------------------------------------
--- Parte 1 — Fechar as tabelas que ficaram sem RLS
+-- Parte 0 — Ajustes no schema
 -- ----------------------------------------------------------------------
--- O schema.sql liga RLS em seis tabelas e esquece destas. No Supabase,
--- tabela sem RLS ligada é tabela ABERTA: os papéis anon e authenticated já têm
--- permissão de leitura e escrita por padrão. Sem isto, qualquer pessoa com a
--- chave pública do app (que fica visível no navegador) conseguiria ler e
--- alterar a tabela de preços de cachê.
+-- A equipe que toca o projeto é atributo do projeto, não da pessoa que abriu.
+-- Derivar do solicitante daria histórico errado: quem muda de equipe levaria
+-- junto todos os projetos antigos. Guardamos a equipe no momento da abertura.
+alter table solicitacao add column if not exists equipe text;
+
+
+-- ----------------------------------------------------------------------
+-- Parte 1 — Quem pode ler o quê (RLS)
+-- ----------------------------------------------------------------------
+-- Duas correções aqui, e a segunda é a que importa.
+--
+-- 1) O schema.sql liga RLS em seis tabelas e esquece de outras seis. No
+--    Supabase, tabela sem RLS ligada é tabela ABERTA: anon e authenticated já
+--    têm permissão de leitura por padrão.
 alter table anunciante       enable row level security;
 alter table marca            enable row level security;
 alter table programa         enable row level security;
@@ -23,23 +32,68 @@ alter table preco_referencia enable row level security;
 alter table lista            enable row level security;
 alter table lista_item       enable row level security;
 
--- Leitura liberada para quem está autenticado; escrita, ninguém por enquanto
--- (sem policy de INSERT/UPDATE, ninguém escreve pela API). O seed abaixo roda
--- no SQL Editor, que usa uma conexão de administrador e ignora o RLS.
+-- 2) "Autenticado" não é o mesmo que "tem acesso ao Hub".
+--
+--    O cadastro de novas contas fica aberto no Supabase Auth, então qualquer
+--    pessoa da internet consegue autenticar. Se as policies disserem apenas
+--    "to authenticated using (true)", essa pessoa lê a tabela de preços de
+--    cachê inteira pela API — mesmo sem conseguir passar da tela de login,
+--    porque a checagem de estado='ativo' mora no aplicativo, não no banco.
+--
+--    A função abaixo move essa checagem para dentro do banco. SECURITY DEFINER
+--    para que ela consulte perfil_usuario sem depender das policies daquela
+--    tabela; STABLE para o Postgres avaliar uma vez por consulta, e não por
+--    linha retornada.
+create or replace function public.eh_membro_ativo()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.perfil_usuario
+    where id = auth.uid() and estado = 'ativo'
+  );
+$$;
+
+grant execute on function public.eh_membro_ativo() to authenticated;
+
+-- Aplica a mesma regra de leitura nas onze tabelas de dados. Remove antes
+-- qualquer policy de SELECT anterior, para não ficar uma permissiva esquecida
+-- convivendo com a nova — no Postgres, policies se somam: basta UMA liberar.
 do $$
 declare
   t text;
+  p record;
 begin
-  foreach t in array array['anunciante','marca','programa','preco_referencia','lista','lista_item']
+  foreach t in array array[
+    'talento', 'restricao', 'solicitacao', 'solicitacao_item', 'evento',
+    'anunciante', 'marca', 'programa', 'preco_referencia', 'lista', 'lista_item'
+  ]
   loop
+    for p in
+      select policyname from pg_policies
+      where schemaname = 'public' and tablename = t and cmd = 'SELECT'
+    loop
+      execute format('drop policy %I on %I', p.policyname, t);
+    end loop;
+
     execute format(
-      'drop policy if exists "leitura autenticada" on %I', t
-    );
-    execute format(
-      'create policy "leitura autenticada" on %I for select to authenticated using (true)', t
+      'create policy "leitura de membro ativo" on %I for select to authenticated using (public.eh_membro_ativo())',
+      t
     );
   end loop;
 end $$;
+
+-- perfil_usuario fica de fora de propósito: a policy "self read perfil" deixa
+-- cada um ler a PRÓPRIA linha, e isso precisa continuar valendo para quem está
+-- pendente — é como o app descobre que a pessoa existe mas ainda não foi
+-- liberada, para mostrar a mensagem certa.
+
+-- Escrita continua fechada para todo mundo: não existe policy de INSERT ou
+-- UPDATE nestas tabelas, e sem policy o Postgres recusa. Só o SQL Editor
+-- escreve, porque roda como administrador e ignora o RLS.
 
 
 -- ----------------------------------------------------------------------
@@ -564,6 +618,82 @@ where lower(p.email) = d.email;
 -- Parte 2 não está ativo — veja o diagnóstico no fim deste arquivo.
 select email, estado, perfis::text, cargo, equipe
 from perfil_usuario order by email;
+
+
+-- ----------------------------------------------------------------------
+-- Parte 9 — Projetos de exemplo (4 projetos, 5 talentos)
+-- ----------------------------------------------------------------------
+-- DADOS FICTÍCIOS, vindos do protótipo. Servem para o Início ter o que mostrar
+-- antes do wizard de nova solicitação existir.
+--
+-- PARA APAGAR TUDO quando o Hub entrar em uso real (os itens saem junto, por
+-- causa do ON DELETE CASCADE):
+--   delete from solicitacao where protocolo like '#ORC-2026-%';
+--
+-- A área de cada talento é derivada da categoria, exatamente como a aplicação
+-- faz ao montar uma solicitação: Talento Globo -> Gestão de Elenco,
+-- Agenciado -> Agenciamento, Influenciador e Creator -> ViU.
+
+delete from solicitacao where protocolo like '#ORC-2026-%';
+
+insert into solicitacao
+  (protocolo, solicitante_id, anunciante, marca, setor_cliente, segmento_marca,
+   programa, equipe, tipo_midia, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em)
+values
+  ('#ORC-2026-0418',
+   (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
+   'Westwing', 'Westwing Brasil', 'Casa e decoração', 'Móveis planejados',
+   'Mais Você', 'Variedades', 'Ambos', 'Patrocínio'::tipo_projeto,
+   '2026-08-07'::date, '2026-09-30'::date, now() - interval '1 hours'),
+  ('#ORC-2026-0431',
+   (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
+   'Ambev', 'Verão Lager', 'Bebidas alcoólicas', 'Cerveja premium',
+   'Big Brother Brasil', 'Realities', 'Social', 'Sob demanda'::tipo_projeto,
+   '2026-08-20'::date, '2026-09-30'::date, now() - interval '2 hours'),
+  ('#ORC-2026-0441',
+   (select id from perfil_usuario where lower(email) = 'thiago.bastos@globo.com'),
+   'Dermáurea', 'Dermáurea', 'Beleza', 'Skincare',
+   'Altas Horas', 'Entretenimento Digital', 'Social', 'Pacote'::tipo_projeto,
+   '2026-09-02'::date, '2026-10-15'::date, now() - interval '3 hours'),
+  ('#ORC-2026-0427',
+   (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
+   'Banco Vértice', 'Banco Vértice', 'Financeiro', 'Cartão de crédito',
+   'Encontro', 'Variedades', 'Digital', 'Patrocínio'::tipo_projeto,
+   '2026-09-12'::date, '2026-10-30'::date, now() - interval '4 hours');
+
+insert into solicitacao_item
+  (solicitacao_id, talento_id, categoria, area, status)
+values
+  ((select id from solicitacao where protocolo = '#ORC-2026-0418'),
+   (select id from talento where nome_artistico = 'Bruno Tavares'),
+   'Influenciador'::talento_categoria,
+   'ViU'::area_responsavel,
+   'Orçada'::solicitacao_status),
+  ((select id from solicitacao where protocolo = '#ORC-2026-0431'),
+   (select id from talento where nome_artistico = 'Manu Ferraz'),
+   'Influenciador'::talento_categoria,
+   'ViU'::area_responsavel,
+   'Em análise'::solicitacao_status),
+  ((select id from solicitacao where protocolo = '#ORC-2026-0431'),
+   (select id from talento where nome_artistico = 'Léo Vasques'),
+   'Creator'::talento_categoria,
+   'ViU'::area_responsavel,
+   'Em análise'::solicitacao_status),
+  ((select id from solicitacao where protocolo = '#ORC-2026-0441'),
+   (select id from talento where nome_artistico = 'Tati Rocha'),
+   'Creator'::talento_categoria,
+   'ViU'::area_responsavel,
+   'Aprovada'::solicitacao_status),
+  ((select id from solicitacao where protocolo = '#ORC-2026-0427'),
+   (select id from talento where nome_artistico = 'Manu Ferraz'),
+   'Influenciador'::talento_categoria,
+   'ViU'::area_responsavel,
+   'Em análise'::solicitacao_status);
+
+-- Confira:
+--   select s.protocolo, s.marca, s.equipe, count(i.id) as talentos
+--   from solicitacao s left join solicitacao_item i on i.solicitacao_id = s.id
+--   group by s.id order by s.criado_em desc;
 
 
 -- ----------------------------------------------------------------------

@@ -117,6 +117,98 @@ const USUARIOS = JSON.parse(
   readFileSync(join(RAIZ, 'src/data/usuarios-seed.json'), 'utf8'),
 );
 
+/**
+ * Projetos de exemplo (constante `projetosBase` do Protótipo, cruzada com
+ * MARCAS_CATALOGO e PROJETOS_DETALHE para preencher os campos do schema).
+ *
+ * DADOS FICTÍCIOS. Saem com um comando só — veja o fim da Parte 9.
+ *
+ * `horasAtras` existe só para o Início listar na mesma ordem do protótipo:
+ * a tela ordena por data de abertura, da mais recente para a mais antiga.
+ */
+const PROJETOS = [
+  {
+    protocolo: '#ORC-2026-0418',
+    anunciante: 'Westwing',
+    marca: 'Westwing Brasil',
+    setor: 'Casa e decoração',
+    segmento: 'Móveis planejados',
+    programa: 'Mais Você',
+    equipe: 'Variedades',
+    solicitante: 'mariana.vasques@globo.com',
+    midia: 'Ambos',
+    tipoProjeto: 'Patrocínio',
+    inicio: '2026-08-07',
+    fim: '2026-09-30',
+    status: 'Orçada',
+    horasAtras: 1,
+    talentos: ['Bruno Tavares'],
+  },
+  {
+    protocolo: '#ORC-2026-0431',
+    anunciante: 'Ambev',
+    marca: 'Verão Lager',
+    setor: 'Bebidas alcoólicas',
+    segmento: 'Cerveja premium',
+    programa: 'Big Brother Brasil',
+    equipe: 'Realities',
+    solicitante: 'mariana.vasques@globo.com',
+    midia: 'Social',
+    tipoProjeto: 'Sob demanda',
+    inicio: '2026-08-20',
+    fim: '2026-09-30',
+    status: 'Em análise',
+    horasAtras: 2,
+    talentos: ['Manu Ferraz', 'Léo Vasques'],
+  },
+  {
+    protocolo: '#ORC-2026-0441',
+    anunciante: 'Dermáurea',
+    marca: 'Dermáurea',
+    setor: 'Beleza',
+    segmento: 'Skincare',
+    programa: 'Altas Horas',
+    equipe: 'Entretenimento Digital',
+    solicitante: 'thiago.bastos@globo.com',
+    midia: 'Social',
+    tipoProjeto: 'Pacote',
+    inicio: '2026-09-02',
+    fim: '2026-10-15',
+    status: 'Aprovada',
+    horasAtras: 3,
+    talentos: ['Tati Rocha'],
+  },
+  {
+    protocolo: '#ORC-2026-0427',
+    anunciante: 'Banco Vértice',
+    marca: 'Banco Vértice',
+    setor: 'Financeiro',
+    segmento: 'Cartão de crédito',
+    programa: 'Encontro',
+    equipe: 'Variedades',
+    solicitante: 'mariana.vasques@globo.com',
+    midia: 'Digital',
+    tipoProjeto: 'Patrocínio',
+    inicio: '2026-09-12',
+    fim: '2026-10-30',
+    status: 'Em análise',
+    horasAtras: 4,
+    talentos: ['Manu Ferraz'],
+  },
+];
+
+/** Roteamento — o mesmo de src/lib/dominio/categorias.ts. */
+const AREA_POR_CATEGORIA = {
+  'Talento Globo': 'Gestão de Elenco',
+  Agenciado: 'Agenciamento',
+  Influenciador: 'ViU',
+  Creator: 'ViU',
+};
+
+const CATEGORIA_POR_TALENTO = Object.fromEntries(
+  TALENTOS.map((t) => [t.artistico, t.categoria]),
+);
+
 // --------------------------------------------------------------------------
 // Utilidades de SQL
 // --------------------------------------------------------------------------
@@ -154,12 +246,22 @@ partes.push(`-- ============================================================
 
 partes.push(
   bloco(
-    'Parte 1 — Fechar as tabelas que ficaram sem RLS',
-    `-- O schema.sql liga RLS em seis tabelas e esquece destas. No Supabase,
--- tabela sem RLS ligada é tabela ABERTA: os papéis anon e authenticated já têm
--- permissão de leitura e escrita por padrão. Sem isto, qualquer pessoa com a
--- chave pública do app (que fica visível no navegador) conseguiria ler e
--- alterar a tabela de preços de cachê.
+    'Parte 0 — Ajustes no schema',
+    `-- A equipe que toca o projeto é atributo do projeto, não da pessoa que abriu.
+-- Derivar do solicitante daria histórico errado: quem muda de equipe levaria
+-- junto todos os projetos antigos. Guardamos a equipe no momento da abertura.
+alter table solicitacao add column if not exists equipe text;`,
+  ),
+);
+
+partes.push(
+  bloco(
+    'Parte 1 — Quem pode ler o quê (RLS)',
+    `-- Duas correções aqui, e a segunda é a que importa.
+--
+-- 1) O schema.sql liga RLS em seis tabelas e esquece de outras seis. No
+--    Supabase, tabela sem RLS ligada é tabela ABERTA: anon e authenticated já
+--    têm permissão de leitura por padrão.
 alter table anunciante       enable row level security;
 alter table marca            enable row level security;
 alter table programa         enable row level security;
@@ -167,23 +269,68 @@ alter table preco_referencia enable row level security;
 alter table lista            enable row level security;
 alter table lista_item       enable row level security;
 
--- Leitura liberada para quem está autenticado; escrita, ninguém por enquanto
--- (sem policy de INSERT/UPDATE, ninguém escreve pela API). O seed abaixo roda
--- no SQL Editor, que usa uma conexão de administrador e ignora o RLS.
+-- 2) "Autenticado" não é o mesmo que "tem acesso ao Hub".
+--
+--    O cadastro de novas contas fica aberto no Supabase Auth, então qualquer
+--    pessoa da internet consegue autenticar. Se as policies disserem apenas
+--    "to authenticated using (true)", essa pessoa lê a tabela de preços de
+--    cachê inteira pela API — mesmo sem conseguir passar da tela de login,
+--    porque a checagem de estado='ativo' mora no aplicativo, não no banco.
+--
+--    A função abaixo move essa checagem para dentro do banco. SECURITY DEFINER
+--    para que ela consulte perfil_usuario sem depender das policies daquela
+--    tabela; STABLE para o Postgres avaliar uma vez por consulta, e não por
+--    linha retornada.
+create or replace function public.eh_membro_ativo()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.perfil_usuario
+    where id = auth.uid() and estado = 'ativo'
+  );
+$$;
+
+grant execute on function public.eh_membro_ativo() to authenticated;
+
+-- Aplica a mesma regra de leitura nas onze tabelas de dados. Remove antes
+-- qualquer policy de SELECT anterior, para não ficar uma permissiva esquecida
+-- convivendo com a nova — no Postgres, policies se somam: basta UMA liberar.
 do $$
 declare
   t text;
+  p record;
 begin
-  foreach t in array array['anunciante','marca','programa','preco_referencia','lista','lista_item']
+  foreach t in array array[
+    'talento', 'restricao', 'solicitacao', 'solicitacao_item', 'evento',
+    'anunciante', 'marca', 'programa', 'preco_referencia', 'lista', 'lista_item'
+  ]
   loop
+    for p in
+      select policyname from pg_policies
+      where schemaname = 'public' and tablename = t and cmd = 'SELECT'
+    loop
+      execute format('drop policy %I on %I', p.policyname, t);
+    end loop;
+
     execute format(
-      'drop policy if exists "leitura autenticada" on %I', t
-    );
-    execute format(
-      'create policy "leitura autenticada" on %I for select to authenticated using (true)', t
+      'create policy "leitura de membro ativo" on %I for select to authenticated using (public.eh_membro_ativo())',
+      t
     );
   end loop;
-end $$;`,
+end $$;
+
+-- perfil_usuario fica de fora de propósito: a policy "self read perfil" deixa
+-- cada um ler a PRÓPRIA linha, e isso precisa continuar valendo para quem está
+-- pendente — é como o app descobre que a pessoa existe mas ainda não foi
+-- liberada, para mostrar a mensagem certa.
+
+-- Escrita continua fechada para todo mundo: não existe policy de INSERT ou
+-- UPDATE nestas tabelas, e sem policy o Postgres recusa. Só o SQL Editor
+-- escreve, porque roda como administrador e ignora o RLS.`,
   ),
 );
 
@@ -393,6 +540,70 @@ from perfil_usuario order by email;`,
   ),
 );
 
+// ---- Projetos de exemplo ----
+const sqlProjetos = PROJETOS.map(
+  (p) => `  (${texto(p.protocolo)},
+   (select id from perfil_usuario where lower(email) = ${texto(p.solicitante)}),
+   ${texto(p.anunciante)}, ${texto(p.marca)}, ${texto(p.setor)}, ${texto(p.segmento)},
+   ${texto(p.programa)}, ${texto(p.equipe)}, ${texto(p.midia)}, ${texto(p.tipoProjeto)}::tipo_projeto,
+   ${texto(p.inicio)}::date, ${texto(p.fim)}::date, now() - interval '${p.horasAtras} hours')`,
+).join(',\n');
+
+const sqlProjetoItens = PROJETOS.flatMap((p) =>
+  p.talentos.map((talento) => {
+    const categoria = CATEGORIA_POR_TALENTO[talento];
+    if (!categoria) {
+      throw new Error(
+        `Talento "${talento}" do projeto ${p.protocolo} não existe na lista TALENTOS.`,
+      );
+    }
+    return `  ((select id from solicitacao where protocolo = ${texto(p.protocolo)}),
+   (select id from talento where nome_artistico = ${texto(talento)}),
+   ${texto(categoria)}::talento_categoria,
+   ${texto(AREA_POR_CATEGORIA[categoria])}::area_responsavel,
+   ${texto(p.status)}::solicitacao_status)`;
+  }),
+).join(',\n');
+
+const totalTalentosEmProjetos = PROJETOS.reduce(
+  (soma, p) => soma + p.talentos.length,
+  0,
+);
+
+partes.push(
+  bloco(
+    `Parte 9 — Projetos de exemplo (${PROJETOS.length} projetos, ${totalTalentosEmProjetos} talentos)`,
+    `-- DADOS FICTÍCIOS, vindos do protótipo. Servem para o Início ter o que mostrar
+-- antes do wizard de nova solicitação existir.
+--
+-- PARA APAGAR TUDO quando o Hub entrar em uso real (os itens saem junto, por
+-- causa do ON DELETE CASCADE):
+--   delete from solicitacao where protocolo like '#ORC-2026-%';
+--
+-- A área de cada talento é derivada da categoria, exatamente como a aplicação
+-- faz ao montar uma solicitação: Talento Globo -> Gestão de Elenco,
+-- Agenciado -> Agenciamento, Influenciador e Creator -> ViU.
+
+delete from solicitacao where protocolo like '#ORC-2026-%';
+
+insert into solicitacao
+  (protocolo, solicitante_id, anunciante, marca, setor_cliente, segmento_marca,
+   programa, equipe, tipo_midia, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em)
+values
+${sqlProjetos};
+
+insert into solicitacao_item
+  (solicitacao_id, talento_id, categoria, area, status)
+values
+${sqlProjetoItens};
+
+-- Confira:
+--   select s.protocolo, s.marca, s.equipe, count(i.id) as talentos
+--   from solicitacao s left join solicitacao_item i on i.solicitacao_id = s.id
+--   group by s.id order by s.criado_em desc;`,
+  ),
+);
+
 partes.push(
   bloco(
     'Diagnóstico — rode só se algo acima não funcionar',
@@ -423,3 +634,6 @@ console.log(`  restrições .......... ${RESTRICOES.length}`);
 console.log(`  preços .............. ${linhasPreco.length}`);
 console.log(`  listas / itens ...... ${LISTAS.length} / ${totalItens}`);
 console.log(`  usuários ............ ${USUARIOS.length}`);
+console.log(
+  `  projetos / talentos . ${PROJETOS.length} / ${totalTalentosEmProjetos}`,
+);
