@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  button { font-family: inherit; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 14 · Visão mobile</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Responder cachê do bolso</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Barra inferior com 4 destinos, cards da fila com <strong>swipe simulado</strong> (arraste com o mouse ou toque nos botões que aparecem), resposta em <strong>tela cheia por talento</strong>, e busca de talentos simplificada. Toque nos itens em <a href="#14a">14a</a>.</p>
+  </div>
+
+  <div id="14a" style="display: flex; align-items: flex-start; gap: 28px">
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="390,844">
+      <div style="height: 100%; display: flex; flex-direction: column; background: #F5F4F9">
+
+        <sc-if value="{{ telaFila }}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 58px 18px 10px; display: flex; align-items: flex-start; justify-content: space-between">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 700; color: #12111A">Minha fila</div>
+              <div style="font-size: 12.5px; color: #85839A">{{ resumoFila }}</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 999px; background: #FF1BA0; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700">TB</div>
+          </div>
+
+          <div style="padding: 0 18px 8px; display: flex; gap: 6px; overflow-x: auto">
+            <sc-for list="{{ abas }}" as="a" hint-placeholder-count="3">
+              <button onClick="{{ a.onClick }}" style="{{ a.style }}">{{ a.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="flex: 1; overflow: auto; padding: 4px 14px 90px; display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{ filaCards }}" as="c" hint-placeholder-count="4">
+              <div style="position: relative; border-radius: 16px; overflow: hidden">
+                <div style="{{ c.actionsStyle }}">
+                  <button onClick="{{ c.onDevolver }}" style="flex: 1; border: none; background: transparent; color: #FFFFFF; font-size: 11.5px; font-weight: 700; height: 100%">Devolver</button>
+                  <button onClick="{{ c.onSugerido }}" style="flex: 1; border: none; background: transparent; color: #FFFFFF; font-size: 11.5px; font-weight: 700; height: 100%">Orçar sugerido</button>
+                </div>
+                <div style="{{ c.cardStyle }}">
+                  <button onClick="{{ c.onToggle }}" style="position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 999px; border: none; background: #F2F0F8; color: #6B6A7C; font-size: 13px; cursor: pointer">⋯</button>
+                  <button onClick="{{ c.onOpen }}" style="width: 100%; border: none; background: transparent; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 8px; cursor: pointer">
+                    <div style="display: flex; align-items: center; gap: 10px; padding-right: 26px">
+                      <div style="{{ c.avatarStyle }}">{{ c.initials }}</div>
+                      <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1">
+                        <div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: 700; color: #12111A">{{ c.talento }}</div>
+                        <div style="font-size: 11.5px; color: #85839A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ c.marca }} · {{ c.programa }}</div>
+                      </div>
+                      <div style="{{ c.prazoStyle }}">{{ c.prazo }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span style="{{ c.catStyle }}">{{ c.categoria }}</span>
+                      <div style="font-size: 11.5px; font-weight: 700; color: #0F7B6C">Sugerido {{ c.sugerido }}</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ filaVazia }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 60px 20px; text-align: center; color: #85839A; font-size: 13px">Fila zerada por aqui 🎉</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ telaResposta }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ respHeaderStyle }}">
+            <button onClick="{{ fecharResposta }}" style="border: none; background: rgba(255,255,255,0.2); color: #FFFFFF; width: 32px; height: 32px; border-radius: 999px; font-size: 15px; cursor: pointer">‹</button>
+            <div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
+              <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 700; color: #FFFFFF">{{ atual.talento }}</div>
+              <div style="font-size: 11.5px; color: rgba(255,255,255,0.82)">{{ atual.marca }} · {{ atual.programa }}</div>
+            </div>
+            <div style="{{ atual.prazoChipStyle }}">{{ atual.prazoLongo }}</div>
+          </div>
+
+          <div style="flex: 1; overflow: auto; padding: 16px 18px 100px; display: flex; flex-direction: column; gap: 14px">
+            <sc-if value="{{ atual.temAlerta }}" hint-placeholder-val="{{ false }}">
+              <div style="background: #FDF1F1; border: 1px solid #F3B4B4; border-radius: 12px; padding: 11px 13px; display: flex; flex-direction: column; gap: 3px">
+                <div style="font-size: 12px; font-weight: 700; color: #B3121B">{{ atual.flag }}</div>
+                <div style="font-size: 11.5px; line-height: 1.45; color: #7A2A2A">{{ atual.alerta }}</div>
+              </div>
+            </sc-if>
+
+            <div style="background: #F5FBF9; border: 1px solid #A9DED2; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #0F7B6C">Sugerido pela base</div>
+                <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #0F7B6C">{{ atual.sugerido }}</div>
+              </div>
+              <div style="display: flex; align-items: center; height: 48px; border: 1px solid #A9DED2; border-radius: 12px; background: #FFFFFF; overflow: hidden">
+                <div style="padding: 0 12px; font-size: 13px; font-weight: 700; color: #0F7B6C; border-right: 1px solid #E1F2EE; height: 100%; display: flex; align-items: center">R$</div>
+                <input value="{{ atual.cache }}" onChange="{{ atual.onCache }}" placeholder="0,00" inputmode="numeric" style="flex: 1; height: 100%; border: none; padding: 0 12px; font-family: Outfit, sans-serif; font-size: 19px; font-weight: 700; color: #12111A" />
+              </div>
+              <div style="display: flex; gap: 7px">
+                <sc-for list="{{ atual.ajustes }}" as="a" hint-placeholder-count="4">
+                  <button onClick="{{ a.onClick }}" style="flex: 1; height: 30px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 11.5px; font-weight: 700">{{ a.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="font-size: 12px; font-weight: 700; color: #12111A">Validade (opcional)</div>
+              <input value="{{ atual.validade }}" onChange="{{ atual.onValidade }}" placeholder="dd/mm/aaaa" inputmode="numeric" style="height: 44px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 12px; padding: 0 12px; font-size: 14px; color: #12111A" />
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div style="font-size: 12px; font-weight: 700; color: #12111A">Parecer</div>
+              <textarea value="{{ atual.parecer }}" onChange="{{ atual.onParecer }}" placeholder="Condições consideradas no valor" rows="3" style="box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 12px; padding: 11px 12px; font-size: 13.5px; line-height: 1.5; color: #12111A; resize: none"></textarea>
+            </div>
+
+            <button onClick="{{ abrirBriefing }}" style="height: 44px; border-radius: 12px; border: 1px dashed #CFCDDD; background: #FFFFFF; color: #56546B; font-size: 13px; font-weight: 600">Ver briefing completo</button>
+          </div>
+
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 26px; background: linear-gradient(180deg, rgba(245,244,249,0) 0%, #F5F4F9 30%); display: flex; gap: 9px">
+            <button onClick="{{ atual.onSalvar }}" style="height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 700">Rascunho</button>
+            <button onClick="{{ atual.onEnviar }}" style="{{ atual.enviarStyle }}">Enviar orçamento</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ briefingOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; background: rgba(18,17,26,0.5); z-index: 40; display: flex; flex-direction: column; justify-content: flex-end">
+            <button onClick="{{ fecharBriefing }}" style="flex: 1; border: none; background: transparent"></button>
+            <div style="background: #FFFFFF; border-radius: 20px 20px 0 0; max-height: 78%; display: flex; flex-direction: column">
+              <div style="display: flex; justify-content: center; padding: 9px 0 4px"><div style="width: 36px; height: 4px; border-radius: 999px; background: #DCDAE6"></div></div>
+              <div style="padding: 4px 18px 10px; display: flex; align-items: center; justify-content: space-between">
+                <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 700; color: #12111A">Briefing completo</div>
+                <button onClick="{{ fecharBriefing }}" style="width: 28px; height: 28px; border-radius: 999px; border: none; background: #F2F0F8; color: #56546B; font-size: 13px">✕</button>
+              </div>
+              <div style="overflow: auto; padding: 4px 18px 28px; display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{ briefingSecoes }}" as="s" hint-placeholder-count="4">
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <div style="width: 4px; height: 13px; border-radius: 2px; background: #C7168C"></div>
+                      <div style="font-family: Outfit, sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #12111A">{{ s.titulo }}</div>
+                    </div>
+                    <sc-for list="{{ s.itens }}" as="i" hint-placeholder-count="4">
+                      <div style="display: flex; flex-direction: column; gap: 1px; padding-left: 12px">
+                        <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #A19FB2">{{ i.label }}</div>
+                        <div style="font-size: 13px; line-height: 1.5; color: #2C2B3A; text-wrap: pretty">{{ i.value }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ telaNotif }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 58px 18px 8px; display: flex; align-items: center; justify-content: space-between">
+            <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 700; color: #12111A">Notificações</div>
+            <button onClick="{{ marcarTudo }}" style="border: none; background: transparent; color: #2020EE; font-size: 12px; font-weight: 700">Marcar lidas</button>
+          </div>
+          <div style="flex: 1; overflow: auto; padding: 4px 4px 90px">
+            <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="5">
+              <button onClick="{{ n.onClick }}" style="{{ n.wrapStyle }}">
+                <div style="{{ n.dotStyle }}"></div>
+                <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                    <div style="{{ n.tituloStyle }}">{{ n.titulo }}</div>
+                    <div style="font-size: 10.5px; color: #A19FB2; white-space: nowrap">{{ n.quando }}</div>
+                  </div>
+                  <div style="font-size: 12px; line-height: 1.45; color: #6B6A7C; text-wrap: pretty">{{ n.corpo }}</div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ telaTalentos }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 58px 18px 8px; display: flex; flex-direction: column; gap: 10px">
+            <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 700; color: #12111A">Banco de talentos</div>
+            <input value="{{ buscaTal }}" onChange="{{ onBuscaTal }}" placeholder="Buscar por nome ou rede social" style="height: 42px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 12px; padding: 0 13px; font-size: 13.5px; color: #12111A; background: #FFFFFF" />
+          </div>
+          <div style="flex: 1; overflow: auto; padding: 6px 14px 90px; display: flex; flex-direction: column; gap: 9px">
+            <sc-for list="{{ talentosBusca }}" as="t" hint-placeholder-count="5">
+              <div style="background: #FFFFFF; border-radius: 14px; padding: 11px 13px; display: flex; align-items: center; gap: 11px">
+                <div style="{{ t.avatarStyle }}">{{ t.initials }}</div>
+                <div style="display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0">
+                  <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 700; color: #12111A">{{ t.nome }}</div>
+                  <div style="font-size: 11px; color: #85839A">{{ t.categoria }} · {{ t.seguidores }}</div>
+                </div>
+                <div style="{{ t.ativoStyle }}">{{ t.ativo }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ talentosVazio }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 40px 20px; text-align: center; color: #85839A; font-size: 13px">Nenhum talento encontrado. Toque em criar novo.</div>
+            </sc-if>
+            <button style="height: 46px; border-radius: 12px; border: 1.5px dashed #C7168C; background: #FDF0F8; color: #C7168C; font-size: 13px; font-weight: 700">+ Criar novo talento</button>
+          </div>
+        </sc-if>
+
+        <div style="{{ tabBarStyle }}">
+          <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+            <button onClick="{{ tb.onClick }}" style="{{ tb.wrapStyle }}">
+              <div style="{{ tb.iconStyle }}">{{ tb.icon }}</div>
+              <div style="{{ tb.labelStyle }}">{{ tb.label }}</div>
+              <sc-if value="{{ tb.temBadge }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ tb.badgeStyle }}">{{ tb.badge }}</div>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </x-import>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 460px; padding-top: 24px">
+      <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 600; color: #12111A">O que muda no mobile</div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{ notas }}" as="n" hint-placeholder-count="5">
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E7E6EE">
+            <div style="font-size: 13px; font-weight: 700; color: #12111A">{{ n.t }}</div>
+            <div style="font-size: 12.5px; line-height: 1.5; color: #56546B">{{ n.d }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400}}">
+const AV = ['#C7168C', '#2020EE', '#8B2FD6', '#00A38C', '#E8112D'];
+const CAT_COLOR = { 'Talento Globo': '#2020EE', 'Agenciado': '#8B2FD6', 'Influenciador': '#C7168C', 'Creator': '#00A38C' };
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+function maskMoney(v) {
+  const d = String(v || '').replace(/\D/g, '').replace(/^0+/, '');
+  if (!d) return '';
+  const c = d.padStart(3, '0');
+  return Number(c.slice(0, -2)).toLocaleString('pt-BR') + ',' + c.slice(-2);
+}
+function maskDate(v) {
+  const d = String(v || '').replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return d.slice(0, 2) + '/' + d.slice(2);
+  return d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+}
+function moneyFrom(n) { return maskMoney(String(Math.round(n * 100))); }
+
+class Component extends DCLogic {
+  state = {
+    tab: 'fila', aba: 'hoje', sel: null, revelado: null, respostas: {}, lidasNotif: {}, buscaTal: '', briefingOpen: false,
+    consultas: [
+      { id: 'c1', talento: 'Manu Ferraz', categoria: 'Influenciador', marca: 'Verão Lager', programa: 'BBB', dias: -1, sugerido: 96000, flag: 'Conflito de restrição', alerta: 'Segmento de bebidas alcoólicas requer aprovação prévia da ViU para este talento.',
+        briefing: { escopo: [['Rede e perfil', 'Instagram @manuferraz'], ['Entregas', '2 Reels + 4 Stories'], ['Collab', 'Sim, com @veraolager'], ['Repost', '2 reposts em 7 dias, com marcação']],
+          contexto: [['Contexto', 'Ativação de verão da marca com criadores de lifestyle, foco em consumo responsável.'], ['Período', '20/08 a 30/09/2026'], ['Segmento do cliente', 'Bebidas alcoólicas'], ['Tipo de projeto', 'Sob demanda']],
+          producao: [['Roteiro', 'Agência entrega roteiro; edição pelo talento.'], ['Diárias', '1 diária externa em São Paulo'], ['Figurino', 'Looks próprios, 2 trocas']],
+          distribuicao: [['Exclusividade', 'Sim — bebidas, 60 dias'], ['Impulsionamento', 'Meta Ads, 30 dias, R$ 80.000'], ['Whitelisting', 'Sim']] } },
+      { id: 'c2', talento: 'Léo Vasques', categoria: 'Creator', marca: 'Verão Lager', programa: 'BBB', dias: 0, sugerido: 54000, flag: '', alerta: '',
+        briefing: { escopo: [['Rede e perfil', 'YouTube @leovasques'], ['Entregas', '1 vídeo de 8 minutos'], ['Collab', 'Não']],
+          contexto: [['Contexto', 'Review em formato longo, com bastidores da casa e degustação.'], ['Período', '20/08 a 30/09/2026'], ['Tipo de projeto', 'Sob demanda']],
+          producao: [['Roteiro', 'Do talento, com aprovação da marca'], ['Diárias', 'Sem diária — produção própria']],
+          distribuicao: [['Exclusividade', 'Não'], ['Impulsionamento', 'YouTube Ads, 15 dias']] } },
+      { id: 'c3', talento: 'Bruno Tavares', categoria: 'Influenciador', marca: 'Westwing', programa: 'Mais Você', dias: 1, sugerido: 66000, flag: '', alerta: '',
+        briefing: { escopo: [['Rede e perfil', 'Instagram @brunotavares'], ['Entregas', '1 Post Carrossel + 3 Stories'], ['Collab', 'Sim']],
+          contexto: [['Contexto', 'Coleção de primavera aplicada em ambientes reais.'], ['Período', '15/09 a 30/10/2026'], ['Segmento do cliente', 'Casa e decoração']],
+          producao: [['Roteiro', 'Agência + aprovação ViU'], ['Diárias', '1 diária na casa do talento']],
+          distribuicao: [['Exclusividade', 'Sim — casa e decoração, 90 dias'], ['Impulsionamento', 'Meta e TikTok, R$ 120.000']] } },
+      { id: 'c4', talento: 'Tati Rocha', categoria: 'Creator', marca: 'Dermáurea', programa: 'Altas Horas', dias: 2, sugerido: 42000, flag: '', alerta: '',
+        briefing: { escopo: [['Rede e perfil', 'TikTok @tatirocha'], ['Entregas', '1 Vídeo TikTok + 3 Stories'], ['Collab', 'Sim']],
+          contexto: [['Contexto', 'Lançamento de linha capilar com público 18-24.'], ['Período', '02/09 a 15/10/2026'], ['Segmento do cliente', 'Beleza']],
+          producao: [['Roteiro', 'Do talento'], ['Diárias', 'Sem diária']],
+          distribuicao: [['Exclusividade', 'Sim — beleza, 45 dias'], ['Impulsionamento', 'TikTok Ads, 20 dias']] } }
+    ],
+    talentos: [
+      { nome: 'Manu Ferraz', categoria: 'Influenciador', seguidores: '2,4M IG', ativo: true },
+      { nome: 'Léo Vasques', categoria: 'Creator', seguidores: '890K YT', ativo: true },
+      { nome: 'Bruno Tavares', categoria: 'Influenciador', seguidores: '1,1M IG', ativo: true },
+      { nome: 'Pri Anjos', categoria: 'Influenciador', seguidores: '640K IG', ativo: false }
+    ]
+  };
+
+  resp(id) { return this.state.respostas[id] || { cache: '', parecer: '', validade: '' }; }
+  setResp(id, k, v) { this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [id]: Object.assign({}, this.resp(id), { [k]: v }) }) })); }
+  prazoDe(dias) {
+    if (dias < 0) return { label: 'Vencida', longo: 'Vencida', fg: '#B3121B', bg: '#FDF1F1', chip: '#C41A22' };
+    if (dias === 0) return { label: 'Hoje', longo: 'Vence hoje', fg: '#8A6A00', bg: '#FFF7E0', chip: '#12111A' };
+    return { label: dias + 'd', longo: 'Faltam ' + dias + ' dias', fg: '#3D6B18', bg: '#F2FBE8', chip: 'rgba(255,255,255,0.22)' };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const abertas = st.consultas.filter(c => !(st.respostas[c.id] && st.respostas[c.id].enviada));
+    const lista = abertas.filter(c => st.aba === 'tudo' || (st.aba === 'hoje' ? c.dias <= 0 : c.dias <= 5));
+    const atual = st.consultas.filter(c => c.id === st.sel)[0];
+    const r = atual ? this.resp(atual.id) : null;
+    const cacheNum = r ? Number(String(r.cache).replace(/\./g, '').replace(',', '.')) || 0 : 0;
+
+    const notifsBase = [
+      { id: 'n1', titulo: 'Prazo vencido — Manu Ferraz', corpo: 'Venceu há 1 dia.', quando: '8min', urgente: true },
+      { id: 'n2', titulo: 'Conflito de restrição — Manu Ferraz', corpo: 'Segmento requer aprovação prévia.', quando: '40min', urgente: true },
+      { id: 'n3', titulo: 'Nova consulta — Léo Vasques', corpo: 'BBB · Verão Lager. Vence hoje.', quando: '2h', urgente: false },
+      { id: 'n4', titulo: 'Reenvio liberado — Bruno Tavares', corpo: 'Solicitante liberou ajuste do orçamento.', quando: '4h', urgente: false },
+      { id: 'n5', titulo: 'Talento inativo', corpo: 'Pri Anjos está inativa na base.', quando: 'ontem', urgente: false }
+    ];
+
+    const talentosF = st.talentos.filter(t => !st.buscaTal || t.nome.toLowerCase().indexOf(st.buscaTal.toLowerCase()) >= 0);
+
+    const tabDef = [
+      { id: 'fila', icon: '📋', label: 'Fila', badge: abertas.length },
+      { id: 'talentos', icon: '🎤', label: 'Talentos', badge: 0 },
+      { id: 'notif', icon: '🔔', label: 'Avisos', badge: notifsBase.filter(n => !st.lidasNotif[n.id]).length },
+      { id: 'perfil', icon: '👤', label: 'Perfil', badge: 0 }
+    ];
+
+    return {
+      tituloTela: '',
+      telaFila: st.tab === 'fila' && !atual, telaResposta: st.tab === 'fila' && !!atual,
+      telaNotif: st.tab === 'notif', telaTalentos: st.tab === 'talentos',
+      resumoFila: abertas.filter(c => c.dias <= 0).length + ' urgente(s) · ' + abertas.length + ' no total',
+      abas: [{ id: 'hoje', label: 'Agora' }, { id: 'semana', label: 'Semana' }, { id: 'tudo', label: 'Tudo' }].map(a => ({
+        label: a.label,
+        style: { flexShrink: 0, height: '30px', padding: '0 13px', borderRadius: '999px', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', color: st.aba === a.id ? '#FFFFFF' : '#56546B', background: st.aba === a.id ? '#C7168C' : '#FFFFFF' },
+        onClick: () => this.setState({ aba: a.id })
+      })),
+      filaCards: lista.map((c, i) => {
+        const p = this.prazoDe(c.dias);
+        const rev = st.revelado === c.id;
+        const rr = this.resp(c.id);
+        return {
+          talento: c.talento, marca: c.marca, programa: c.programa, categoria: c.categoria, initials: ini(c.talento), prazo: p.label,
+          sugerido: 'R$ ' + Math.round(c.sugerido).toLocaleString('pt-BR'),
+          prazoStyle: { fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', color: p.fg, background: p.bg },
+          catStyle: { fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.03em', textTransform: 'uppercase', color: '#FFFFFF', background: CAT_COLOR[c.categoria], padding: '3px 7px', borderRadius: '999px' },
+          avatarStyle: { width: '38px', height: '38px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700 },
+          actionsStyle: { position: 'absolute', inset: 0, display: 'flex', background: '#C41A22' },
+          cardStyle: { position: 'relative', background: rr.rascunho ? '#FDF7FB' : '#FFFFFF', borderRadius: '16px', padding: '13px', transform: rev ? 'translateX(-140px)' : 'none', transition: 'transform .18s ease', boxShadow: '0 1px 3px rgba(18,17,26,0.06)' },
+          onToggle: () => this.setState({ revelado: rev ? null : c.id }),
+          onOpen: () => this.setState({ sel: c.id, revelado: null }),
+          onSugerido: () => this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [c.id]: { cache: moneyFrom(c.sugerido), parecer: 'Valor conforme tabela de referência.', enviada: true } }), revelado: null })),
+          onDevolver: () => this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [c.id]: Object.assign({}, this.resp(c.id), { enviada: true }) }), revelado: null }))
+        };
+      }),
+      filaVazia: lista.length === 0,
+      atual: atual ? {
+        talento: atual.talento, marca: atual.marca, programa: atual.programa,
+        prazoLongo: this.prazoDe(atual.dias).longo,
+        prazoChipStyle: { fontSize: '10.5px', fontWeight: 700, padding: '5px 10px', borderRadius: '999px', color: '#FFFFFF', background: this.prazoDe(atual.dias).chip },
+        temAlerta: !!atual.alerta, flag: atual.flag, alerta: atual.alerta,
+        cache: r.cache, parecer: r.parecer, validade: r.validade,
+        onCache: e => this.setResp(atual.id, 'cache', maskMoney(e.target.value)),
+        onParecer: e => this.setResp(atual.id, 'parecer', e.target.value),
+        onValidade: e => this.setResp(atual.id, 'validade', maskDate(e.target.value)),
+        sugerido: 'R$ ' + Math.round(atual.sugerido).toLocaleString('pt-BR'),
+        ajustes: [-10, -5, 5, 10].map(p => ({ label: (p > 0 ? '+' : '') + p + '%', onClick: () => this.setResp(atual.id, 'cache', moneyFrom(Math.round(atual.sugerido * (1 + p / 100)))) })),
+        onSalvar: () => this.setResp(atual.id, 'rascunho', true),
+        onEnviar: () => { if (cacheNum) this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [atual.id]: Object.assign({}, this.resp(atual.id), { enviada: true }) }), sel: null })); },
+        enviarStyle: { flex: 1, height: '48px', borderRadius: '999px', border: 'none', cursor: cacheNum ? 'pointer' : 'not-allowed', background: cacheNum ? '#C7168C' : '#EAE8F1', color: cacheNum ? '#FFFFFF' : '#A19FB2', fontFamily: 'Outfit, sans-serif', fontSize: '14px', fontWeight: 700 }
+      } : {},
+      respHeaderStyle: { background: atual ? CAT_COLOR[atual.categoria] : '#C7168C', padding: '58px 16px 16px', display: 'flex', alignItems: 'center', gap: '10px' },
+      fecharResposta: () => this.setState({ sel: null }),
+      briefingOpen: st.briefingOpen,
+      abrirBriefing: () => this.setState({ briefingOpen: true }),
+      fecharBriefing: () => this.setState({ briefingOpen: false }),
+      briefingSecoes: atual ? [
+        { titulo: 'Escopo da entrega', itens: atual.briefing.escopo },
+        { titulo: 'Contexto do projeto', itens: atual.briefing.contexto },
+        { titulo: 'Produção e captação', itens: atual.briefing.producao },
+        { titulo: 'Distribuição e exclusividade', itens: atual.briefing.distribuicao }
+      ].map(s => ({ titulo: s.titulo, itens: s.itens.map(it => ({ label: it[0], value: it[1] })) })) : [],
+      notifs: notifsBase.map(n => ({
+        titulo: n.titulo, corpo: n.corpo, quando: n.quando,
+        dotStyle: { width: '8px', height: '8px', borderRadius: '999px', marginTop: '5px', flexShrink: 0, background: st.lidasNotif[n.id] ? '#E4E2ED' : (n.urgente ? '#C41A22' : '#C7168C') },
+        tituloStyle: { fontSize: '13px', fontWeight: st.lidasNotif[n.id] ? 500 : 700, color: st.lidasNotif[n.id] ? '#6B6A7C' : '#12111A' },
+        wrapStyle: { width: '100%', boxSizing: 'border-box', border: 'none', borderBottom: '1px solid #ECEAF2', background: st.lidasNotif[n.id] ? 'transparent' : '#FDF9FC', padding: '11px 14px', display: 'flex', gap: '10px', cursor: 'pointer', textAlign: 'left' },
+        onClick: () => this.setState(s => ({ lidasNotif: Object.assign({}, s.lidasNotif, { [n.id]: true }) }))
+      })),
+      marcarTudo: () => this.setState(s => { const l = {}; notifsBase.forEach(n => l[n.id] = true); return { lidasNotif: l }; }),
+      buscaTal: st.buscaTal, onBuscaTal: e => this.setState({ buscaTal: e.target.value }),
+      talentosBusca: talentosF.map((t, i) => ({
+        nome: t.nome, categoria: t.categoria, seguidores: t.seguidores, initials: ini(t.nome),
+        avatarStyle: { width: '38px', height: '38px', borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '12.5px', fontWeight: 700 },
+        ativo: t.ativo ? 'Ativo' : 'Inativo',
+        ativoStyle: { fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', color: t.ativo ? '#3D6B18' : '#B3121B', background: t.ativo ? '#F2FBE8' : '#FDF1F1' }
+      })),
+      talentosVazio: talentosF.length === 0,
+      tabBarStyle: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '78px', background: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(10px)', borderTop: '1px solid #ECEAF2', display: 'flex', paddingBottom: '18px' },
+      tabs: tabDef.map(t => {
+        const on = st.tab === t.id;
+        return {
+          icon: t.icon, label: t.label,
+          wrapStyle: { flex: 1, border: 'none', background: 'transparent', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', cursor: 'pointer', position: 'relative', paddingTop: '8px' },
+          iconStyle: { fontSize: '19px', opacity: on ? 1 : 0.55, filter: on ? 'none' : 'grayscale(0.4)' },
+          labelStyle: { fontSize: '10.5px', fontWeight: on ? 700 : 500, color: on ? '#C7168C' : '#85839A' },
+          temBadge: t.badge > 0,
+          badge: String(t.badge),
+          badgeStyle: { position: 'absolute', top: '2px', right: 'calc(50% - 20px)', minWidth: '15px', height: '15px', borderRadius: '999px', background: '#C41A22', color: '#FFFFFF', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' },
+          onClick: () => this.setState({ tab: t.id, sel: null })
+        };
+      }),
+      notas: [
+        { t: 'Barra inferior fixa', d: 'Fila, Talentos, Avisos e Perfil sempre a um toque — sem menu hambúrguer escondendo a ação principal.' },
+        { t: 'Swipe simulado nos cards', d: 'Toque em ⋯ (ou arraste) para revelar Devolver / Orçar pelo sugerido sem abrir a tela cheia.' },
+        { t: 'Resposta em tela cheia', d: 'Um talento por vez, teclado numérico para valor e data, botão de envio fixo no rodapé.' },
+        { t: 'Banco de talentos simplificado', d: 'Busca + status ativo/inativo + criar novo. Ficha completa fica para o desktop.' },
+        { t: 'Contador nas abas', d: 'Badge vermelho mostra pendências sem precisar entrar na tela.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  a:hover { color: #FF1BA0; }
+  button { font-family: inherit; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 13 · Notificações dentro do app</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">O sino que leva direto à ação</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Duas formas para o mesmo conteúdo: <a href="#13a">13a</a> é o <strong>dropdown</strong> compacto do sino; <a href="#13b">13b</a> é o <strong>painel lateral</strong> (drawer), melhor quando há muita coisa pendente. Ambos agrupam por <strong>Urgente / Hoje / Antes</strong>, destacam prazo vencendo e conflito de restrição, e cada item leva direto para a fila ou o projeto — sem passar por uma tela intermediária. Alterne o perfil para ver o conteúdo do solicitante e do aprovador.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="13a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">13a</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Dropdown do sino</div>
+        <div style="font-size: 13px; color: #6B6A7C">clique no sino, alterne o perfil</div>
+      </div>
+
+      <div style="width: 780px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); position: relative">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 22px">
+          <div style="display: flex; align-items: center; gap: 11px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 26px; height: 26px; object-fit: contain" />
+            <div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: 700; color: #12111A">Cachê Hub</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px">
+            <div style="display: flex; gap: 3px; background: #F2F0F8; padding: 3px; border-radius: 999px">
+              <button onClick="{{ setPersonaA_solic }}" style="{{ personaAStyleSolic }}">Solicitante</button>
+              <button onClick="{{ setPersonaA_apr }}" style="{{ personaAStyleApr }}">Aprovador</button>
+            </div>
+            <button onClick="{{ toggleDropdown }}" style="position: relative; width: 36px; height: 36px; border-radius: 999px; border: none; background: #F7F6FA; cursor: pointer; font-size: 16px">
+              🔔
+              <sc-if value="{{ temNaoLidasA }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ badgeAStyle }}">{{ naoLidasA }}</div>
+              </sc-if>
+            </button>
+          </div>
+        </div>
+
+        <div style="height: 420px; background: #FBFAFD; position: relative">
+          <sc-if value="{{ dropdownOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="position: absolute; top: 10px; right: 22px; width: 400px; background: #FFFFFF; border-radius: 14px; box-shadow: 0 16px 40px rgba(18,17,26,0.22); border: 1px solid #E7E6EE; overflow: hidden; z-index: 5">
+              <div style="padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0EFF5">
+                <div style="font-family: Outfit, sans-serif; font-size: 14.5px; font-weight: 700; color: #12111A">Notificações</div>
+                <button onClick="{{ marcarTudoA }}" style="border: none; background: transparent; color: #2020EE; font-size: 11.5px; font-weight: 700; cursor: pointer">Marcar tudo como lido</button>
+              </div>
+              <div style="max-height: 420px; overflow: auto">
+                <sc-for list="{{ gruposA }}" as="g" hint-placeholder-count="3">
+                  <div>
+                    <div style="padding: 9px 16px 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A19FB2">{{ g.label }}</div>
+                    <sc-for list="{{ g.itens }}" as="n" hint-placeholder-count="2">
+                      <button onClick="{{ n.onClick }}" style="{{ n.wrapStyle }}">
+                        <div style="{{ n.dotStyle }}"></div>
+                        <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1">
+                          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                            <div style="{{ n.tituloStyle }}">{{ n.titulo }}</div>
+                            <div style="font-size: 10.5px; color: #A19FB2; white-space: nowrap">{{ n.quando }}</div>
+                          </div>
+                          <div style="font-size: 11.5px; line-height: 1.4; color: #6B6A7C; text-wrap: pretty">{{ n.corpo }}</div>
+                          <sc-if value="{{ n.temTag }}" hint-placeholder-val="{{ false }}">
+                            <div style="{{ n.tagStyle }}">{{ n.tag }}</div>
+                          </sc-if>
+                        </div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding: 10px 16px; border-top: 1px solid #F0EFF5; text-align: center">
+                <div style="font-size: 12px; color: #2020EE; font-weight: 700; cursor: pointer">Ver todas as notificações</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div id="13b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #12111A; padding: 5px 11px; border-radius: 999px">13b</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Painel lateral (drawer)</div>
+        <div style="font-size: 13px; color: #6B6A7C">para quem tem muita coisa pendente</div>
+      </div>
+
+      <div style="width: 1340px; height: 780px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); display: grid; grid-template-columns: 1fr 420px">
+        <div style="background: #F7F6FA; padding: 26px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <div style="display: flex; align-items: center; gap: 11px">
+              <img src="assets/logo-globo.png" alt="Globo" style="width: 28px; height: 28px; object-fit: contain" />
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A">Cachê Hub</div>
+            </div>
+            <div style="display: flex; gap: 3px; background: #EAE8F1; padding: 3px; border-radius: 999px">
+              <button onClick="{{ setPersonaB_solic }}" style="{{ personaBStyleSolic }}">Solicitante</button>
+              <button onClick="{{ setPersonaB_apr }}" style="{{ personaBStyleApr }}">Aprovador</button>
+            </div>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #A19FB2; text-align: center">
+            <div style="font-size: 13px">O restante da tela do Hub fica aqui — o painel abre por cima, à direita.</div>
+          </div>
+        </div>
+
+        <div style="border-left: 1px solid #E7E6EE; display: flex; flex-direction: column">
+          <div style="padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0EFF5">
+            <div style="display: flex; flex-direction column; gap: 2px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Notificações</div>
+                <div style="{{ badgeBInlineStyle }}">{{ naoLidasB }} não lidas</div>
+              </div>
+            </div>
+            <button onClick="{{ marcarTudoB }}" style="border: none; background: transparent; color: #2020EE; font-size: 12.5px; font-weight: 700; cursor: pointer">Marcar tudo como lido</button>
+          </div>
+
+          <div style="padding: 12px 20px 0; display: flex; gap: 6px">
+            <sc-for list="{{ filtrosB }}" as="f" hint-placeholder-count="3">
+              <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="flex: 1; overflow: auto; padding: 8px 0 16px">
+            <sc-for list="{{ gruposB }}" as="g" hint-placeholder-count="3">
+              <div>
+                <div style="padding: 14px 20px 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A19FB2">{{ g.label }}</div>
+                <sc-for list="{{ g.itens }}" as="n" hint-placeholder-count="2">
+                  <button onClick="{{ n.onClick }}" style="{{ n.wrapStyleB }}">
+                    <div style="{{ n.dotStyle }}"></div>
+                    <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1">
+                      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+                        <div style="{{ n.tituloStyle }}">{{ n.titulo }}</div>
+                        <div style="font-size: 11px; color: #A19FB2; white-space: nowrap">{{ n.quando }}</div>
+                      </div>
+                      <div style="font-size: 12.5px; line-height: 1.5; color: #6B6A7C; text-wrap: pretty">{{ n.corpo }}</div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <sc-if value="{{ n.temTag }}" hint-placeholder-val="{{ false }}">
+                          <div style="{{ n.tagStyle }}">{{ n.tag }}</div>
+                        </sc-if>
+                        <sc-if value="{{ n.temAcao }}" hint-placeholder-val="{{ false }}">
+                          <div style="font-size: 11.5px; font-weight: 700; color: #C7168C">{{ n.acaoLabel }} →</div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+function evento(tipo, urgente, titulo, corpo, quando, tag, acaoLabel) {
+  return { tipo, urgente, titulo, corpo, quando, tag: tag || '', acaoLabel: acaoLabel || '' };
+}
+const SOLIC_EVENTS = [
+  evento('urgente', true, 'Ajuste liberado — Bruno Tavares', 'Você liberou o orçamento de Bruno Tavares para correção. A ViU já pode reenviar.', 'há 12min', 'Aguardando ViU', 'Ver projeto'),
+  evento('hoje', false, 'Orçamento respondido — Helena Barreto', 'Gestão de Elenco enviou R$ 152.000, validade 30/09/2026.', 'há 2h', 'Aprovada', 'Ver orçamento'),
+  evento('hoje', false, 'Consulta roteada — Manu Ferraz', 'Sua consulta foi encaminhada para a ViU.', 'há 3h', '', 'Ver projeto'),
+  evento('antes', false, 'Orçamento próximo de vencer', 'O orçamento de Tati Rocha (R$ 48.000) vence em 3 dias.', 'ontem', 'Expira em breve', 'Confirmar venda'),
+  evento('antes', false, 'Acesso aprovado', 'Seu perfil de Solicitante foi liberado por Ricardo Alencar.', '2 dias atrás', '', '')
+];
+const APR_EVENTS = [
+  evento('urgente', true, 'Prazo vencido — Manu Ferraz', 'A consulta de Manu Ferraz venceu há 1 dia e ainda não foi respondida.', 'há 8min', 'Vencida', 'Responder agora'),
+  evento('urgente', true, 'Conflito de restrição — Manu Ferraz', 'Segmento Bebidas alcoólicas requer aprovação prévia da ViU para este talento.', 'há 40min', 'Atenção', 'Ver detalhes'),
+  evento('hoje', false, 'Nova consulta na fila — Léo Vasques', 'Big Brother Brasil · Verão Lager. Vence hoje.', 'há 2h', 'Vence hoje', 'Abrir na fila'),
+  evento('hoje', false, 'Solicitante liberou reenvio — Bruno Tavares', 'Mariana Vasques liberou o orçamento para você ajustar o valor.', 'há 4h', 'Liberado', 'Editar orçamento'),
+  evento('antes', false, 'Talento marcado inativo', 'Pri Anjos está inativa na base — confirme disponibilidade antes de orçar.', 'ontem', '', 'Ver talento'),
+  evento('antes', false, 'Resumo semanal', 'Você respondeu 7 consultas nos últimos 7 dias, média de 1,2 dia de resposta.', '3 dias atrás', '', '')
+];
+const GROUP_LABEL = { urgente: 'Urgente', hoje: 'Hoje', antes: 'Antes' };
+
+class Component extends DCLogic {
+  state = { personaA: 'apr', personaB: 'apr', dropdownOpen: true, lidas: {}, filtroB: 'tudo' };
+
+  build(persona, prefix) {
+    const base = persona === 'solic' ? SOLIC_EVENTS : APR_EVENTS;
+    return base.map((e, i) => ({ ...e, id: prefix + '-' + i }));
+  }
+
+  card(n, isB) {
+    const lida = !!this.state.lidas[n.id];
+    const urgente = n.tipo === 'urgente';
+    return {
+      titulo: n.titulo, corpo: n.corpo, quando: n.quando, tag: n.tag, acaoLabel: n.acaoLabel,
+      temTag: !!n.tag, temAcao: !!n.acaoLabel,
+      dotStyle: { width: '8px', height: '8px', borderRadius: '999px', marginTop: '5px', flexShrink: 0, background: lida ? '#E4E2ED' : (urgente ? '#C41A22' : '#C7168C') },
+      tituloStyle: { fontSize: isB ? '13.5px' : '12.5px', fontWeight: lida ? 500 : 700, color: lida ? '#6B6A7C' : '#12111A' },
+      tagStyle: { fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '999px', color: urgente ? '#B3121B' : '#0F7B6C', background: urgente ? '#FDF1F1' : '#E6F6F2' },
+      wrapStyle: { width: '100%', boxSizing: 'border-box', border: 'none', borderBottom: '1px solid #F5F4F9', background: lida ? '#FFFFFF' : '#FDF9FC', padding: '10px 16px', display: 'flex', gap: '10px', cursor: 'pointer', textAlign: 'left' },
+      wrapStyleB: { width: '100%', boxSizing: 'border-box', border: 'none', borderBottom: '1px solid #F5F4F9', background: lida ? '#FFFFFF' : '#FDF9FC', padding: '12px 20px', display: 'flex', gap: '11px', cursor: 'pointer', textAlign: 'left' },
+      onClick: () => this.setState(s => ({ lidas: Object.assign({}, s.lidas, { [n.id]: true }) }))
+    };
+  }
+
+  grupos(persona, isB) {
+    const items = this.build(persona, isB ? 'b' : 'a');
+    const order = ['urgente', 'hoje', 'antes'];
+    return order.map(k => ({ label: GROUP_LABEL[k], itens: items.filter(n => n.tipo === k).map(n => this.card(n, isB)) })).filter(g => g.itens.length);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const naoLidasA = this.build(st.personaA, 'a').filter(n => !st.lidas[n.id]).length;
+    const naoLidasB = this.build(st.personaB, 'b').filter(n => !st.lidas[n.id]).length;
+    const pillStyle = on => ({ height: '26px', padding: '0 12px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700, color: on ? '#12111A' : '#6B6A7C', background: on ? '#FFFFFF' : 'transparent', boxShadow: on ? '0 1px 3px rgba(18,17,26,0.12)' : 'none' });
+
+    return {
+      setPersonaA_solic: () => this.setState({ personaA: 'solic' }),
+      setPersonaA_apr: () => this.setState({ personaA: 'apr' }),
+      personaAStyleSolic: pillStyle(st.personaA === 'solic'),
+      personaAStyleApr: pillStyle(st.personaA === 'apr'),
+      toggleDropdown: () => this.setState({ dropdownOpen: !st.dropdownOpen }),
+      dropdownOpen: st.dropdownOpen,
+      temNaoLidasA: naoLidasA > 0,
+      naoLidasA: String(naoLidasA),
+      badgeAStyle: { position: 'absolute', top: '2px', right: '2px', minWidth: '16px', height: '16px', borderRadius: '999px', background: '#C41A22', color: '#FFFFFF', fontSize: '9.5px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' },
+      marcarTudoA: () => this.setState(s => {
+        const lidas = Object.assign({}, s.lidas);
+        this.build(s.personaA, 'a').forEach(n => { lidas[n.id] = true; });
+        return { lidas };
+      }),
+      gruposA: this.grupos(st.personaA, false),
+
+      setPersonaB_solic: () => this.setState({ personaB: 'solic' }),
+      setPersonaB_apr: () => this.setState({ personaB: 'apr' }),
+      personaBStyleSolic: pillStyle(st.personaB === 'solic'),
+      personaBStyleApr: pillStyle(st.personaB === 'apr'),
+      naoLidasB: String(naoLidasB),
+      badgeBInlineStyle: { fontSize: '11px', fontWeight: 700, color: '#C7168C', background: '#FDF0F8', padding: '2px 9px', borderRadius: '999px' },
+      marcarTudoB: () => this.setState(s => {
+        const lidas = Object.assign({}, s.lidas);
+        this.build(s.personaB, 'b').forEach(n => { lidas[n.id] = true; });
+        return { lidas };
+      }),
+      filtrosB: [{ id: 'tudo', label: 'Tudo' }, { id: 'urgente', label: 'Urgente' }, { id: 'nao_lidas', label: 'Não lidas' }].map(f => ({
+        label: f.label,
+        style: { height: '28px', padding: '0 12px', borderRadius: '999px', border: '1px solid ' + (st.filtroB === f.id ? '#C7168C' : '#DCDAE6'), background: st.filtroB === f.id ? '#FDF0F8' : '#FFFFFF', color: st.filtroB === f.id ? '#C7168C' : '#56546B', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' },
+        onClick: () => this.setState({ filtroB: f.id })
+      })),
+      gruposB: this.grupos(st.personaB, true).map(g => ({
+        label: g.label,
+        itens: g.itens.filter(it => st.filtroB === 'tudo' || (st.filtroB === 'urgente' && it.tag && it.dotStyle.background === '#C41A22') || (st.filtroB === 'nao_lidas' && it.wrapStyleB.background === '#FDF9FC'))
+      })).filter(g => g.itens.length)
+    };
+  }
+}
+</script>
+</body>
+</html>

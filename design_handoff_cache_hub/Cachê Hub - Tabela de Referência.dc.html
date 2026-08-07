@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, button { font-family: inherit; }
+  input:focus, select:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 9 · Base de precificação</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Tabela de Referência de Cachê</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Seção restrita: só <strong>Aprovadores e Gerentes de ViU e Agenciamento</strong> (mais o Proprietário) entram aqui. A tabela cruza tamanho do talento × entrega × categoria × tipo de projeto e devolve o <strong>valor unitário sugerido em reais</strong>, multiplicado pela quantidade informada no Escopo Social. <a href="#9a">9a</a> é a base com atualização em massa; <a href="#9b">9b</a> é a calculadora e o histórico de versões.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="9a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #00A38C; padding: 5px 11px; border-radius: 999px">9a</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Base de valores unitários + upload em massa</div>
+        <div style="font-size: 13px; color: #6B6A7C">planilha inteira substituída em uma operação</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); position: relative">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 20px">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+              <div style="{{ n.style }}">{{ n.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="display: flex; flex-direction: column; align-items: flex-end">
+              <div style="font-size: 13px; font-weight: 600; color: #12111A">Camile Nogueira</div>
+              <div style="font-size: 11px; color: #85839A">Gerente ViU</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 999px; background: #C7168C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">CN</div>
+          </div>
+        </div>
+
+        <div style="background: #12111A; padding: 11px 26px; display: flex; align-items: center; gap: 11px">
+          <div style="font-size: 13px">🔒</div>
+          <div style="font-size: 12.5px; color: #FFFFFF">Seção restrita — visível apenas para Aprovadores e Gerentes de ViU e Agenciamento e para o Proprietário. O solicitante vê somente o cachê sugerido, nunca a tabela.</div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Tabela de Referência de Cachê</div>
+            <div style="font-size: 13px; color: #6B6A7C">{{ resumo }}</div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button style="height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A">Baixar modelo</button>
+            <button style="height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #0F7B3C; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #0F7B3C">Exportar base atual</button>
+            <button onClick="{{ openUpload }}" style="height: 42px; padding: 0 22px; border-radius: 999px; border: none; background: #00A38C; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer" style-hover="background: #008672">Atualizar em massa</button>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: grid; grid-template-columns: repeat(4, 1fr) 1.3fr; gap: 12px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 3px; padding: 13px 15px; border-radius: 12px; background: #F7F6FA">
+              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+              <div style="font-family: Outfit, sans-serif; font-size: 24px; font-weight: 700; color: #12111A">{{ k.value }}</div>
+              <div style="font-size: 11.5px; color: #85839A">{{ k.note }}</div>
+            </div>
+          </sc-for>
+          <div style="display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border-radius: 12px; background: #E6F6F2; border: 1px solid #A9DED2">
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #0F7B6C">Valores absolutos</div>
+            <div style="font-size: 12px; line-height: 1.5; color: #0F7B6C">A base já traz o <strong>valor unitário sugerido em reais</strong> por entrega, tamanho e tipo de projeto — sem multiplicador.</div>
+          </div>
+        </div>
+
+        <div style="margin: 20px 26px 26px; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #E7E6EE">
+            <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar por entrega, tamanho ou faixa de seguidores" style="flex: 1; min-width: 230px; height: 34px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 14px; font-size: 13px; color: #12111A; background: #FFFFFF" />
+            <select value="{{ fCat }}" onChange="{{ onCat }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <option value="Todas as categorias">Todas as categorias</option>
+              <option value="Creator">Creator</option>
+              <option value="Agenciado">Agenciado</option>
+            </select>
+            <select value="{{ fTam }}" onChange="{{ onTam }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ tamOptions }}" as="o" hint-placeholder-count="8">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ fEntrega }}" onChange="{{ onEntrega }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ entregaOptions }}" as="o" hint-placeholder-count="7">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ fRede }}" onChange="{{ onRede }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <option value="Todas as redes">Todas as redes</option>
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+              <option value="X / Twitter">X / Twitter</option>
+            </select>
+            <button onClick="{{ toggleValores }}" style="{{ toggleStyle }}">{{ toggleLabel }}</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1.25fr 1.15fr 2fr 0.95fr 0.95fr 0.95fr; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+            <div style="padding: 10px 12px">Tamanho</div>
+            <div style="padding: 10px 12px">Faixa de seguidores</div>
+            <div style="padding: 10px 12px">Categoria · rede</div>
+            <div style="padding: 10px 12px">Entregas</div>
+            <div style="padding: 10px 12px; text-align: center">Pacote</div>
+            <div style="padding: 10px 12px; text-align: center">Patrocínio</div>
+            <div style="padding: 10px 12px; text-align: center">Sob demanda</div>
+          </div>
+
+          <sc-for list="{{ linhas }}" as="r" hint-placeholder-count="12">
+            <div style="{{ r.rowStyle }}">
+              <div style="padding: 9px 12px; display: flex; align-items: center; gap: 8px">
+                <div style="{{ r.tamStyle }}">{{ r.tamanho }}</div>
+              </div>
+              <div style="padding: 9px 12px; font-family: ui-monospace, monospace; font-size: 11.5px; color: #56546B">{{ r.faixa }}</div>
+              <div style="padding: 9px 12px; display: flex; flex-direction: column; gap: 2px">
+                <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ r.categoria }}</div>
+                <div style="font-size: 11px; color: #A19FB2">{{ r.rede }}</div>
+              </div>
+              <div style="padding: 9px 12px; font-size: 12.5px; color: #2C2B3A">{{ r.entrega }}</div>
+              <div style="padding: 7px 10px; display: flex; align-items: center; justify-content: center"><div style="{{ r.c0.style }}">{{ r.c0.label }}</div></div>
+              <div style="padding: 7px 10px; display: flex; align-items: center; justify-content: center"><div style="{{ r.c1.style }}">{{ r.c1.label }}</div></div>
+              <div style="padding: 7px 10px; display: flex; align-items: center; justify-content: center"><div style="{{ r.c2.style }}">{{ r.c2.label }}</div></div>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 34px; text-align: center; font-size: 13.5px; color: #85839A">Nenhuma linha encontrada com esses filtros.</div>
+          </sc-if>
+
+          <div style="padding: 12px 16px; font-size: 12px; color: #85839A; border-top: 1px solid #F0EFF5">{{ visiveis }} de {{ total }} combinações · versão {{ versaoAtual }} vigente desde {{ versaoData }}</div>
+        </div>
+
+        <sc-if value="{{ uploadOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; background: rgba(18,17,26,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 70px 0">
+            <div style="width: 800px; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.3)">
+              <div style="background: #00A38C; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #FFFFFF">Atualização em massa</div>
+                  <div style="font-size: 12.5px; color: rgba(255,255,255,0.8)">A planilha substitui a base inteira e gera uma nova versão</div>
+                </div>
+                <button onClick="{{ closeUpload }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.45); background: transparent; color: #FFFFFF; font-size: 16px; line-height: 1; cursor: pointer">×</button>
+              </div>
+
+              <div style="padding: 12px 22px 0; display: flex; gap: 4px; border-bottom: 1px solid #E7E6EE">
+                <sc-for list="{{ passos }}" as="p" hint-placeholder-count="3">
+                  <div style="{{ p.style }}">
+                    <span style="{{ p.numStyle }}">{{ p.num }}</span>
+                    <span>{{ p.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ passo1 }}" hint-placeholder-val="{{ true }}">
+                <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
+                  <div style="border: 2px dashed #A9DED2; border-radius: 13px; background: #F5FBF9; padding: 34px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+                    <div style="font-size: 30px; color: #00A38C">⤒</div>
+                    <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 600; color: #12111A">Arraste a planilha aqui</div>
+                    <div style="font-size: 12.5px; color: #56546B">.xlsx ou .csv · até 5.000 linhas</div>
+                    <button onClick="{{ simular }}" style="margin-top: 6px; height: 38px; padding: 0 20px; border-radius: 999px; border: none; background: #00A38C; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer" style-hover="background: #008672">Selecionar arquivo</button>
+                  </div>
+                  <div style="border: 1px solid #E7E6EE; border-radius: 11px; overflow: hidden">
+                    <div style="background: #F7F6FA; padding: 10px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6A7C; border-bottom: 1px solid #E7E6EE">Colunas esperadas, nesta ordem</div>
+                    <div style="padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 7px">
+                      <sc-for list="{{ colunasEsperadas }}" as="c" hint-placeholder-count="7">
+                        <div style="font-family: ui-monospace, monospace; font-size: 11px; color: #0F7B6C; background: #E6F6F2; border: 1px solid #A9DED2; padding: 5px 9px; border-radius: 7px">{{ c }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ passo2 }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
+                  <div style="display: flex; align-items: center; gap: 12px; background: #FBFAFD; border: 1px solid #EEECF3; border-radius: 11px; padding: 12px 14px">
+                    <div style="font-size: 18px">📄</div>
+                    <div style="display: flex; flex-direction: column; gap: 2px; flex: 1">
+                      <div style="font-size: 13.5px; font-weight: 600; color: #12111A">tabela-referencia-cache_v9.xlsx</div>
+                      <div style="font-size: 11.5px; color: #85839A">252 linhas lidas · enviado agora por Camile Nogueira</div>
+                    </div>
+                    <button onClick="{{ voltar }}" style="height: 32px; padding: 0 13px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #56546B; font-size: 12.5px; font-weight: 600; cursor: pointer">Trocar arquivo</button>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px">
+                    <sc-for list="{{ validacao }}" as="v" hint-placeholder-count="4">
+                      <div style="{{ v.style }}">
+                        <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">{{ v.label }}</div>
+                        <div style="{{ v.valueStyle }}">{{ v.value }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="border: 1px solid #E7E6EE; border-radius: 11px; overflow: hidden">
+                    <div style="background: #F7F6FA; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #E7E6EE">
+                      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6A7C">Prévia das mudanças</div>
+                      <div style="font-size: 11.5px; color: #85839A">só as linhas que alteram valor</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1.6fr 1fr 0.9fr 0.9fr; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6B6A7C">
+                      <div style="padding: 8px 12px">Tamanho</div>
+                      <div style="padding: 8px 12px">Entrega</div>
+                      <div style="padding: 8px 12px">Tipo</div>
+                      <div style="padding: 8px 12px; text-align: center">De</div>
+                      <div style="padding: 8px 12px; text-align: center">Para</div>
+                    </div>
+                    <sc-for list="{{ diffs }}" as="d" hint-placeholder-count="5">
+                      <div style="display: grid; grid-template-columns: 1fr 1.6fr 1fr 0.9fr 0.9fr; border-bottom: 1px solid #F0EFF5; align-items: center">
+                        <div style="padding: 8px 12px; font-size: 12.5px; color: #12111A">{{ d.tamanho }}</div>
+                        <div style="padding: 8px 12px; font-size: 12px; color: #56546B">{{ d.entrega }}</div>
+                        <div style="padding: 8px 12px; font-size: 12px; color: #56546B">{{ d.tipo }}</div>
+                        <div style="padding: 8px 12px; text-align: center; font-size: 12.5px; color: #A19FB2; text-decoration: line-through">{{ d.de }}</div>
+                        <div style="padding: 8px 12px; text-align: center"><span style="{{ d.paraStyle }}">{{ d.para }}</span></div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 11px; background: #FFF7E0; border: 1px solid #F0DCA0; border-radius: 10px; padding: 11px 13px">
+                    <div style="font-size: 12.5px; line-height: 1.5; color: #8A6A00">A versão vigente é arquivada e pode ser restaurada. Solicitações já enviadas mantêm o valor sugerido no momento do envio.</div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="padding: 16px 22px; border-top: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between">
+                <div style="font-size: 12.5px; color: #85839A">{{ rodapeUpload }}</div>
+                <div style="display: flex; gap: 10px">
+                  <button onClick="{{ closeUpload }}" style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancelar</button>
+                  <button onClick="{{ publicar }}" style="{{ publicarStyle }}">Publicar nova versão</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div id="9b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #2B2ADB; padding: 5px 11px; border-radius: 999px">9b</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Calculadora e versões</div>
+        <div style="font-size: 13px; color: #6B6A7C">o mesmo cálculo que alimenta o cachê sugerido</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start">
+          <div style="border: 1px solid #DCD7EC; border-radius: 13px; overflow: hidden">
+            <div style="background: #2B2ADB; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+              <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #FFFFFF">Simulador de cachê sugerido</div>
+            </div>
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px">
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Categoria</div>
+                  <select value="{{ simCat }}" onChange="{{ onSimCat }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                    <option value="Creator">Creator</option>
+                    <option value="Agenciado">Agenciado</option>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Seguidores do talento</div>
+                  <input value="{{ simSeguidores }}" onChange="{{ onSimSeguidores }}" placeholder="1900000" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                </div>
+                <div style="grid-column: span 2">
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Entrega</div>
+                  <select value="{{ simEntrega }}" onChange="{{ onSimEntrega }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                    <sc-for list="{{ entregas }}" as="o" hint-placeholder-count="6">
+                      <option value="{{ o }}">{{ o }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Tipo de projeto</div>
+                  <select value="{{ simTipo }}" onChange="{{ onSimTipo }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                    <option value="Pacote">Pacote</option>
+                    <option value="Patrocínio">Patrocínio</option>
+                    <option value="Sob demanda">Sob demanda</option>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Quantidade</div>
+                  <input value="{{ simQtd }}" onChange="{{ onSimQtd }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                </div>
+              </div>
+
+              <div style="background: #F4F2FC; border: 1px solid #DCD7EC; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 11px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #2B2ADB">Cachê sugerido</div>
+                  <div style="{{ simTamStyle }}">{{ simTamanho }} · {{ simFaixa }}</div>
+                </div>
+                <div style="font-family: Outfit, sans-serif; font-size: 32px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">{{ simValor }}</div>
+                <div style="font-family: ui-monospace, monospace; font-size: 11.5px; color: #56546B">{{ simConta }}</div>
+                <div style="display: flex; align-items: center; gap: 10px; border-top: 1px dashed #C7CBF5; padding-top: 11px">
+                  <div style="font-size: 12px; color: #56546B">Faixa de negociação sugerida</div>
+                  <div style="flex: 1"></div>
+                  <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 700; color: #2B2ADB">{{ simFaixaValor }}</div>
+                </div>
+              </div>
+
+              <div style="font-size: 11.5px; line-height: 1.5; color: #85839A; text-wrap: pretty">O solicitante vê apenas este valor sugerido e a faixa, como referência para preencher o cachê estimado. As unidades e a tabela ficam restritas a esta seção.</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+              <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+                <div style="width: 4px; height: 15px; border-radius: 2px; background: #00A38C"></div>
+                <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Histórico de versões</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 80px 1.3fr 1.5fr 1fr 100px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+                <div style="padding: 10px 12px">Versão</div>
+                <div style="padding: 10px 12px">Publicada em</div>
+                <div style="padding: 10px 12px">Por</div>
+                <div style="padding: 10px 12px">Mudanças</div>
+                <div style="padding: 10px 12px">Status</div>
+              </div>
+              <sc-for list="{{ versoes }}" as="v" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 80px 1.3fr 1.5fr 1fr 100px; border-bottom: 1px solid #F0EFF5; align-items: center">
+                  <div style="padding: 9px 12px; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #12111A">{{ v.versao }}</div>
+                  <div style="padding: 9px 12px; font-size: 12.5px; color: #2C2B3A">{{ v.data }}</div>
+                  <div style="padding: 9px 12px; font-size: 12.5px; color: #56546B">{{ v.autor }}</div>
+                  <div style="padding: 9px 12px; font-size: 12.5px; color: #56546B">{{ v.mudancas }}</div>
+                  <div style="padding: 9px 12px"><span style="{{ v.statusStyle }}">{{ v.status }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+              <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+                <div style="width: 4px; height: 15px; border-radius: 2px; background: #C7168C"></div>
+                <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Quem enxerga o quê</div>
+              </div>
+              <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{ acessos }}" as="a" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 9px 11px; border-radius: 9px; background: #FBFAFD; border: 1px solid #EEECF3">
+                    <span style="{{ a.markStyle }}">{{ a.mark }}</span>
+                    <div style="font-size: 12.5px; font-weight: 600; color: #12111A; min-width: 220px">{{ a.perfil }}</div>
+                    <div style="font-size: 12px; color: #56546B">{{ a.nota }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const TAMANHOS = [
+  { nome: 'Nano', faixa: '1.000 a 10.000', min: 1000, max: 10000, color: '#85839A' },
+  { nome: 'Micro', faixa: '10.000 a 100.000', min: 10000, max: 100000, color: '#00A38C' },
+  { nome: 'Médio', faixa: '100.000 a 500.000', min: 100000, max: 500000, color: '#2B2ADB' },
+  { nome: 'Macro', faixa: '500.000 a 1.000.000', min: 500000, max: 1000000, color: '#6B4BE8' },
+  { nome: 'Mega', faixa: '1.000.000 a 5.000.000', min: 1000000, max: 5000000, color: '#8B2FD6' },
+  { nome: 'Super', faixa: '5.000.000 a 10.000.000', min: 5000000, max: 10000000, color: '#C7168C' },
+  { nome: 'Celebridade', faixa: '>10.000.000', min: 10000000, max: 999999999, color: '#12111A' }
+];
+const TIPOS = ['Pacote', 'Patrocínio', 'Sob demanda'];
+const REDE_POR_ENTREGA = { '1 Vídeo TikTok': 'TikTok', '1 Reel': 'Instagram', '1 Story': 'Instagram', '1 Post Carrossel': 'Instagram', '1 Tweet (Texto/Foto)': 'X / Twitter' };
+const BASE = {
+  'Creator': {
+    '1 Vídeo TikTok':       [[3800,11600,18800],[7200,13300,28300],[10000,17300,35000],[13900,21500,50000],[20900,28200,70000],[27100,47100,100000],[35300,65300,140000]],
+    '1 Reel':               [[3800,9800,12300],[4900,8900,17800],[7500,14600,23500],[12200,19300,39900],[17100,25100,61200],[26600,51400,120000],[54900,110500,164600]],
+    '1 Story':              [[600,400,1500],[700,1500,500],[1000,1900,2700],[1200,4000,3700],[1100,5100,3100],[2600,6100,7300],[4100,5800,14500]],
+    '1 Post Carrossel':     [[2900,7600,9100],[3800,6800,18500],[5600,11400,22000],[8700,12000,35400],[14800,16700,60600],[24700,41800,98000],[32600,82500,138100]],
+    '1 Tweet (Texto/Foto)': [[1800,3500,7000],[2100,4400,8700],[3100,5500,10900],[4300,7700,15300],[5800,10700,21300],[7800,13300,26700],[10000,16700,33300]]
+  },
+  'Agenciado': {
+    '1 Vídeo TikTok':       [[7400,18600,19500],[14000,21500,29300],[19300,27800,36200],[25000,35000,60000],[37500,55000,100000],[48600,91800,172800],[63200,127200,211200]],
+    '1 Reel':               [[11300,17300,13900],[13400,19800,16800],[17200,24800,25600],[17800,24500,42700],[25600,40500,76300],[51300,87600,155500],[130200,146000,202000]],
+    '1 Story':              [[800,400,2000],[1200,500,2800],[1200,100,3800],[2900,5700,6200],[2800,9100,10700],[4400,11100,8600],[8600,16800,6100]],
+    '1 Post Carrossel':     [[9400,11200,7400],[11200,14800,11600],[15500,22800,23700],[16400,15200,35800],[26800,28900,67100],[46700,72600,139200],[139200,129500,181600]],
+    '1 Tweet (Texto/Foto)': [[4500,6700,13300],[5200,8400,16700],[8300,10500,20800],[11700,14700,29200],[15600,33300,55000],[33300,56700,66700],[42800,70800,83300]]
+  }
+};
+const ENTREGAS = Object.keys(BASE['Creator']);
+function brl(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function tamPor(seg) {
+  const n = Number(String(seg).replace(/\D/g, '')) || 0;
+  for (let i = 0; i < TAMANHOS.length; i++) { if (n <= TAMANHOS[i].max) return TAMANHOS[i]; }
+  return TAMANHOS[TAMANHOS.length - 1];
+}
+
+class Component extends DCLogic {
+  state = {
+    unidadeCreator: '1',
+    unidadeAgenciado: '1,5',
+    query: '', fCat: 'Todas as categorias', fTam: 'Todos os tamanhos', fEntrega: 'Todas as entregas', fRede: 'Todas as redes',
+    verValores: true,
+    uploadOpen: false, passo: 1,
+    simCat: 'Creator', simSeguidores: '1900000', simEntrega: '1 Reel', simTipo: 'Sob demanda', simQtd: '2'
+  };
+
+  unidadeDe(cat) { return 1; }
+
+  linhasBase() {
+    const out = [];
+    Object.keys(BASE).forEach(cat => {
+      Object.keys(BASE[cat]).forEach(ent => {
+        BASE[cat][ent].forEach((vals, ti) => {
+          out.push({ categoria: cat, entrega: ent, tamanho: TAMANHOS[ti], vals: vals });
+        });
+      });
+    });
+    return out;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const q = st.query.trim().toLowerCase();
+    const todas = this.linhasBase();
+
+    const filtradas = todas.filter(r => {
+      if (st.fCat !== 'Todas as categorias' && r.categoria !== st.fCat) return false;
+      if (st.fTam !== 'Todos os tamanhos' && r.tamanho.nome !== st.fTam) return false;
+      if (st.fEntrega !== 'Todas as entregas' && r.entrega !== st.fEntrega) return false;
+      if (q && (r.entrega + ' ' + r.tamanho.nome + ' ' + r.tamanho.faixa + ' ' + r.categoria).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    const cell = (n, destaque, cat) => ({
+      label: st.verValores ? (n ? brl(n) : 'sob consulta') : '•••••',
+      style: {
+        minWidth: '96px', textAlign: 'center', padding: '6px 9px', borderRadius: '8px',
+        fontFamily: st.verValores ? 'Manrope, sans-serif' : 'Outfit, sans-serif',
+        fontSize: st.verValores ? '12px' : '14px', fontWeight: 700,
+        color: n ? (destaque ? '#12111A' : '#2C2B3A') : '#A19FB2',
+        background: n === 0 ? '#F4F3F7' : destaque ? '#E6F6F2' : '#F7F6FA'
+      }
+    });
+
+    const simTam = tamPor(st.simSeguidores);
+    const simIdx = TAMANHOS.indexOf(simTam);
+    const simTipoIdx = TIPOS.indexOf(st.simTipo);
+    const simUnidades = (BASE[st.simCat][st.simEntrega] || BASE['Creator']['1 Reel'])[simIdx][simTipoIdx];
+    const simQtd = Number(st.simQtd) || 1;
+    const simTotal = simUnidades * simQtd;
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Tabela de Referência', active: true }, { label: 'Relatórios' }, { label: 'Usuários' }, { label: 'Notificações' }]
+        .map(n => ({ label: n.label, style: { fontSize: '13px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } })),
+      resumo: todas.length + ' combinações · ' + ENTREGAS.length + ' entregas × ' + TAMANHOS.length + ' tamanhos × ' + TIPOS.length + ' tipos de projeto · Creator e Agenciado',
+      unidadeCreator: st.unidadeCreator,
+      unidadeAgenciado: st.unidadeAgenciado,
+      onUnidadeCreator: e => this.setState({ unidadeCreator: e.target.value }),
+      onUnidadeAgenciado: e => this.setState({ unidadeAgenciado: e.target.value }),
+      kpis: [
+        { label: 'Combinações', value: String(todas.length), note: 'linhas na base vigente' },
+        { label: 'Entregas mapeadas', value: String(ENTREGAS.length), note: 'formatos padrão' },
+        { label: 'Faixas de tamanho', value: String(TAMANHOS.length), note: 'Nano a Celebridade' },
+        { label: 'Sem valor definido', value: String(todas.filter(r => r.vals.some(v => v === 0)).length), note: 'caem em "sob consulta"' }
+      ],
+      query: st.query, fCat: st.fCat, fTam: st.fTam, fEntrega: st.fEntrega, fRede: st.fRede,
+      tamOptions: ['Todos os tamanhos'].concat(TAMANHOS.map(t => t.nome)),
+      entregaOptions: ['Todas as entregas'].concat(ENTREGAS),
+      onQuery: e => this.setState({ query: e.target.value }),
+      onCat: e => this.setState({ fCat: e.target.value }),
+      onTam: e => this.setState({ fTam: e.target.value }),
+      onEntrega: e => this.setState({ fEntrega: e.target.value }),
+      onRede: e => this.setState({ fRede: e.target.value }),
+      toggleLabel: st.verValores ? 'Ocultar valores' : 'Ver valores',
+      toggleStyle: { height: '34px', padding: '0 14px', borderRadius: '999px', border: '1px solid #A9DED2', background: '#E6F6F2', color: '#0F7B6C', fontSize: '12.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' },
+      toggleValores: () => this.setState({ verValores: !st.verValores }),
+      linhas: filtradas.map((r, i) => ({
+        tamanho: r.tamanho.nome, faixa: r.tamanho.faixa, categoria: r.categoria, rede: REDE_POR_ENTREGA[r.entrega] || '—', entrega: r.entrega,
+        tamStyle: { fontSize: '11px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#FFFFFF', background: r.tamanho.color, padding: '4px 9px', borderRadius: '999px' },
+        rowStyle: { display: 'grid', gridTemplateColumns: '1fr 1.25fr 1.15fr 2fr 0.95fr 0.95fr 0.95fr', alignItems: 'center', borderBottom: '1px solid #F0EFF5', background: i % 2 ? '#FDFDFE' : '#FFFFFF' },
+        c0: cell(r.vals[0], false, r.categoria), c1: cell(r.vals[1], false, r.categoria), c2: cell(r.vals[2], true, r.categoria)
+      })),
+      vazio: filtradas.length === 0,
+      visiveis: String(filtradas.length), total: String(todas.length),
+      versaoAtual: 'v8', versaoData: '12/07/2026',
+      uploadOpen: st.uploadOpen,
+      openUpload: () => this.setState({ uploadOpen: true, passo: 1 }),
+      closeUpload: () => this.setState({ uploadOpen: false, passo: 1 }),
+      simular: () => this.setState({ passo: 2 }),
+      voltar: () => this.setState({ passo: 1 }),
+      publicar: () => this.setState({ uploadOpen: false, passo: 1 }),
+      passo1: st.passo === 1, passo2: st.passo === 2,
+      passos: [
+        { n: 1, label: 'Enviar planilha' }, { n: 2, label: 'Validar e revisar' }, { n: 3, label: 'Publicar versão' }
+      ].map(p => {
+        const on = st.passo === p.n;
+        return {
+          label: p.label, num: String(p.n),
+          style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 13px', borderRadius: '10px 10px 0 0', fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 600, background: on ? '#E6F6F2' : 'transparent', color: on ? '#0F7B6C' : '#A19FB2' },
+          numStyle: { width: '20px', height: '20px', borderRadius: '999px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, background: on ? '#00A38C' : '#EAE8F1', color: on ? '#FFFFFF' : '#A19FB2' }
+        };
+      }),
+      colunasEsperadas: ['Chave_preco', 'Tipo', 'Tamanho', 'Faixa_seguidores', 'Tipo_projeto', 'Entrega_unitaria', 'Plataforma', 'Valor_unitario_sugerido'],
+      validacao: [
+        { label: 'Linhas válidas', value: '248', ok: true },
+        { label: 'Linhas novas', value: '6', ok: true },
+        { label: 'Valores alterados', value: '31', ok: true },
+        { label: 'Erros', value: '4', ok: false }
+      ].map(v => ({
+        label: v.label, value: v.value,
+        style: { display: 'flex', flexDirection: 'column', gap: '3px', padding: '12px 14px', borderRadius: '11px', background: v.ok ? '#F7F6FA' : '#FDF1F1', border: '1px solid ' + (v.ok ? 'transparent' : '#F3B4B4') },
+        valueStyle: { fontFamily: 'Outfit, sans-serif', fontSize: '22px', fontWeight: 700, color: v.ok ? '#12111A' : '#B3121B' }
+      })),
+      diffs: [
+        { tamanho: 'Mega', entrega: '1 Reels + 3 Stories', tipo: 'Sob demanda', de: '3', para: '4' },
+        { tamanho: 'Super', entrega: '1 Vídeo TikTok', tipo: 'Patrocínio', de: '2', para: '3' },
+        { tamanho: 'Celebridade', entrega: '1 Post Carrossel + 3 Stories', tipo: 'Sob demanda', de: '8', para: '9' },
+        { tamanho: 'Macro', entrega: '3 Tweets (Texto/Foto)', tipo: 'Pacote', de: '1', para: '2' },
+        { tamanho: 'Médio', entrega: '1 Reel', tipo: 'Patrocínio', de: '1', para: '2' }
+      ].map(d => ({
+        tamanho: d.tamanho, entrega: d.entrega, tipo: d.tipo, de: d.de, para: d.para,
+        paraStyle: { fontSize: '12.5px', fontWeight: 700, color: '#0F7B6C', background: '#E6F6F2', padding: '3px 9px', borderRadius: '999px' }
+      })),
+      rodapeUpload: st.passo === 1 ? 'A planilha substitui todas as linhas da base' : '4 linhas com erro serão ignoradas na publicação',
+      publicarStyle: { height: '40px', padding: '0 22px', borderRadius: '999px', border: 'none', cursor: st.passo === 2 ? 'pointer' : 'not-allowed', background: st.passo === 2 ? '#00A38C' : '#EAE8F1', color: st.passo === 2 ? '#FFFFFF' : '#A19FB2', fontSize: '13.5px', fontWeight: 700 },
+      entregas: ENTREGAS,
+      simCat: st.simCat, simSeguidores: st.simSeguidores, simEntrega: st.simEntrega, simTipo: st.simTipo, simQtd: st.simQtd,
+      onSimCat: e => this.setState({ simCat: e.target.value }),
+      onSimSeguidores: e => this.setState({ simSeguidores: e.target.value }),
+      onSimEntrega: e => this.setState({ simEntrega: e.target.value }),
+      onSimTipo: e => this.setState({ simTipo: e.target.value }),
+      onSimQtd: e => this.setState({ simQtd: e.target.value }),
+      simTamanho: simTam.nome, simFaixa: simTam.faixa,
+      simTamStyle: { fontSize: '11px', fontWeight: 700, color: '#FFFFFF', background: simTam.color, padding: '4px 10px', borderRadius: '999px' },
+      simValor: simUnidades ? brl(simTotal) : 'Sob consulta da área',
+      simConta: simUnidades
+        ? brl(simUnidades) + ' (valor unitário) × ' + simQtd + ' entrega(s) = ' + brl(simTotal)
+        : 'Combinação sem unidade definida na tabela — a área responsável precisa precificar caso a caso',
+      simFaixaValor: simUnidades ? brl(simTotal * 0.85) + ' a ' + brl(simTotal * 1.15) : '—',
+      versoes: [
+        { versao: 'v8', data: '12/07/2026 · 14:32', autor: 'Camile Nogueira · Gerente ViU', mudancas: '22 valores', status: 'Vigente' },
+        { versao: 'v7', data: '03/05/2026 · 10:11', autor: 'Sônia Vilela · Gerente Agenciamento', mudancas: '48 valores', status: 'Arquivada' },
+        { versao: 'v6', data: '18/02/2026 · 09:40', autor: 'Camile Nogueira · Gerente ViU', mudancas: '12 valores', status: 'Arquivada' },
+        { versao: 'v5', data: '06/12/2025 · 16:20', autor: 'Ricardo Alencar · Proprietário', mudancas: 'base inicial', status: 'Arquivada' }
+      ].map(v => ({
+        versao: v.versao, data: v.data, autor: v.autor, mudancas: v.mudancas, status: v.status,
+        statusStyle: { fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', whiteSpace: 'nowrap', color: v.status === 'Vigente' ? '#3D6B18' : '#85839A', background: v.status === 'Vigente' ? '#F2FBE8' : '#F4F3F7' }
+      })),
+      acessos: [
+        { perfil: 'Proprietário', nota: 'vê a tabela e publica versões', v: 2 },
+        { perfil: 'Gerente ViU / Agenciamento', nota: 'vê a tabela e publica versões', v: 2 },
+        { perfil: 'Aprovador ViU / Agenciamento', nota: 'vê a tabela, não publica', v: 1 },
+        { perfil: 'Gestão de Elenco', nota: 'sem acesso — Talento Globo não usa esta base', v: 0 },
+        { perfil: 'Solicitante', nota: 'vê apenas o cachê sugerido no formulário', v: 0 }
+      ].map(a => ({
+        perfil: a.perfil, nota: a.nota,
+        mark: a.v === 2 ? '✓' : a.v === 1 ? '~' : '·',
+        markStyle: { width: '20px', height: '20px', flexShrink: 0, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: a.v ? '#12111A' : '#CFCDDD', background: a.v === 2 ? '#C8F000' : a.v === 1 ? '#F5A623' : '#F2F0F8' }
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

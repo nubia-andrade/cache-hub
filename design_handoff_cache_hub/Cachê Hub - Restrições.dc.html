@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, textarea, button { font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 960px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 5 · Restrições de talentos</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Banco de restrições</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Mesma estrutura do Banco de Talentos: lista densa com busca e filtros, agrupada por talento. O <strong>simulador</strong> no topo mostra quais restrições um segmento e uma marca acionariam antes de abrir a solicitação. Edição restrita a Admin de talentos e Proprietário.</p>
+  </div>
+
+  <div id="5a" style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C41A22; padding: 5px 11px; border-radius: 999px">5a</div>
+      <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Lista de restrições + simulador</div>
+      <div style="font-size: 13px; color: #6B6A7C">agrupada por talento, com vigência e origem</div>
+    </div>
+
+    <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); position: relative">
+      <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+        <div style="display: flex; align-items: center; gap: 13px">
+          <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+          <div style="display: flex; flex-direction: column">
+            <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+            <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 22px">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+            <div style="{{ n.style }}">{{ n.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; align-items: flex-end">
+            <div style="font-size: 13px; font-weight: 600; color: #12111A">Bianca Toledo</div>
+            <div style="font-size: 11px; color: #85839A">Admin de talentos</div>
+          </div>
+          <div style="width: 34px; height: 34px; border-radius: 999px; background: #8B2FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">BT</div>
+        </div>
+      </div>
+
+      <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Restrições de talentos</div>
+          <div style="font-size: 13px; color: #6B6A7C">Bloqueios por segmento e por patrocinador concorrente, cruzados em cada solicitação.</div>
+        </div>
+        <button onClick="{{ openNew }}" style="height: 42px; padding: 0 22px; border-radius: 999px; border: none; background: #C41A22; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer" style-hover="background: #9E1319">+ Adicionar restrição</button>
+      </div>
+
+      <div style="padding: 18px 26px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="{{ k.style }}">
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+            <div style="font-family: Outfit, sans-serif; font-size: 24px; font-weight: 700; color: #12111A">{{ k.value }}</div>
+            <div style="font-size: 11.5px; color: #85839A">{{ k.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin: 20px 26px 0; border: 1px solid #DCD7EC; border-radius: 13px; overflow: hidden">
+        <div style="background: #12111A; padding: 11px 16px; display: flex; align-items: center; gap: 11px">
+          <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #FFFFFF">Simulador de conflito</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.6)">confira antes de abrir a solicitação</div>
+        </div>
+        <div style="padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end">
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Segmento do cliente</div>
+            <select value="{{ simSeg }}" onChange="{{ onSimSeg }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ segmentos }}" as="o" hint-placeholder-count="6">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Marca / anunciante</div>
+            <input value="{{ simMarca }}" onChange="{{ onSimMarca }}" placeholder="Ex.: MadeiraMadeira" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+          </div>
+          <div style="{{ simResultStyle }}">{{ simResultText }}</div>
+        </div>
+        <sc-if value="{{ simTemConflito }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 0 16px 14px; display: flex; flex-direction: column; gap: 7px">
+            <sc-for list="{{ simConflitos }}" as="c" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 11px; background: #FDF1F1; border: 1px solid #F3B4B4; border-radius: 9px; padding: 9px 12px">
+                <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 600; color: #12111A; min-width: 150px">{{ c.talento }}</div>
+                <div style="font-size: 12.5px; color: #7A2A2A">{{ c.texto }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="margin: 20px 26px 26px; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+        <div style="background: #F7F6FA; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #E7E6EE">
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar por talento, segmento ou marca concorrente" style="flex: 1; min-width: 250px; height: 34px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 14px; font-size: 13px; color: #12111A; background: #FFFFFF" />
+          <select value="{{ fTipo }}" onChange="{{ onTipo }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <option value="Todos os tipos">Todos os tipos</option>
+            <option value="Segmento">Segmento</option>
+            <option value="Patrocinador concorrente">Patrocinador concorrente</option>
+          </select>
+          <select value="{{ fCat }}" onChange="{{ onCat }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ catOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fVig }}" onChange="{{ onVig }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <option value="Todas as vigências">Todas as vigências</option>
+            <option value="Permanente">Permanente</option>
+            <option value="Com prazo">Com prazo</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 26px 1.5fr 1.2fr 1.5fr 1fr 1.6fr 90px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+          <div></div>
+          <div style="padding: 10px 11px">Talento</div>
+          <div style="padding: 10px 11px">Tipo</div>
+          <div style="padding: 10px 11px">Segmento / concorrente</div>
+          <div style="padding: 10px 11px">Vigência</div>
+          <div style="padding: 10px 11px">Origem</div>
+          <div style="padding: 10px 11px">Ações</div>
+        </div>
+
+        <sc-for list="{{ grupos }}" as="g" hint-placeholder-count="4">
+          <div>
+            <div style="{{ g.rowStyle }}">
+              <button onClick="{{ g.onToggle }}" style="{{ g.chevronStyle }}">⌄</button>
+              <div style="padding: 9px 11px; display: flex; align-items: center; gap: 10px">
+                <div style="{{ g.avatarStyle }}">{{ g.initials }}</div>
+                <div style="display: flex; flex-direction: column; min-width: 0">
+                  <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600; color: #12111A">{{ g.artistico }}</div>
+                  <div style="font-size: 11.5px; color: #85839A">{{ g.categoria }}</div>
+                </div>
+              </div>
+              <div style="padding: 9px 11px; font-size: 12.5px; color: #56546B">{{ g.tiposResumo }}</div>
+              <div style="padding: 9px 11px; font-size: 12.5px; color: #2C2B3A">{{ g.alvosResumo }}</div>
+              <div style="padding: 9px 11px; font-size: 12.5px; color: #56546B">{{ g.vigResumo }}</div>
+              <div style="padding: 9px 11px; font-size: 12px; color: #85839A">{{ g.atualizado }}</div>
+              <div style="padding: 9px 11px"><span style="{{ g.countStyle }}">{{ g.count }}</span></div>
+            </div>
+
+            <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div style="background: #FBFAFD; border-bottom: 1px solid #F0EFF5; padding: 12px 16px 14px 37px; display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{ g.itens }}" as="r" hint-placeholder-count="2">
+                  <div style="display: grid; grid-template-columns: 190px 1.4fr 130px 1.6fr 80px; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #E7E6EE; border-left: 3px solid #C41A22; border-radius: 10px; padding: 10px 12px">
+                    <div style="{{ r.tagStyle }}">{{ r.tipo }}</div>
+                    <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600; color: #12111A">{{ r.valor }}</div>
+                    <div style="{{ r.vigStyle }}">{{ r.vigencia }}</div>
+                    <div style="font-size: 12.5px; color: #56546B; line-height: 1.45">{{ r.obs }}</div>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end">
+                      <button onClick="{{ r.onEdit }}" title="Editar" style="width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E4E2EC; background: #FFFFFF; color: #6B6A7C; font-size: 12px; cursor: pointer" style-hover="border-color: #2B2ADB; color: #2B2ADB">✎</button>
+                      <button onClick="{{ r.onRemove }}" title="Remover" style="width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E4E2EC; background: #FFFFFF; color: #6B6A7C; font-size: 14px; line-height: 1; cursor: pointer" style-hover="border-color: #C41A22; color: #C41A22">×</button>
+                    </div>
+                  </div>
+                </sc-for>
+                <button onClick="{{ g.onAdd }}" style="align-self: flex-start; height: 32px; padding: 0 13px; border-radius: 999px; border: 1px dashed #C41A22; background: #FFFFFF; color: #C41A22; font-size: 12.5px; font-weight: 700; cursor: pointer" style-hover="background: #FDF1F1">+ Restrição para {{ g.artistico }}</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 34px; text-align: center; font-size: 13.5px; color: #85839A">Nenhuma restrição encontrada com esses filtros.</div>
+        </sc-if>
+
+        <div style="padding: 12px 16px; font-size: 12px; color: #85839A; border-top: 1px solid #F0EFF5">{{ visiveis }} restrição(ões) em {{ talentosComRestr }} talento(s)</div>
+      </div>
+
+      <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; background: rgba(18,17,26,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 70px 0">
+          <div style="width: 740px; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.3)">
+            <div style="background: #12111A; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between">
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 600; color: #FFFFFF">{{ modalTitulo }}</div>
+                <div style="font-size: 12.5px; color: rgba(255,255,255,0.7)">Cruzada com o segmento do cliente e a marca de cada solicitação</div>
+              </div>
+              <button onClick="{{ closeModal }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); background: transparent; color: #FFFFFF; font-size: 16px; line-height: 1; cursor: pointer">×</button>
+            </div>
+            <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px">
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A">Talento</div>
+                  <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #C7168C; background: #FDEBF6; padding: 2px 6px; border-radius: 4px">obrigatório</span>
+                </div>
+                <select value="{{ draft.talento }}" onChange="{{ onDraftTalento }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                  <sc-for list="{{ talentoOptions }}" as="o" hint-placeholder-count="6">
+                    <option value="{{ o }}">{{ o }}</option>
+                  </sc-for>
+                </select>
+              </div>
+
+              <div>
+                <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 8px">Tipo de restrição</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px">
+                  <sc-for list="{{ tipos }}" as="t" hint-placeholder-count="2">
+                    <button onClick="{{ t.onClick }}" style="{{ t.style }}">
+                      <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600">{{ t.label }}</div>
+                      <div style="{{ t.descStyle }}">{{ t.desc }}</div>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px 16px">
+                <div style="grid-column: span 12">
+                  <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px">
+                    <div style="font-size: 12px; font-weight: 700; color: #12111A">{{ valorLabel }}</div>
+                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #C7168C; background: #FDEBF6; padding: 2px 6px; border-radius: 4px">obrigatório</span>
+                  </div>
+                  <sc-if value="{{ isSegmento }}" hint-placeholder-val="{{ true }}">
+                    <select value="{{ draft.valor }}" onChange="{{ onDraftValor }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                      <sc-for list="{{ segmentos }}" as="o" hint-placeholder-count="6">
+                        <option value="{{ o }}">{{ o }}</option>
+                      </sc-for>
+                    </select>
+                  </sc-if>
+                  <sc-if value="{{ isConcorrente }}" hint-placeholder-val="{{ false }}">
+                    <input value="{{ draft.valor }}" onChange="{{ onDraftValor }}" placeholder="Nome da marca concorrente — ex.: MadeiraMadeira" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                  </sc-if>
+                </div>
+                <div style="grid-column: span 5">
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Vigência</div>
+                  <select value="{{ draft.vigenciaTipo }}" onChange="{{ onDraftVigTipo }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                    <option value="Permanente">Permanente</option>
+                    <option value="Até uma data">Até uma data</option>
+                  </select>
+                </div>
+                <div style="{{ dataWrap }}">
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Válida até</div>
+                  <input value="{{ draft.vigenciaAte }}" onChange="{{ onDraftVigAte }}" placeholder="mm/aaaa" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                </div>
+                <div style="grid-column: span 12">
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Origem da restrição</div>
+                  <textarea value="{{ draft.obs }}" onChange="{{ onDraftObs }}" placeholder="Contrato, patrocínio vigente, política de elenco, decisão da área…" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.5; color: #12111A; resize: vertical"></textarea>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 11px; background: #FDF1F1; border: 1px solid #F3B4B4; border-radius: 10px; padding: 11px 13px">
+                <div style="font-size: 12.5px; line-height: 1.5; color: #7A2A2A">Solicitações que cruzarem com esta restrição serão sinalizadas ao solicitante e marcadas para a área responsável.</div>
+              </div>
+            </div>
+            <div style="padding: 16px 22px; border-top: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between">
+              <div style="{{ validStyle }}">{{ validText }}</div>
+              <div style="display: flex; gap: 10px">
+                <button onClick="{{ closeModal }}" style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancelar</button>
+                <button onClick="{{ save }}" style="{{ saveStyle }}">{{ saveLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const CAT_COLOR = { 'Talento Globo': '#2B2ADB', 'Agenciado': '#8B2FD6', 'Influenciador': '#C7168C', 'Creator': '#00A38C' };
+const AV = ['#C7168C', '#2B2ADB', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+const SEGMENTOS = ['Bets / apostas', 'Bebidas alcoólicas', 'Casa e decoração', 'Varejo', 'Beleza', 'Alimentos', 'Bebidas não alcoólicas', 'Financeiro', 'Automotivo', 'Telecom', 'Farmacêutico', 'Moda', 'Tecnologia'];
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+
+class Component extends DCLogic {
+  state = {
+    query: '', fTipo: 'Todos os tipos', fCat: 'Todas as categorias', fVig: 'Todas as vigências',
+    simSeg: 'Bets / apostas', simMarca: '',
+    open: { 'Helena Barreto': true },
+    draft: null, editing: null,
+    talentos: [
+      { artistico: 'Helena Barreto', nome: 'Helena Barreto Nunes', categoria: 'Talento Globo' },
+      { artistico: 'Rodrigo Sampaio', nome: 'Rodrigo Sampaio Alves', categoria: 'Talento Globo' },
+      { artistico: 'Diego Lemos', nome: 'Diego Lemos Farias', categoria: 'Talento Globo' },
+      { artistico: 'Manu Ferraz', nome: 'Manuela Ferraz', categoria: 'Influenciador' },
+      { artistico: 'Léo Vasques', nome: 'Leonardo Vasques', categoria: 'Creator' },
+      { artistico: 'Camila Duarte', nome: 'Camila Duarte Prado', categoria: 'Agenciado' },
+      { artistico: 'Bruno Tavares', nome: 'Bruno Tavares Lima', categoria: 'Influenciador' },
+      { artistico: 'Tati Rocha', nome: 'Tatiana Rocha', categoria: 'Creator' }
+    ],
+    restricoes: [
+      { id: 'x1', talento: 'Helena Barreto', tipo: 'Segmento', valor: 'Bets / apostas', vigencia: 'permanente', obs: 'Cláusula contratual de imagem', atualizado: '12/06/2026 · Bianca Toledo' },
+      { id: 'x2', talento: 'Helena Barreto', tipo: 'Segmento', valor: 'Bebidas alcoólicas', vigencia: 'até 12/2026', obs: 'Contrato com programa infantojuvenil', atualizado: '12/06/2026 · Bianca Toledo' },
+      { id: 'x3', talento: 'Helena Barreto', tipo: 'Patrocinador concorrente', valor: 'MadeiraMadeira', vigencia: 'até 06/2027', obs: 'Patrocínio ativo no programa', atualizado: '28/07/2026 · Ricardo Alencar' },
+      { id: 'x4', talento: 'Rodrigo Sampaio', tipo: 'Segmento', valor: 'Bets / apostas', vigencia: 'permanente', obs: 'Política de elenco', atualizado: '03/03/2026 · Bianca Toledo' },
+      { id: 'x5', talento: 'Diego Lemos', tipo: 'Patrocinador concorrente', valor: 'Tok&Stok', vigencia: 'até 03/2027', obs: 'Campanha vigente da novela', atualizado: '19/07/2026 · Bianca Toledo' },
+      { id: 'x6', talento: 'Léo Vasques', tipo: 'Patrocinador concorrente', valor: 'Bebidas Aurora', vigencia: 'até 10/2026', obs: 'Contrato próprio vigente', atualizado: '05/07/2026 · Bianca Toledo' },
+      { id: 'x7', talento: 'Camila Duarte', tipo: 'Segmento', valor: 'Farmacêutico', vigencia: 'até 09/2026', obs: 'Exclusividade fechada pela agência Bloom', atualizado: '22/07/2026 · Bianca Toledo' },
+      { id: 'x8', talento: 'Tati Rocha', tipo: 'Segmento', valor: 'Bets / apostas', vigencia: 'permanente', obs: 'Restrição pessoal declarada pelo talento', atualizado: '30/06/2026 · Bianca Toledo' }
+    ]
+  };
+
+  cat(nome) { const t = this.state.talentos.filter(x => x.artistico === nome)[0]; return t ? t.categoria : 'Influenciador'; }
+  nomeCompleto(nome) { const t = this.state.talentos.filter(x => x.artistico === nome)[0]; return t ? t.nome : nome; }
+  setD(k, v) { this.setState(s => ({ draft: Object.assign({}, s.draft, { [k]: v }) })); }
+
+  renderVals() {
+    const st = this.state;
+    const q = st.query.trim().toLowerCase();
+    const d = st.draft || {};
+    const isSeg = (d.tipo || 'Segmento') === 'Segmento';
+    const valido = !!(d.talento && d.valor && (d.vigenciaTipo === 'Permanente' || d.vigenciaAte));
+
+    const filtered = st.restricoes.filter(r => {
+      if (st.fTipo !== 'Todos os tipos' && r.tipo !== st.fTipo) return false;
+      if (st.fCat !== 'Todas as categorias' && this.cat(r.talento) !== st.fCat) return false;
+      if (st.fVig === 'Permanente' && r.vigencia !== 'permanente') return false;
+      if (st.fVig === 'Com prazo' && r.vigencia === 'permanente') return false;
+      if (q && (r.talento + ' ' + r.tipo + ' ' + r.valor + ' ' + r.obs).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    const nomes = [];
+    filtered.forEach(r => { if (nomes.indexOf(r.talento) < 0) nomes.push(r.talento); });
+
+    const grupos = nomes.map((nome, i) => {
+      const itens = filtered.filter(r => r.talento === nome);
+      const tipos = [];
+      itens.forEach(r => { if (tipos.indexOf(r.tipo) < 0) tipos.push(r.tipo); });
+      const perm = itens.filter(r => r.vigencia === 'permanente').length;
+      const openNow = st.open[nome] === undefined ? false : st.open[nome];
+      return {
+        artistico: nome, initials: ini(this.nomeCompleto(nome)), categoria: this.cat(nome),
+        tiposResumo: tipos.join(' + '),
+        alvosResumo: itens.map(r => r.valor).join(' · '),
+        vigResumo: perm === itens.length ? 'Permanente' : perm ? perm + ' permanente(s) + ' + (itens.length - perm) + ' com prazo' : 'Com prazo',
+        atualizado: 'atualizado ' + itens[0].atualizado,
+        count: String(itens.length),
+        countStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', color: '#B3121B', background: '#FDF1F1' },
+        avatarStyle: { width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '11.5px', fontWeight: 700 },
+        rowStyle: { display: 'grid', gridTemplateColumns: '26px 1.5fr 1.2fr 1.5fr 1fr 1.6fr 90px', alignItems: 'center', borderBottom: '1px solid #F0EFF5', borderLeft: '3px solid ' + CAT_COLOR[this.cat(nome)], background: '#FFFFFF' },
+        chevronStyle: { width: '26px', minHeight: '44px', border: 'none', background: 'transparent', color: '#A19FB2', fontSize: '15px', cursor: 'pointer', transform: openNow ? 'rotate(180deg)' : 'none' },
+        open: openNow,
+        onToggle: () => this.setState(s => ({ open: Object.assign({}, s.open, { [nome]: !(s.open[nome] === undefined ? false : s.open[nome]) }) })),
+        onAdd: () => this.setState({ draft: { talento: nome, tipo: 'Segmento', valor: 'Bets / apostas', vigenciaTipo: 'Permanente', vigenciaAte: '', obs: '' }, editing: null }),
+        itens: itens.map(r => ({
+          tipo: r.tipo, valor: r.valor, vigencia: r.vigencia, obs: r.obs,
+          tagStyle: { fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#FFFFFF', background: r.tipo === 'Segmento' ? '#C41A22' : '#12111A', padding: '4px 9px', borderRadius: '999px', textAlign: 'center' },
+          vigStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', textAlign: 'center', color: r.vigencia === 'permanente' ? '#B3121B' : '#8A6A00', background: r.vigencia === 'permanente' ? '#FDF1F1' : '#FFF7E0' },
+          onEdit: () => this.setState({
+            editing: r.id,
+            draft: { talento: r.talento, tipo: r.tipo, valor: r.valor, vigenciaTipo: r.vigencia === 'permanente' ? 'Permanente' : 'Até uma data', vigenciaAte: r.vigencia === 'permanente' ? '' : r.vigencia.replace('até ', ''), obs: r.obs }
+          }),
+          onRemove: () => this.setState(s => ({ restricoes: s.restricoes.filter(x => x.id !== r.id) }))
+        }))
+      };
+    });
+
+    const marca = st.simMarca.trim().toLowerCase();
+    const simConflitos = st.restricoes.filter(r =>
+      r.tipo === 'Segmento' ? r.valor === st.simSeg : (marca.length > 2 && r.valor.toLowerCase().indexOf(marca) >= 0)
+    ).map(r => ({
+      talento: r.talento,
+      texto: (r.tipo === 'Segmento' ? 'Segmento bloqueado: ' : 'Patrocinador concorrente: ') + r.valor + ' · ' + r.vigencia + ' · ' + r.obs
+    }));
+
+    const comPrazo = st.restricoes.filter(r => r.vigencia !== 'permanente').length;
+    const talentosSet = [];
+    st.restricoes.forEach(r => { if (talentosSet.indexOf(r.talento) < 0) talentosSet.push(r.talento); });
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições', active: true }, { label: 'Relatórios' }, { label: 'Usuários' }]
+        .map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer' } })),
+      kpis: [
+        { label: 'Restrições ativas', value: String(st.restricoes.length), note: 'em toda a base' },
+        { label: 'Talentos com restrição', value: String(talentosSet.length), note: 'de ' + st.talentos.length + ' na base' },
+        { label: 'Por segmento', value: String(st.restricoes.filter(r => r.tipo === 'Segmento').length), note: 'categorias bloqueadas' },
+        { label: 'Com prazo de vigência', value: String(comPrazo), note: 'exigem revisão periódica' }
+      ].map((k, i) => ({ label: k.label, value: k.value, note: k.note, style: { display: 'flex', flexDirection: 'column', gap: '3px', padding: '13px 15px', borderRadius: '12px', background: i === 0 ? '#FDF1F1' : '#F7F6FA' } })),
+      query: st.query, fTipo: st.fTipo, fCat: st.fCat, fVig: st.fVig,
+      catOptions: ['Todas as categorias', 'Talento Globo', 'Agenciado', 'Influenciador', 'Creator'],
+      onQuery: e => this.setState({ query: e.target.value }),
+      onTipo: e => this.setState({ fTipo: e.target.value }),
+      onCat: e => this.setState({ fCat: e.target.value }),
+      onVig: e => this.setState({ fVig: e.target.value }),
+      grupos: grupos, vazio: grupos.length === 0,
+      visiveis: String(filtered.length), talentosComRestr: String(nomes.length),
+      segmentos: SEGMENTOS,
+      simSeg: st.simSeg, simMarca: st.simMarca,
+      onSimSeg: e => this.setState({ simSeg: e.target.value }),
+      onSimMarca: e => this.setState({ simMarca: e.target.value }),
+      simConflitos: simConflitos,
+      simTemConflito: simConflitos.length > 0,
+      simResultText: simConflitos.length ? simConflitos.length + ' talento(s) com conflito' : 'Nenhum conflito nesta combinação',
+      simResultStyle: { fontSize: '12.5px', fontWeight: 700, padding: '9px 14px', borderRadius: '999px', whiteSpace: 'nowrap', color: simConflitos.length ? '#B3121B' : '#3D6B18', background: simConflitos.length ? '#FDF1F1' : '#F2FBE8' },
+      modalOpen: !!st.draft,
+      modalTitulo: st.editing ? 'Editar restrição' : 'Nova restrição',
+      saveLabel: st.editing ? 'Salvar alterações' : 'Salvar restrição',
+      openNew: () => this.setState({ draft: { talento: '', tipo: 'Segmento', valor: 'Bets / apostas', vigenciaTipo: 'Permanente', vigenciaAte: '', obs: '' }, editing: null }),
+      closeModal: () => this.setState({ draft: null, editing: null }),
+      draft: { talento: d.talento || '', valor: d.valor || '', vigenciaTipo: d.vigenciaTipo || 'Permanente', vigenciaAte: d.vigenciaAte || '', obs: d.obs || '' },
+      talentoOptions: [''].concat(st.talentos.map(t => t.artistico)),
+      isSegmento: isSeg, isConcorrente: !isSeg,
+      valorLabel: isSeg ? 'Segmento bloqueado' : 'Marca concorrente',
+      tipos: [
+        { id: 'Segmento', label: 'Segmento', desc: 'Bloqueia categorias inteiras — bets, bebidas alcoólicas, etc.' },
+        { id: 'Patrocinador concorrente', label: 'Patrocinador concorrente', desc: 'Bloqueia uma marca específica por conflito de patrocínio.' }
+      ].map(x => {
+        const on = (d.tipo || 'Segmento') === x.id;
+        return {
+          label: x.label, desc: x.desc,
+          style: { display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start', textAlign: 'left', padding: '13px 15px', borderRadius: '11px', cursor: 'pointer', background: on ? '#FDF1F1' : '#FFFFFF', border: '1.5px solid ' + (on ? '#C41A22' : '#DCDAE6'), color: on ? '#C41A22' : '#12111A' },
+          descStyle: { fontSize: '11.5px', lineHeight: 1.45, color: on ? '#7A2A2A' : '#85839A' },
+          onClick: () => this.setState(s => ({ draft: Object.assign({}, s.draft, { tipo: x.id, valor: x.id === 'Segmento' ? 'Bets / apostas' : '' }) }))
+        };
+      }),
+      dataWrap: { gridColumn: 'span 7', display: d.vigenciaTipo === 'Até uma data' ? 'block' : 'none' },
+      onDraftTalento: e => this.setD('talento', e.target.value),
+      onDraftValor: e => this.setD('valor', e.target.value),
+      onDraftVigTipo: e => this.setD('vigenciaTipo', e.target.value),
+      onDraftVigAte: e => this.setD('vigenciaAte', e.target.value),
+      onDraftObs: e => this.setD('obs', e.target.value),
+      validText: valido ? 'Pronto para salvar' : 'Selecione o talento, o alvo da restrição e a vigência',
+      validStyle: { fontSize: '12.5px', fontWeight: 600, color: valido ? '#3D6B18' : '#8A6A00' },
+      saveStyle: { height: '40px', padding: '0 22px', borderRadius: '999px', border: 'none', cursor: valido ? 'pointer' : 'not-allowed', background: valido ? '#C41A22' : '#EAE8F1', color: valido ? '#FFFFFF' : '#A19FB2', fontSize: '13.5px', fontWeight: 700 },
+      save: () => {
+        if (!valido) return;
+        this.setState(s => {
+          const q2 = s.draft;
+          const vig = q2.vigenciaTipo === 'Permanente' ? 'permanente' : 'até ' + q2.vigenciaAte;
+          const base = { talento: q2.talento, tipo: q2.tipo || 'Segmento', valor: q2.valor, vigencia: vig, obs: q2.obs || 'Sem observação', atualizado: '04/08/2026 · Bianca Toledo' };
+          return {
+            restricoes: s.editing
+              ? s.restricoes.map(r => r.id === s.editing ? Object.assign({}, r, base) : r)
+              : s.restricoes.concat([Object.assign({ id: 'n' + Date.now() }, base)]),
+            open: Object.assign({}, s.open, { [q2.talento]: true }),
+            draft: null, editing: null
+          };
+        });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

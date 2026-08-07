@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, button { font-family: inherit; }
+  input:focus, select:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 980px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 7 · Usuários e permissões</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Administração de acessos</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Entram os perfis de <strong>Gerente</strong> por área — só eles e o Proprietário veem o desempenho dos aprovadores. <a href="#7a">7a</a> é a lista de usuários com a ficha de permissões efetivas; <a href="#7b">7b</a> é a matriz do que cada perfil pode fazer, editável pelo Proprietário.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="7a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">7a</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Lista de usuários + ficha de acesso</div>
+        <div style="font-size: 13px; color: #6B6A7C">perfis, equipe e o que a pessoa enxerga</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 22px">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+              <div style="{{ n.style }}">{{ n.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="display: flex; flex-direction: column; align-items: flex-end">
+              <div style="font-size: 13px; font-weight: 600; color: #12111A">Ricardo Alencar</div>
+              <div style="font-size: 11px; color: #85839A">Proprietário</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 999px; background: #12111A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">RA</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Usuários</div>
+            <div style="font-size: 13px; color: #6B6A7C">{{ ativos }} ativos · {{ pendentes }} aguardando aprovação de acesso</div>
+          </div>
+          <button style="height: 42px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">+ Convidar usuário</button>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+            <div style="{{ k.style }}">
+              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+              <div style="font-family: Outfit, sans-serif; font-size: 24px; font-weight: 700; color: #12111A">{{ k.value }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin: 20px 26px 26px; display: grid; grid-template-columns: 1fr 430px; gap: 16px; align-items: start">
+          <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+            <div style="background: #F7F6FA; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid #E7E6EE">
+              <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar por nome, e-mail ou equipe" style="flex: 1; min-width: 210px; height: 34px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 14px; font-size: 13px; color: #12111A; background: #FFFFFF" />
+              <select value="{{ fPerfil }}" onChange="{{ onPerfil }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ perfilOptions }}" as="o" hint-placeholder-count="6">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ fEquipe }}" onChange="{{ onEquipe }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ equipeOptions }}" as="o" hint-placeholder-count="5">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ fSit }}" onChange="{{ onSit }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <option value="Todas as situações">Todas as situações</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Pendente">Pendente</option>
+                <option value="Suspenso">Suspenso</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.7fr 1.15fr 1.9fr 1fr; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+              <div style="padding: 10px 12px">Usuário</div>
+              <div style="padding: 10px 12px">Equipe</div>
+              <div style="padding: 10px 12px">Perfis</div>
+              <div style="padding: 10px 12px">Situação</div>
+            </div>
+
+            <sc-for list="{{ rows }}" as="u" hint-placeholder-count="8">
+              <button onClick="{{ u.onSelect }}" style="{{ u.rowStyle }}">
+                <div style="padding: 9px 12px; display: flex; align-items: center; gap: 10px; text-align: left">
+                  <div style="{{ u.avatarStyle }}">{{ u.initials }}</div>
+                  <div style="display: flex; flex-direction: column; min-width: 0">
+                    <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 600; color: #12111A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ u.nome }}</div>
+                    <div style="font-size: 11.5px; color: #85839A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ u.email }}</div>
+                  </div>
+                </div>
+                <div style="padding: 9px 12px; font-size: 12.5px; color: #2C2B3A; text-align: left">{{ u.equipe }}</div>
+                <div style="padding: 9px 12px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap">
+                  <sc-for list="{{ u.chips }}" as="c" hint-placeholder-count="2">
+                    <span style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="padding: 9px 12px; text-align: left"><span style="{{ u.sitStyle }}">{{ u.situacao }}</span></div>
+              </button>
+            </sc-for>
+
+            <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 34px; text-align: center; font-size: 13.5px; color: #85839A">Nenhum usuário encontrado com esses filtros.</div>
+            </sc-if>
+
+            <div style="padding: 12px 16px; font-size: 12px; color: #85839A; border-top: 1px solid #F0EFF5">{{ visiveis }} de {{ total }} usuários</div>
+          </div>
+
+          <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden; position: sticky; top: 16px">
+            <div style="background: #12111A; padding: 18px 16px; display: flex; align-items: center; gap: 13px">
+              <div style="{{ ficha.avatarStyle }}">{{ ficha.initials }}</div>
+              <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 600; color: #FFFFFF">{{ ficha.nome }}</div>
+                <div style="font-size: 12px; color: rgba(255,255,255,0.7)">{{ ficha.cargo }} · {{ ficha.equipe }}</div>
+                <div style="font-size: 11.5px; color: rgba(255,255,255,0.55)">{{ ficha.email }}</div>
+              </div>
+            </div>
+
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; flex-direction: column; gap: 9px">
+                <div style="display: flex; align-items: center; gap: 9px">
+                  <div style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">Perfis atribuídos</div>
+                  <div style="font-size: 10.5px; font-weight: 600; color: #12111A; background: #C8F000; padding: 2px 8px; border-radius: 999px">edição do Proprietário</div>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 7px">
+                  <sc-for list="{{ ficha.flags }}" as="f" hint-placeholder-count="9">
+                    <button onClick="{{ f.onClick }}" style="{{ f.style }}">
+                      <span style="{{ f.boxStyle }}">✓</span>
+                      <span>{{ f.label }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 9px">
+                <div style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">O que esta pessoa enxerga</div>
+                <div style="display: flex; flex-direction: column; gap: 6px">
+                  <sc-for list="{{ ficha.permissoes }}" as="p" hint-placeholder-count="8">
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 9px; background: #FBFAFD; border: 1px solid #EEECF3">
+                      <span style="{{ p.markStyle }}">{{ p.mark }}</span>
+                      <div style="font-size: 12.5px; color: #2C2B3A; flex: 1">{{ p.label }}</div>
+                      <div style="{{ p.tagStyle }}">{{ p.tag }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 9px; border-top: 1px solid #F0EFF5; padding-top: 14px">
+                <button style="flex: 1; height: 38px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">Salvar perfis</button>
+                <button style="height: 38px; padding: 0 15px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #B3121B; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="border-color: #B3121B">Suspender</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="7b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #12111A; padding: 5px 11px; border-radius: 999px">7b</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Matriz de permissões por perfil</div>
+        <div style="font-size: 13px; color: #6B6A7C">clique numa célula para conceder ou revogar</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="background: #12111A; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #C8F000">Proprietário</div>
+            <div style="font-family: Outfit, sans-serif; font-size: 21px; font-weight: 600; color: #FFFFFF">Permissões por perfil</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px">
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: rgba(255,255,255,0.75)"><span style="width: 16px; height: 16px; border-radius: 4px; background: #C8F000; color: #12111A; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">✓</span>permitido</div>
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: rgba(255,255,255,0.75)"><span style="width: 16px; height: 16px; border-radius: 4px; background: #F5A623; color: #12111A; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">~</span>parcial</div>
+            <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: rgba(255,255,255,0.75)"><span style="width: 16px; height: 16px; border-radius: 4px; background: rgba(255,255,255,0.15)"></span>sem acesso</div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 24px 26px">
+          <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+            <div style="{{ matrizHeaderStyle }}">
+              <div style="padding: 12px 14px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">Permissão</div>
+              <sc-for list="{{ perfisCols }}" as="c" hint-placeholder-count="9">
+                <div style="padding: 12px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px">
+                  <div style="{{ c.dotStyle }}"></div>
+                  <div style="font-size: 10.5px; font-weight: 700; line-height: 1.3; color: #12111A">{{ c.label }}</div>
+                  <div style="font-size: 9.5px; color: #A19FB2">{{ c.escopo }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-for list="{{ matriz }}" as="r" hint-placeholder-count="11">
+              <div style="{{ r.rowStyle }}">
+                <div style="padding: 11px 14px; display: flex; flex-direction: column; gap: 2px">
+                  <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ r.label }}</div>
+                  <div style="font-size: 11px; color: #A19FB2">{{ r.nota }}</div>
+                </div>
+                <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="9">
+                  <div style="padding: 8px; display: flex; align-items: center; justify-content: center">
+                    <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.mark }}</button>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px">
+            <sc-for list="{{ notas }}" as="n" hint-placeholder-count="3">
+              <div style="{{ n.style }}">
+                <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 700; color: #12111A">{{ n.titulo }}</div>
+                <div style="font-size: 12.5px; line-height: 1.5; color: #56546B; text-wrap: pretty">{{ n.texto }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const EQUIPES = ['Dramaturgia', 'Realities', 'Variedades', 'Esportes', 'Notícias Digital', 'Notícias Linear', 'Territórios', 'Regionais', 'Entretenimento Digital'];
+const AV = ['#C7168C', '#2B2ADB', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+const PERFIS = [
+  { id: 'prop', label: 'Proprietário', curto: 'Proprietário', escopo: 'tudo', color: '#12111A' },
+  { id: 'gerElenco', label: 'Gerente Gestão de Elenco', curto: 'Gerente Elenco', escopo: 'Elenco', color: '#1E1BB0' },
+  { id: 'gerViu', label: 'Gerente ViU', curto: 'Gerente ViU', escopo: 'ViU', color: '#A61175' },
+  { id: 'gerAg', label: 'Gerente Agenciamento', curto: 'Gerente Agenc.', escopo: 'Agenciamento', color: '#6B1FA8' },
+  { id: 'aprElenco', label: 'Aprovador Gestão de Elenco', curto: 'Aprov. Elenco', escopo: 'Elenco', color: '#2B2ADB' },
+  { id: 'aprViu', label: 'Aprovador ViU', curto: 'Aprov. ViU', escopo: 'ViU', color: '#C7168C' },
+  { id: 'aprAg', label: 'Aprovador Agenciamento', curto: 'Aprov. Agenc.', escopo: 'Agenciamento', color: '#8B2FD6' },
+  { id: 'admTal', label: 'Admin de talentos e restrições', curto: 'Admin talentos', escopo: 'base', color: '#00A38C' },
+  { id: 'solic', label: 'Solicitante', curto: 'Solicitante', escopo: 'equipe', color: '#6B6A7C' }
+];
+const CAPS = [
+  { id: 'abrir', label: 'Abrir solicitação de orçamento', nota: 'criar consultas e vincular a projetos' },
+  { id: 'verEquipe', label: 'Ver solicitações da própria equipe', nota: 'com valores de cachê' },
+  { id: 'verTodas', label: 'Ver solicitações de outras equipes', nota: 'parcial = só cabeçalho, sem valores' },
+  { id: 'responder', label: 'Responder cachê orçado e parecer', nota: 'parcial = apenas talentos da própria área' },
+  { id: 'talentos', label: 'Editar banco de talentos', nota: 'criar e alterar fichas' },
+  { id: 'restricoes', label: 'Editar banco de restrições', nota: 'segmentos e patrocinadores concorrentes' },
+  { id: 'relatorios', label: 'Ver relatórios e dashboard', nota: 'parcial = recorte da própria equipe ou área' },
+  { id: 'desempenho', label: 'Ver desempenho dos aprovadores', nota: 'exclusivo de Gerentes e Proprietário' },
+  { id: 'exportar', label: 'Exportar Excel dos relatórios', nota: 'leva o recorte visível' },
+  { id: 'acessos', label: 'Aprovar solicitações de acesso', nota: 'conceder perfis a novos usuários' },
+  { id: 'usuarios', label: 'Administrar usuários e permissões', nota: 'esta tela e a matriz' }
+];
+const DEFAULT = {
+  abrir:       { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 0, aprViu: 0, aprAg: 0, admTal: 0, solic: 2 },
+  verEquipe:   { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 2, aprViu: 2, aprAg: 2, admTal: 1, solic: 2 },
+  verTodas:    { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 1, aprViu: 1, aprAg: 1, admTal: 1, solic: 1 },
+  responder:   { prop: 2, gerElenco: 1, gerViu: 1, gerAg: 1, aprElenco: 1, aprViu: 1, aprAg: 1, admTal: 0, solic: 0 },
+  talentos:    { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 1, aprViu: 1, aprAg: 1, admTal: 2, solic: 0 },
+  restricoes:  { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 1, aprViu: 1, aprAg: 1, admTal: 2, solic: 0 },
+  relatorios:  { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 1, aprViu: 1, aprAg: 1, admTal: 1, solic: 1 },
+  desempenho:  { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 0, aprViu: 0, aprAg: 0, admTal: 0, solic: 0 },
+  exportar:    { prop: 2, gerElenco: 2, gerViu: 2, gerAg: 2, aprElenco: 2, aprViu: 2, aprAg: 2, admTal: 1, solic: 1 },
+  acessos:     { prop: 2, gerElenco: 1, gerViu: 1, gerAg: 1, aprElenco: 0, aprViu: 0, aprAg: 0, admTal: 0, solic: 0 },
+  usuarios:    { prop: 2, gerElenco: 0, gerViu: 0, gerAg: 0, aprElenco: 0, aprViu: 0, aprAg: 0, admTal: 0, solic: 0 }
+};
+const COLS = '1.9fr repeat(9, 1fr)';
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+
+class Component extends DCLogic {
+  state = {
+    query: '', fPerfil: 'Todos os perfis', fEquipe: 'Todas as equipes', fSit: 'Todas as situações',
+    sel: 'u1',
+    matriz: JSON.parse(JSON.stringify(DEFAULT)),
+    usuarios: [
+      { id: 'u1', nome: 'Ricardo Alencar', email: 'ricardo.alencar@globo.com', cargo: 'Head de negócios com talentos', equipe: 'Territórios', situacao: 'Ativo', perfis: ['prop'] },
+      { id: 'u2', nome: 'Letícia Moura', email: 'leticia.moura@globo.com', cargo: 'Gerente de Gestão de Elenco', equipe: 'Dramaturgia', situacao: 'Ativo', perfis: ['gerElenco'] },
+      { id: 'u3', nome: 'Camile Nogueira', email: 'camile.nogueira@globo.com', cargo: 'Gerente ViU', equipe: 'Entretenimento Digital', situacao: 'Ativo', perfis: ['gerViu'] },
+      { id: 'u4', nome: 'Sônia Vilela', email: 'sonia.vilela@globo.com', cargo: 'Gerente de Agenciamento', equipe: 'Variedades', situacao: 'Ativo', perfis: ['gerAg', 'aprAg'] },
+      { id: 'u5', nome: 'Rafael Prado', email: 'rafael.prado@globo.com', cargo: 'Analista de elenco', equipe: 'Dramaturgia', situacao: 'Ativo', perfis: ['aprElenco'] },
+      { id: 'u6', nome: 'Thiago Bastos', email: 'thiago.bastos@globo.com', cargo: 'Analista ViU', equipe: 'Entretenimento Digital', situacao: 'Ativo', perfis: ['aprViu'] },
+      { id: 'u7', nome: 'Bianca Toledo', email: 'bianca.toledo@globo.com', cargo: 'Analista de talentos', equipe: 'Territórios', situacao: 'Ativo', perfis: ['admTal', 'solic'] },
+      { id: 'u8', nome: 'Mariana Vasques', email: 'mariana.vasques@globo.com', cargo: 'Coordenadora de projetos comerciais', equipe: 'Variedades', situacao: 'Ativo', perfis: ['solic'] },
+      { id: 'u9', nome: 'Caio Bastos', email: 'caio.bastos@globo.com', cargo: 'Produtor comercial', equipe: 'Realities', situacao: 'Ativo', perfis: ['solic'] },
+      { id: 'u10', nome: 'Renata Coelho', email: 'renata.coelho@globo.com', cargo: 'Analista de projetos', equipe: 'Esportes', situacao: 'Ativo', perfis: ['solic'] },
+      { id: 'u11', nome: 'Fernanda Aguiar', email: 'fernanda.aguiar@globo.com', cargo: 'Coordenadora de projetos comerciais', equipe: 'Realities', situacao: 'Pendente', perfis: [] },
+      { id: 'u12', nome: 'Otávio Ramalho', email: 'otavio.ramalho@globo.com', cargo: 'Gerente de conteúdo', equipe: 'Esportes', situacao: 'Pendente', perfis: [] },
+      { id: 'u13', nome: 'Juliana Prado', email: 'juliana.prado@globo.com', cargo: 'Produtora regional', equipe: 'Regionais', situacao: 'Suspenso', perfis: ['solic'] }
+    ]
+  };
+
+  perfilLabel(id) { const p = PERFIS.filter(x => x.id === id)[0]; return p ? p.curto : id; }
+  perfilColor(id) { const p = PERFIS.filter(x => x.id === id)[0]; return p ? p.color : '#6B6A7C'; }
+
+  efetivo(perfis, capId) {
+    const m = this.state.matriz[capId];
+    let best = 0;
+    perfis.forEach(p => { if (m[p] > best) best = m[p]; });
+    return best;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const q = st.query.trim().toLowerCase();
+
+    const filtered = st.usuarios.filter(u => {
+      if (st.fPerfil !== 'Todos os perfis') {
+        const alvo = PERFIS.filter(p => p.label === st.fPerfil)[0];
+        if (!alvo || u.perfis.indexOf(alvo.id) < 0) return false;
+      }
+      if (st.fEquipe !== 'Todas as equipes' && u.equipe !== st.fEquipe) return false;
+      if (st.fSit !== 'Todas as situações' && u.situacao !== st.fSit) return false;
+      if (q && (u.nome + ' ' + u.email + ' ' + u.equipe + ' ' + u.cargo).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+
+    const sitStyle = s => ({ fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', whiteSpace: 'nowrap', color: s === 'Ativo' ? '#3D6B18' : s === 'Pendente' ? '#8A6A00' : '#B3121B', background: s === 'Ativo' ? '#F2FBE8' : s === 'Pendente' ? '#FFF7E0' : '#FDF1F1' });
+
+    const rows = filtered.map((u, i) => {
+      const on = st.sel === u.id;
+      return {
+        nome: u.nome, email: u.email, equipe: u.equipe, situacao: u.situacao,
+        initials: ini(u.nome), sitStyle: sitStyle(u.situacao),
+        chips: (u.perfis.length ? u.perfis : ['—']).map(p => ({
+          label: p === '—' ? 'sem perfil' : this.perfilLabel(p),
+          style: p === '—'
+            ? { fontSize: '10.5px', fontWeight: 600, color: '#A19FB2', background: '#F4F3F7', padding: '3px 8px', borderRadius: '999px' }
+            : { fontSize: '10.5px', fontWeight: 700, color: '#FFFFFF', background: this.perfilColor(p), padding: '3px 8px', borderRadius: '999px', whiteSpace: 'nowrap' }
+        })),
+        avatarStyle: { width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '11.5px', fontWeight: 700, opacity: u.situacao === 'Suspenso' ? 0.45 : 1 },
+        rowStyle: { display: 'grid', gridTemplateColumns: '1.7fr 1.15fr 1.9fr 1fr', alignItems: 'center', width: '100%', border: 'none', borderBottom: '1px solid #F0EFF5', borderLeft: '3px solid ' + (on ? '#C7168C' : 'transparent'), background: on ? '#FDF0F8' : '#FFFFFF', cursor: 'pointer', padding: 0 },
+        onSelect: () => this.setState({ sel: u.id })
+      };
+    });
+
+    const u = st.usuarios.filter(x => x.id === st.sel)[0] || st.usuarios[0];
+    const idx = st.usuarios.indexOf(u);
+    const markOf = v => v === 2 ? '✓' : v === 1 ? '~' : '';
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Relatórios' }, { label: 'Usuários', active: true }]
+        .map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer' } })),
+      ativos: String(st.usuarios.filter(x => x.situacao === 'Ativo').length),
+      pendentes: String(st.usuarios.filter(x => x.situacao === 'Pendente').length),
+      kpis: [
+        { label: 'Usuários', value: String(st.usuarios.length) },
+        { label: 'Gerentes', value: String(st.usuarios.filter(x => x.perfis.some(p => p.indexOf('ger') === 0)).length) },
+        { label: 'Aprovadores', value: String(st.usuarios.filter(x => x.perfis.some(p => p.indexOf('apr') === 0)).length) },
+        { label: 'Solicitantes', value: String(st.usuarios.filter(x => x.perfis.indexOf('solic') >= 0).length) },
+        { label: 'Pendentes', value: String(st.usuarios.filter(x => x.situacao === 'Pendente').length) }
+      ].map((k, i) => ({ label: k.label, value: k.value, style: { display: 'flex', flexDirection: 'column', gap: '3px', padding: '13px 15px', borderRadius: '12px', background: i === 4 ? '#FFF7E0' : '#F7F6FA' } })),
+      query: st.query, fPerfil: st.fPerfil, fEquipe: st.fEquipe, fSit: st.fSit,
+      perfilOptions: ['Todos os perfis'].concat(PERFIS.map(p => p.label)),
+      equipeOptions: ['Todas as equipes'].concat(EQUIPES),
+      onQuery: e => this.setState({ query: e.target.value }),
+      onPerfil: e => this.setState({ fPerfil: e.target.value }),
+      onEquipe: e => this.setState({ fEquipe: e.target.value }),
+      onSit: e => this.setState({ fSit: e.target.value }),
+      rows: rows, vazio: rows.length === 0, visiveis: String(rows.length), total: String(st.usuarios.length),
+      ficha: {
+        nome: u.nome, email: u.email, cargo: u.cargo, equipe: u.equipe, initials: ini(u.nome),
+        avatarStyle: { width: '52px', height: '52px', flexShrink: 0, borderRadius: '999px', background: AV[idx % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '17px', fontWeight: 700 },
+        flags: PERFIS.map(p => {
+          const on = u.perfis.indexOf(p.id) >= 0;
+          return {
+            label: p.label,
+            style: { display: 'flex', alignItems: 'center', gap: '7px', height: '30px', padding: '0 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '11.5px', fontWeight: on ? 700 : 600, color: on ? '#FFFFFF' : '#56546B', background: on ? p.color : '#FFFFFF', border: '1px solid ' + (on ? p.color : '#DCDAE6') },
+            boxStyle: { width: '13px', height: '13px', borderRadius: '3px', border: '1.5px solid ' + (on ? '#FFFFFF' : '#CFCDDD'), background: on ? '#FFFFFF' : 'transparent', color: on ? p.color : 'transparent', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+            onClick: () => this.setState(s => ({
+              usuarios: s.usuarios.map(x => x.id !== u.id ? x : Object.assign({}, x, { perfis: x.perfis.indexOf(p.id) >= 0 ? x.perfis.filter(y => y !== p.id) : x.perfis.concat([p.id]) }))
+            }))
+          };
+        }),
+        permissoes: CAPS.map(c => {
+          const v = this.efetivo(u.perfis, c.id);
+          return {
+            label: c.label,
+            mark: markOf(v) || '·',
+            markStyle: { width: '18px', height: '18px', flexShrink: 0, borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: v === 2 ? '#12111A' : v === 1 ? '#12111A' : '#CFCDDD', background: v === 2 ? '#C8F000' : v === 1 ? '#F5A623' : '#F2F0F8' },
+            tag: v === 2 ? 'total' : v === 1 ? 'parcial' : 'sem acesso',
+            tagStyle: { fontSize: '10.5px', fontWeight: 700, color: v === 2 ? '#3D6B18' : v === 1 ? '#8A6A00' : '#A19FB2' }
+          };
+        })
+      },
+      matrizHeaderStyle: { display: 'grid', gridTemplateColumns: COLS, background: '#FBFAFD', borderBottom: '1px solid #E7E6EE', alignItems: 'end' },
+      perfisCols: PERFIS.map(p => ({
+        label: p.curto, escopo: p.escopo,
+        dotStyle: { width: '10px', height: '10px', borderRadius: '999px', background: p.color }
+      })),
+      matriz: CAPS.map((c, ri) => ({
+        label: c.label, nota: c.nota,
+        rowStyle: { display: 'grid', gridTemplateColumns: COLS, alignItems: 'center', borderBottom: '1px solid #F0EFF5', background: ri % 2 ? '#FDFDFE' : '#FFFFFF' },
+        cells: PERFIS.map(p => {
+          const v = st.matriz[c.id][p.id];
+          const locked = p.id === 'prop';
+          return {
+            mark: markOf(v),
+            style: { width: '30px', height: '30px', borderRadius: '7px', border: 'none', cursor: locked ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 700, color: v ? '#12111A' : '#CFCDDD', background: v === 2 ? '#C8F000' : v === 1 ? '#F5A623' : '#F2F0F8', opacity: locked ? 0.75 : 1 },
+            onClick: () => { if (!locked) this.setState(s => {
+              const next = JSON.parse(JSON.stringify(s.matriz));
+              next[c.id][p.id] = (next[c.id][p.id] + 1) % 3;
+              return { matriz: next };
+            }); }
+          };
+        })
+      })),
+      notas: [
+        { titulo: 'Gerentes por área', texto: 'Gerente de Gestão de Elenco, ViU e Agenciamento veem tudo da própria área, inclusive o desempenho dos aprovadores — painel invisível para os demais perfis.' },
+        { titulo: 'Parcial em "ver outras equipes"', texto: 'O solicitante vê o cabeçalho do projeto de outro time para poder se plugar, mas os valores de cachê ficam ocultos.' },
+        { titulo: 'Parcial em "responder orçamento"', texto: 'O aprovador só responde os talentos roteados para a sua área. O Proprietário responde qualquer um.' }
+      ].map(n => ({ titulo: n.titulo, texto: n.texto, style: { display: 'flex', flexDirection: 'column', gap: '5px', padding: '14px 16px', borderRadius: '12px', background: '#F7F6FA' } }))
+    };
+  }
+}
+</script>
+</body>
+</html>

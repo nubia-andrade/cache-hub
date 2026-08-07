@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  a:hover { color: #FF1BA0; }
+  input, select, textarea, button { font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #FF1BA0; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 11 · Fila do aprovador</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Trabalhar a fila, não procurar a fila</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Três práticas guiam <a href="#11a">11a</a>: <strong>lista e resposta na mesma tela</strong> (nada de abrir e voltar), <strong>prioridade explícita</strong> — o topo diz o que fazer agora — e <strong>ação em lote</strong> para o que é repetitivo. O aprovador responde com teclado, vê o cachê sugerido ao lado do campo e nunca perde o contexto do briefing.</p>
+  </div>
+
+  <div id="11a" style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">11a</div>
+      <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Fila + resposta lado a lado</div>
+      <div style="font-size: 13px; color: #6B6A7C">interativo — selecione, responda, use o lote</div>
+    </div>
+
+    <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+      <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+        <div style="display: flex; align-items: center; gap: 13px">
+          <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+          <div style="display: flex; flex-direction: column">
+            <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+            <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Minha fila · ViU</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+            <div style="{{ n.style }}">{{ n.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; align-items: flex-end">
+            <div style="font-size: 13px; font-weight: 600; color: #12111A">Thiago Bastos</div>
+            <div style="font-size: 11px; color: #85839A">Aprovador ViU</div>
+          </div>
+          <div style="width: 34px; height: 34px; border-radius: 999px; background: #FF1BA0; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">TB</div>
+        </div>
+      </div>
+
+      <div style="padding: 22px 26px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">{{ saudacao }}</div>
+          <div style="font-size: 13.5px; color: #6B6A7C">{{ foco }}</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 7px; background: #F7F6FA; border-radius: 999px; padding: 7px 13px">
+            <div style="font-size: 11.5px; color: #6B6A7C">Atalhos</div>
+            <div style="font-family: ui-monospace, monospace; font-size: 10.5px; font-weight: 700; color: #12111A; background: #FFFFFF; border: 1px solid #DCDAE6; padding: 3px 7px; border-radius: 5px">J</div>
+            <div style="font-family: ui-monospace, monospace; font-size: 10.5px; font-weight: 700; color: #12111A; background: #FFFFFF; border: 1px solid #DCDAE6; padding: 3px 7px; border-radius: 5px">K</div>
+            <div style="font-size: 11.5px; color: #6B6A7C">navegar ·</div>
+            <div style="font-family: ui-monospace, monospace; font-size: 10.5px; font-weight: 700; color: #12111A; background: #FFFFFF; border: 1px solid #DCDAE6; padding: 3px 7px; border-radius: 5px">⏎</div>
+            <div style="font-size: 11.5px; color: #6B6A7C">enviar</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 26px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <button onClick="{{ k.onClick }}" style="{{ k.style }}">
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A; text-align: left">{{ k.label }}</div>
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <div style="{{ k.valueStyle }}">{{ k.value }}</div>
+              <div style="font-size: 11.5px; color: #85839A">{{ k.note }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="margin: 20px 26px 26px; display: grid; grid-template-columns: 452px 1fr; gap: 16px; align-items: start">
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; padding: 11px 14px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #E7E6EE">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div style="display: flex; gap: 3px; background: #EAE8F1; padding: 3px; border-radius: 999px; flex: 1">
+                <sc-for list="{{ abas }}" as="a" hint-placeholder-count="4">
+                  <button onClick="{{ a.onClick }}" style="{{ a.style }}">{{ a.label }} <span style="{{ a.countStyle }}">{{ a.count }}</span></button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <input value="{{ busca }}" onChange="{{ onBusca }}" placeholder="Buscar talento, marca ou protocolo" style="flex: 1; min-width: 0; height: 32px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 12px; font-size: 12.5px; color: #12111A; background: #FFFFFF" />
+              <select value="{{ ordem }}" onChange="{{ onOrdem }}" style="height: 32px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 12px; color: #12111A; background: #FFFFFF">
+                <option value="Prazo">Prazo</option>
+                <option value="Valor">Valor estimado</option>
+                <option value="Chegada">Mais recentes</option>
+              </select>
+            </div>
+            <div style="{{ barraLoteStyle }}">
+              <button onClick="{{ toggleTodos }}" style="{{ selTodosStyle }}">{{ selTodosLabel }}</button>
+              <div style="font-size: 11.5px; color: #85839A">{{ selResumo }}</div>
+            </div>
+          </div>
+
+          <sc-if value="{{ temSelecao }}" hint-placeholder-val="{{ false }}">
+            <div style="background: #12111A; padding: 11px 14px; display: flex; align-items: center; gap: 9px">
+              <div style="font-size: 12px; font-weight: 700; color: #C8F000">{{ selCount }} selecionadas</div>
+              <div style="flex: 1"></div>
+              <button onClick="{{ loteIndisponivel }}" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #FFFFFF; font-size: 11.5px; font-weight: 700; cursor: pointer">Marcar indisponível</button>
+              <button onClick="{{ loteDevolver }}" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #FFFFFF; font-size: 11.5px; font-weight: 700; cursor: pointer">Devolver</button>
+              <button onClick="{{ loteSugerido }}" style="height: 28px; padding: 0 12px; border-radius: 999px; border: none; background: #C8F000; color: #12111A; font-size: 11.5px; font-weight: 700; cursor: pointer">Orçar pelo sugerido</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ mostrarEnviados }}" hint-placeholder-val="{{ false }}">
+            <div style="max-height: 640px; overflow: auto; padding: 12px 13px; display: flex; flex-direction: column; gap: 10px">
+              <sc-for list="{{ enviadosCards }}" as="e" hint-placeholder-count="3">
+                <div style="border: 1px solid #E7E6EE; border-radius: 12px; padding: 12px 13px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF">
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div style="{{ e.avatarStyle }}">{{ e.initials }}</div>
+                    <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1">
+                      <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600; color: #12111A">{{ e.talento }}</div>
+                      <div style="font-size: 11px; color: #85839A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ e.marca }} · {{ e.programa }}</div>
+                    </div>
+                    <div style="font-family: Outfit, sans-serif; font-size: 14.5px; font-weight: 700; color: #0F7B6C">{{ e.valor }}</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 11.5px; color: #56546B">{{ e.validade }}</div>
+                    <div style="font-size: 11.5px; line-height: 1.45; color: #85839A">{{ e.parecer }}</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; border-top: 1px dashed #EEECF3; padding-top: 10px">
+                    <div style="{{ e.tagStyle }}">{{ e.tag }}</div>
+                    <div style="flex: 1"></div>
+                    <sc-if value="{{ e.podePedir }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ e.onPedir }}" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 11.5px; font-weight: 700; cursor: pointer" style-hover="border-color: #C7168C; color: #C7168C">Solicitar ajuste</button>
+                    </sc-if>
+                    <sc-if value="{{ e.aguardando }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ e.onSimular }}" title="No app real, quem libera é o solicitante" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px dashed #A9CE00; background: #F4FFCC; color: #3D6B18; font-size: 11.5px; font-weight: 700; cursor: pointer">Simular liberação</button>
+                    </sc-if>
+                    <sc-if value="{{ e.liberado }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ e.onEditar }}" style="height: 28px; padding: 0 12px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 11.5px; font-weight: 700; cursor: pointer">Editar orçamento</button>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ semEnviados }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 40px 20px; text-align: center; font-size: 13px; color: #85839A">Nenhum orçamento enviado ainda. Responda uma consulta da fila para ela aparecer aqui.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <div style="{{ listaWrapStyle }}">
+            <sc-for list="{{ fila }}" as="c" hint-placeholder-count="6">
+              <div style="{{ c.wrapStyle }}">
+                <div style="display: flex; align-items: flex-start; gap: 10px">
+                  <button onClick="{{ c.onCheck }}" style="{{ c.checkStyle }}">✓</button>
+                  <button onClick="{{ c.onSelect }}" style="flex: 1; min-width: 0; border: none; background: transparent; padding: 0; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 7px">
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div style="{{ c.avatarStyle }}">{{ c.initials }}</div>
+                      <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1">
+                        <div style="font-family: Outfit, sans-serif; font-size: 14.5px; font-weight: 600; color: #12111A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ c.talento }}</div>
+                        <div style="font-size: 11.5px; color: #85839A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ c.marca }} · {{ c.programa }}</div>
+                      </div>
+                      <div style="{{ c.prazoStyle }}">{{ c.prazo }}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                      <span style="{{ c.catStyle }}">{{ c.categoria }}</span>
+                      <span style="font-size: 11px; color: #6B6A7C">{{ c.escopo }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 9px">
+                      <div style="font-size: 11.5px; color: #85839A">Verba {{ c.verba }}</div>
+                      <div style="width: 3px; height: 3px; border-radius: 999px; background: #CFCDDD"></div>
+                      <div style="font-size: 11.5px; font-weight: 700; color: #0F7B6C">Sugerido {{ c.sugerido }}</div>
+                      <div style="flex: 1"></div>
+                      <sc-if value="{{ c.temFlag }}" hint-placeholder-val="{{ false }}">
+                        <div style="{{ c.flagStyle }}">{{ c.flag }}</div>
+                      </sc-if>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ filaVazia }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 44px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+                <div style="width: 46px; height: 46px; border-radius: 999px; background: #F2FBE8; color: #3D6B18; display: flex; align-items: center; justify-content: center; font-size: 20px">✓</div>
+                <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 600; color: #12111A">Nada nesta aba</div>
+                <div style="font-size: 12.5px; color: #85839A; max-width: 240px">Sem consultas pendentes com esse recorte. Troque a aba ou limpe a busca.</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <sc-if value="{{ temAtual }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="{{ headerStyle }}">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 18px">
+                  <div style="display: flex; align-items: center; gap: 13px">
+                    <div style="{{ atual.avatarStyle }}">{{ atual.initials }}</div>
+                    <div style="display: flex; flex-direction: column; gap: 3px">
+                      <div style="font-family: Outfit, sans-serif; font-size: 21px; font-weight: 600; color: #FFFFFF; letter-spacing: -0.01em">{{ atual.talento }}</div>
+                      <div style="font-size: 12.5px; color: rgba(255,255,255,0.82)">{{ atual.marca }} · {{ atual.programa }} · {{ atual.dataProjeto }}</div>
+                      <div style="font-family: ui-monospace, monospace; font-size: 11px; color: rgba(255,255,255,0.6)">{{ atual.protocolo }} · {{ atual.solicitante }}</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 7px">
+                    <div style="{{ atual.prazoChipStyle }}">{{ atual.prazoLongo }}</div>
+                    <div style="display: flex; align-items: center gap: 8px">
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <button onClick="{{ anterior }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #FFFFFF; font-size: 13px; cursor: pointer">↑</button>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.8)">{{ posicao }}</div>
+                        <button onClick="{{ proximo }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: transparent; color: #FFFFFF; font-size: 13px; cursor: pointer">↓</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <sc-if value="{{ atual.emEdicao }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #C8F000; padding: 12px 20px; display: flex; align-items: center; gap: 10px">
+                  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #12111A">Ajuste liberado</div>
+                  <div style="font-size: 12.5px; color: #3D4A00">{{ atual.edicaoTexto }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ atual.temAlerta }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ atual.alertaStyle }}">
+                  <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #B3121B">{{ atual.alertaTitulo }}</div>
+                  <div style="font-size: 12.5px; line-height: 1.5; color: #7A2A2A">{{ atual.alertaTexto }}</div>
+                </div>
+              </sc-if>
+
+              <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 18px">
+                <div style="border: 1px solid #A9DED2; background: #F5FBF9; border-radius: 13px; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px">
+                  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 18px">
+                    <div style="display: flex; flex-direction: column; gap: 5px">
+                      <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0F7B6C">Sua resposta</div>
+                      <div style="display: flex; align-items: center; gap: 12px">
+                        <div style="display: flex; align-items: center; height: 46px; border: 1px solid #A9DED2; border-radius: 11px; background: #FFFFFF; overflow: hidden">
+                          <div style="padding: 0 11px; font-size: 13px; font-weight: 700; color: #0F7B6C; border-right: 1px solid #E1F2EE; height: 100%; display: flex; align-items: center">R$</div>
+                          <input value="{{ atual.cache }}" onChange="{{ atual.onCache }}" placeholder="0,00" style="width: 170px; height: 100%; border: none; padding: 0 12px; font-family: Outfit, sans-serif; font-size: 19px; font-weight: 700; color: #12111A" />
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 4px">
+                          <div style="font-size: 11px; color: #56546B">Validade da proposta <span style="color: #A19FB2">(opcional)</span></div>
+                          <input value="{{ atual.validade }}" onChange="{{ atual.onValidade }}" placeholder="dd/mm/aaaa" style="width: 130px; box-sizing: border-box; height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 12.5px; color: #12111A" />
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+                      <div style="font-size: 11px; color: #56546B">Cachê sugerido pela base</div>
+                      <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 700; color: #0F7B6C">{{ atual.sugerido }}</div>
+                      <button onClick="{{ atual.usarSugerido }}" style="height: 28px; padding: 0 12px; border-radius: 999px; border: 1px solid #00A38C; background: #FFFFFF; color: #0F7B6C; font-size: 11.5px; font-weight: 700; cursor: pointer" style-hover="background: #E6F6F2">Usar sugerido</button>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                    <div style="font-size: 11.5px; color: #56546B">Ajuste rápido</div>
+                    <sc-for list="{{ atual.ajustes }}" as="a" hint-placeholder-count="4">
+                      <button onClick="{{ a.onClick }}" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 11.5px; font-weight: 700; cursor: pointer" style-hover="border-color: #00A38C; color: #0F7B6C">{{ a.label }}</button>
+                    </sc-for>
+                    <div style="flex: 1"></div>
+                    <div style="{{ atual.deltaStyle }}">{{ atual.delta }}</div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px">
+                      <div style="font-size: 12px; font-weight: 700; color: #12111A">Parecer</div>
+                      <sc-for list="{{ atual.frases }}" as="f" hint-placeholder-count="3">
+                        <button onClick="{{ f.onClick }}" style="height: 24px; padding: 0 10px; border-radius: 999px; border: 1px dashed #A9DED2; background: #FFFFFF; color: #0F7B6C; font-size: 11px; font-weight: 600; cursor: pointer" style-hover="background: #E6F6F2">{{ f.label }}</button>
+                      </sc-for>
+                    </div>
+                    <textarea value="{{ atual.parecer }}" onChange="{{ atual.onParecer }}" placeholder="Condições, premissas e ressalvas consideradas no valor" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.55; color: #12111A; background: #FFFFFF; resize: vertical"></textarea>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 10px; border-top: 1px dashed #A9DED2; padding-top: 13px">
+                    <button onClick="{{ atual.onIndisponivel }}" style="height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #B3121B; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="border-color: #B3121B">Indisponível</button>
+                    <button onClick="{{ atual.onDevolver }}" style="height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A">Devolver ao solicitante</button>
+                    <button onClick="{{ atual.onRascunho }}" style="{{ atual.rascunhoStyle }}">{{ atual.rascunhoLabel }}</button>
+                    <div style="flex: 1"></div>
+                    <div style="font-size: 11.5px; color: #85839A">{{ atual.dica }}</div>
+                    <button onClick="{{ atual.onEnviar }}" style="{{ atual.enviarStyle }}">Enviar orçamento e ir para a próxima</button>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px">
+                  <sc-for list="{{ atual.resumo }}" as="r" hint-placeholder-count="4">
+                    <div style="display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 11px; background: #F7F6FA">
+                      <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">{{ r.label }}</div>
+                      <div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: 600; color: #12111A">{{ r.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: start">
+                  <div style="display: flex; flex-direction: column; gap: 9px">
+                    <sc-for list="{{ atual.secoes }}" as="s" hint-placeholder-count="4">
+                      <div style="border: 1px solid #E7E6EE; border-radius: 12px; overflow: hidden">
+                        <button onClick="{{ s.onToggle }}" style="width: 100%; box-sizing: border-box; background: #F7F6FA; border: none; padding: 11px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; text-align: left">
+                          <div style="width: 4px; height: 14px; border-radius: 2px; background: #C7168C"></div>
+                          <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">{{ s.titulo }}</div>
+                          <div style="font-size: 11.5px; color: #85839A">{{ s.nota }}</div>
+                          <div style="flex: 1"></div>
+                          <div style="{{ s.chevronStyle }}">⌄</div>
+                        </button>
+                        <sc-if value="{{ s.open }}" hint-placeholder-val="{{ true }}">
+                          <div style="padding: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 18px">
+                            <sc-for list="{{ s.itens }}" as="i" hint-placeholder-count="4">
+                              <div style="{{ i.wrap }}">
+                                <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A19FB2; margin-bottom: 3px">{{ i.label }}</div>
+                                <div style="font-size: 12.5px; line-height: 1.5; color: #2C2B3A; text-wrap: pretty">{{ i.value }}</div>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 12px">
+                    <div style="border: 1px solid #E7E6EE; border-radius: 12px; overflow: hidden">
+                      <div style="background: #F7F6FA; padding: 10px 13px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6A7C; border-bottom: 1px solid #E7E6EE">Histórico do talento</div>
+                      <div style="padding: 11px 13px; display: flex; flex-direction: column; gap: 9px">
+                        <sc-for list="{{ atual.historico }}" as="h" hint-placeholder-count="3">
+                          <div style="display: flex; flex-direction: column; gap: 2px">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                              <div style="font-size: 12px; font-weight: 600; color: #12111A">{{ h.projeto }}</div>
+                              <div style="font-size: 12px; font-weight: 700; color: #0F7B6C">{{ h.cache }}</div>
+                            </div>
+                            <div style="font-size: 10.5px; color: #A19FB2">{{ h.data }} · {{ h.status }}</div>
+                          </div>
+                        </sc-for>
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0EFF5; padding-top: 9px">
+                          <div style="font-size: 11.5px; color: #6B6A7C">Média aprovada</div>
+                          <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 700; color: #C7168C">{{ atual.media }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="border: 1px solid #E7E6EE; border-radius: 12px; overflow: hidden">
+                      <div style="background: #F7F6FA; padding: 10px 13px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6A7C; border-bottom: 1px solid #E7E6EE">Contato para acionar</div>
+                      <div style="padding: 11px 13px; display: flex; flex-direction: column; gap: 8px">
+                        <sc-for list="{{ atual.contato }}" as="c" hint-placeholder-count="4">
+                          <div style="display: flex; flex-direction: column; gap: 1px">
+                            <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #A19FB2">{{ c.label }}</div>
+                            <div style="font-family: ui-monospace, monospace; font-size: 11.5px; color: #2C2B3A">{{ c.value }}</div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ semAtual }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 90px 40px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+              <div style="width: 60px; height: 60px; border-radius: 999px; background: #C8F000; color: #12111A; display: flex; align-items: center; justify-content: center; font-size: 26px">✓</div>
+              <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 600; color: #12111A">{{ semAtualTitulo }}</div>
+              <div style="font-size: 13.5px; line-height: 1.6; color: #6B6A7C; max-width: 360px; text-wrap: pretty">{{ semAtualTexto }}</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const CAT_COLOR = { 'Talento Globo': '#2020EE', 'Agenciado': '#8B2FD6', 'Influenciador': '#C7168C', 'Creator': '#00A38C' };
+const AV = ['#C7168C', '#2020EE', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+function brl(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function num(s) { return Number(String(s).replace(/\./g, '').replace(',', '.')) || 0; }
+function maskMoney(v) {
+  const d = String(v || '').replace(/\D/g, '').replace(/^0+/, '');
+  if (!d) return '';
+  const cents = d.padStart(3, '0');
+  const int = cents.slice(0, -2);
+  return Number(int).toLocaleString('pt-BR') + ',' + cents.slice(-2);
+}
+function moneyFrom(n) { return maskMoney(String(Math.round(n * 100))); }
+function maskDate(v) {
+  const d = String(v || '').replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return d.slice(0, 2) + '/' + d.slice(2);
+  return d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4);
+}
+
+class Component extends DCLogic {
+  state = {
+    aba: 'hoje', busca: '', ordem: 'Prazo',
+    sel: 'c1', marcadas: {},
+    secOpen: { escopo: true, contexto: false, producao: false, distribuicao: false },
+    respostas: {},
+    consultas: [
+      { id: 'c1', protocolo: '#ORC-2026-0431', talento: 'Manu Ferraz', categoria: 'Influenciador', marca: 'Verão Lager', programa: 'Big Brother Brasil', dataProjeto: '20/08/2026', solicitante: 'Caio Bastos · Realities', dias: -1, verba: 110000, sugerido: 96000, flag: 'Conflito de restrição',
+        alerta: 'Manu Ferraz não tem restrição de segmento, mas o projeto é de bebidas alcoólicas e o contrato prevê aprovação prévia da ViU para a categoria.',
+        escopo: [['Rede e perfil', 'Instagram @manuferraz'], ['Entregas', '2 Reels + 4 Stories'], ['Collab', 'Sim, com @veraolager'], ['Repost', '2 reposts em 7 dias, com marcação']],
+        contexto: [['Contexto', 'Ativação de verão da marca com criadores de lifestyle, foco em consumo responsável e presença em festas de verão.'], ['Período', '20/08 a 30/09/2026'], ['Segmento do cliente', 'Bebidas alcoólicas'], ['Tipo de projeto', 'Sob demanda']],
+        producao: [['Roteiro', 'Agência entrega roteiro; edição pelo talento.'], ['Diárias', '1 diária externa em São Paulo'], ['Figurino', 'Looks próprios, 2 trocas'], ['Logística', 'Transporte e alimentação por conta da produção']],
+        distribuicao: [['Exclusividade', 'Sim — bebidas, 60 dias'], ['Impulsionamento', 'Meta Ads, 30 dias, R$ 80.000'], ['Whitelisting', 'Sim'], ['Conteúdo para a marca', '1 vídeo exclusivo']],
+        historico: [['Westwing · Mais Você', '02/08/2026', 'Orçada', 'R$ 125.000'], ['Dermáurea · Vídeo Show Digital', '29/07/2026', 'Aprovada', 'R$ 102.000'], ['Casa Lume · gshow', '14/06/2026', 'Aprovada', 'R$ 98.000']],
+        contato: [['WhatsApp', '(11) 98000-0003'], ['E-mail', 'manu@manuferraz.com'], ['Agência', 'Casa Um'], ['Empresária', 'Paula Reis']] },
+      { id: 'c2', protocolo: '#ORC-2026-0432', talento: 'Léo Vasques', categoria: 'Creator', marca: 'Verão Lager', programa: 'Big Brother Brasil', dataProjeto: '20/08/2026', solicitante: 'Caio Bastos · Realities', dias: 0, verba: 60000, sugerido: 54000, flag: '',
+        alerta: '',
+        escopo: [['Rede e perfil', 'YouTube @leovasques'], ['Entregas', '1 vídeo de 8 minutos'], ['Collab', 'Não'], ['Repost', 'Não']],
+        contexto: [['Contexto', 'Review em formato longo, com bastidores da casa e degustação.'], ['Período', '20/08 a 30/09/2026'], ['Segmento do cliente', 'Bebidas alcoólicas'], ['Tipo de projeto', 'Sob demanda']],
+        producao: [['Roteiro', 'Do talento, com aprovação da marca'], ['Diárias', 'Sem diária — produção própria'], ['Figurino', 'Não se aplica'], ['Logística', 'Envio de kit de produtos']],
+        distribuicao: [['Exclusividade', 'Não'], ['Impulsionamento', 'YouTube Ads, 15 dias'], ['Whitelisting', 'Não'], ['Conteúdo para a marca', 'Cortes para Shorts']],
+        historico: [['Movtech · Cartola', '11/07/2026', 'Aprovada', 'R$ 58.000'], ['Nutrilar · É de Casa', '22/05/2026', 'Recusada', '—']],
+        contato: [['WhatsApp', '(11) 98000-0004'], ['E-mail', 'leo@leovasques.com'], ['Agência', 'Sem agência'], ['Empresário', '—']] },
+      { id: 'c3', protocolo: '#ORC-2026-0419', talento: 'Bruno Tavares', categoria: 'Influenciador', marca: 'Westwing', programa: 'Mais Você', dataProjeto: '07/08/2026', solicitante: 'Mariana Vasques · Variedades', dias: 1, verba: 70000, sugerido: 66000, flag: '',
+        alerta: '',
+        escopo: [['Rede e perfil', 'Instagram @brunotavares'], ['Entregas', '1 Post Carrossel + 3 Stories'], ['Collab', 'Sim'], ['Repost', '1 repost']],
+        contexto: [['Contexto', 'Coleção de primavera aplicada em ambientes reais, tom de dicas de decoração.'], ['Período', '15/09 a 30/10/2026'], ['Segmento do cliente', 'Casa e decoração'], ['Tipo de projeto', 'Patrocínio']],
+        producao: [['Roteiro', 'Agência + aprovação ViU'], ['Diárias', '1 diária na casa do talento'], ['Figurino', 'Looks neutros próprios'], ['Logística', 'Transporte dos produtos']],
+        distribuicao: [['Exclusividade', 'Sim — casa e decoração, 90 dias'], ['Impulsionamento', 'Meta e TikTok, R$ 120.000'], ['Whitelisting', 'Sim'], ['Conteúdo para a marca', '1 vídeo exclusivo']],
+        historico: [['Nutrilar · É de Casa', '30/07/2026', 'Aprovada', 'R$ 66.000'], ['Bella · Encontro', '02/05/2026', 'Aprovada', 'R$ 61.000']],
+        contato: [['WhatsApp', '(21) 98000-0006'], ['E-mail', 'bruno@casaum.com.br'], ['Agência', 'Casa Um'], ['Empresária', 'Paula Reis']] },
+      { id: 'c4', protocolo: '#ORC-2026-0441', talento: 'Tati Rocha', categoria: 'Creator', marca: 'Dermáurea', programa: 'Altas Horas', dataProjeto: '02/09/2026', solicitante: 'Aline Souza · Ent. Digital', dias: 2, verba: 45000, sugerido: 42000, flag: '',
+        alerta: '',
+        escopo: [['Rede e perfil', 'TikTok @tatirocha'], ['Entregas', '1 Vídeo TikTok + 3 Stories'], ['Collab', 'Sim'], ['Repost', '1 repost']],
+        contexto: [['Contexto', 'Lançamento de linha capilar com público 18-24.'], ['Período', '02/09 a 15/10/2026'], ['Segmento do cliente', 'Beleza'], ['Tipo de projeto', 'Pacote']],
+        producao: [['Roteiro', 'Do talento'], ['Diárias', 'Sem diária'], ['Figurino', 'Não se aplica'], ['Logística', 'Kit de produtos']],
+        distribuicao: [['Exclusividade', 'Sim — beleza, 45 dias'], ['Impulsionamento', 'TikTok Ads, 20 dias'], ['Whitelisting', 'Sim'], ['Conteúdo para a marca', 'Não']],
+        historico: [['Nutrilar · É de Casa', '30/07/2026', 'Aprovada', 'R$ 48.000']],
+        contato: [['WhatsApp', '(31) 98000-0007'], ['E-mail', 'tati@tatirocha.com'], ['Agência', 'Sem agência'], ['Empresário', '—']] },
+      { id: 'c5', protocolo: '#ORC-2026-0447', talento: 'Pri Anjos', categoria: 'Influenciador', marca: 'Banco Vértice', programa: 'Encontro', dataProjeto: '12/09/2026', solicitante: 'Mariana Vasques · Variedades', dias: 4, verba: 38000, sugerido: 36000, flag: 'Talento inativo na base',
+        alerta: 'Pri Anjos está marcada como inativa no banco de talentos desde 05/2026. Confirme a disponibilidade antes de orçar.',
+        escopo: [['Rede e perfil', 'Instagram @prianjos'], ['Entregas', '1 Reels + 3 Stories'], ['Collab', 'Não'], ['Repost', 'Não']],
+        contexto: [['Contexto', 'Educação financeira para jovens adultos.'], ['Período', '12/09 a 12/10/2026'], ['Segmento do cliente', 'Financeiro'], ['Tipo de projeto', 'Patrocínio']],
+        producao: [['Roteiro', 'Agência'], ['Diárias', '1 diária em estúdio'], ['Figurino', 'Fornecido pela marca'], ['Logística', 'Transporte no Recife']],
+        distribuicao: [['Exclusividade', 'Sim — financeiro, 90 dias'], ['Impulsionamento', 'Meta Ads, 30 dias'], ['Whitelisting', 'Não'], ['Conteúdo para a marca', 'Não']],
+        historico: [],
+        contato: [['WhatsApp', '(81) 98000-0009'], ['E-mail', 'pri@nortetalentos.com'], ['Agência', 'Norte Talentos'], ['Empresário', 'Léo Muniz']] }
+    ]
+  };
+
+  resp(id) { return this.state.respostas[id] || { cache: '', parecer: '', validade: '' }; }
+  setResp(id, k, v) {
+    this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [id]: Object.assign({}, this.resp(id), { [k]: v }) }) }));
+  }
+
+  prazoDe(dias) {
+    if (dias < 0) return { label: 'Vencida', longo: 'Prazo vencido há 1 dia', fg: '#B3121B', bg: '#FDF1F1', chipFg: '#FFFFFF', chipBg: '#C41A22' };
+    if (dias === 0) return { label: 'Hoje', longo: 'Vence hoje', fg: '#8A6A00', bg: '#FFF7E0', chipFg: '#12111A', chipBg: '#C8F000' };
+    return { label: dias + 'd', longo: 'Faltam ' + dias + ' dias', fg: '#3D6B18', bg: '#F2FBE8', chipFg: '#FFFFFF', chipBg: 'rgba(255,255,255,0.2)' };
+  }
+
+  filtradas() {
+    const st = this.state;
+    const q = st.busca.trim().toLowerCase();
+    if (st.aba === 'enviados') {
+      return st.consultas.filter(c => {
+        const rr = st.respostas[c.id];
+        if (!rr || !rr.enviada) return false;
+        if (q && (c.talento + ' ' + c.marca + ' ' + c.programa + ' ' + c.protocolo).toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+    }
+    let list = st.consultas.filter(c => {
+      const rr = st.respostas[c.id];
+      if (rr && rr.enviada && !rr.liberado) return false;
+      if (st.aba === 'hoje' && c.dias > 0) return false;
+      if (st.aba === 'semana' && c.dias > 5) return false;
+      if (st.aba === 'atencao' && !c.flag) return false;
+      if (q && (c.talento + ' ' + c.marca + ' ' + c.programa + ' ' + c.protocolo).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    if (st.ordem === 'Prazo') list = list.slice().sort((a, b) => a.dias - b.dias);
+    if (st.ordem === 'Valor') list = list.slice().sort((a, b) => b.verba - a.verba);
+    return list;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const lista = this.filtradas();
+    const atual = lista.filter(c => c.id === st.sel)[0] || lista[0];
+    const idx = atual ? lista.indexOf(atual) : -1;
+    const marcadas = Object.keys(st.marcadas).filter(k => st.marcadas[k]);
+    const abertas = st.consultas.filter(c => { const rr = st.respostas[c.id]; return !(rr && rr.enviada && !rr.liberado); });
+    const enviados = st.consultas.filter(c => { const rr = st.respostas[c.id]; return rr && rr.enviada; });
+    const naFila = st.aba !== 'enviados';
+    const r = atual ? this.resp(atual.id) : { cache: '', parecer: '', validade: '' };
+    const cacheNum = num(r.cache);
+    const delta = atual && cacheNum ? Math.round((cacheNum / atual.sugerido - 1) * 100) : 0;
+
+    const irPara = d => {
+      if (!lista.length) return;
+      const i = Math.max(0, Math.min(lista.length - 1, (idx < 0 ? 0 : idx) + d));
+      this.setState({ sel: lista[i].id });
+    };
+
+    const enviar = () => {
+      if (!atual || !cacheNum) return;
+      const proximo = lista.filter(c => c.id !== atual.id)[0];
+      this.setState(s => ({
+        respostas: Object.assign({}, s.respostas, { [atual.id]: Object.assign({}, this.resp(atual.id), { enviada: true, rascunho: false, pedido: false, liberado: false }) }),
+        sel: proximo ? proximo.id : ''
+      }));
+    };
+
+    return {
+      nav: [{ label: 'Minha fila', active: true }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Tabela de Referência' }, { label: 'Relatórios' }]
+        .map(n => ({ label: n.label, style: { fontSize: '13px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } })),
+      saudacao: 'Bom dia, Thiago',
+      foco: abertas.filter(c => c.dias <= 0).length
+        ? abertas.filter(c => c.dias <= 0).length + ' consulta(s) precisam de resposta hoje — comece pela primeira da fila.'
+        : 'Nenhum vencimento hoje. Boa hora para adiantar a semana.',
+      kpis: [
+        { id: 'vencidas', label: 'Vencidas', value: String(abertas.filter(c => c.dias < 0).length), note: 'prioridade máxima', cor: '#B3121B', bg: '#FDF1F1' },
+        { id: 'hoje', label: 'Vencem hoje', value: String(abertas.filter(c => c.dias === 0).length), note: 'até 18h', cor: '#8A6A00', bg: '#FFF7E0' },
+        { id: 'semana', label: 'Na semana', value: String(abertas.filter(c => c.dias > 0 && c.dias <= 5).length), note: 'próximos 5 dias', cor: '#12111A', bg: '#F7F6FA' },
+        { id: 'atencao', label: 'Com alerta', value: String(abertas.filter(c => c.flag).length), note: 'restrição ou base', cor: '#12111A', bg: '#F7F6FA' }
+      ].map(k => ({
+        label: k.label, value: k.value, note: k.note,
+        valueStyle: { fontFamily: 'Outfit, sans-serif', fontSize: '26px', fontWeight: 700, color: k.cor },
+        style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '14px 16px', borderRadius: '12px', background: k.bg, border: '1px solid ' + (k.bg === '#F7F6FA' ? 'transparent' : '#F3DCDC'), cursor: 'pointer', textAlign: 'left' },
+        onClick: () => this.setState({ aba: k.id === 'vencidas' ? 'hoje' : k.id })
+      })),
+      abas: [
+        { id: 'hoje', label: 'Agora' }, { id: 'semana', label: 'Semana' }, { id: 'atencao', label: 'Alertas' }, { id: 'tudo', label: 'Tudo' }, { id: 'enviados', label: 'Enviados' }
+      ].map(a => {
+        const on = st.aba === a.id;
+        const n = st.consultas.filter(c => {
+          const rr = st.respostas[c.id];
+          if (a.id === 'enviados') return !!(rr && rr.enviada);
+          if (rr && rr.enviada && !rr.liberado) return false;
+          if (a.id === 'hoje') return c.dias <= 0;
+          if (a.id === 'semana') return c.dias <= 5;
+          if (a.id === 'atencao') return !!c.flag;
+          return true;
+        }).length;
+        return {
+          label: a.label, count: String(n),
+          style: { flex: 1, height: '28px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '12.5px', fontWeight: 600, color: on ? '#12111A' : '#6B6A7C', background: on ? '#FFFFFF' : 'transparent', boxShadow: on ? '0 1px 3px rgba(18,17,26,0.12)' : 'none' },
+          countStyle: { marginLeft: '4px', fontSize: '10.5px', fontWeight: 700, color: on ? '#C7168C' : '#A19FB2' },
+          onClick: () => this.setState({ aba: a.id })
+        };
+      }),
+      busca: st.busca, ordem: st.ordem,
+      onBusca: e => this.setState({ busca: e.target.value }),
+      onOrdem: e => this.setState({ ordem: e.target.value }),
+      selCount: String(marcadas.length),
+      temSelecao: naFila && marcadas.length > 0,
+      barraLoteStyle: { display: naFila ? 'flex' : 'none', alignItems: 'center', gap: '9px' },
+      selResumo: marcadas.length ? 'ações em lote liberadas' : 'selecione para agir em lote',
+      selTodosLabel: marcadas.length === lista.length && lista.length ? 'Limpar seleção' : 'Selecionar tudo',
+      selTodosStyle: { height: '26px', padding: '0 11px', borderRadius: '999px', border: '1px solid #DCDAE6', background: '#FFFFFF', color: '#56546B', fontSize: '11.5px', fontWeight: 600, cursor: 'pointer' },
+      toggleTodos: () => this.setState(s => {
+        const todos = lista.length && lista.every(c => s.marcadas[c.id]);
+        const m = {};
+        if (!todos) lista.forEach(c => { m[c.id] = true; });
+        return { marcadas: m };
+      }),
+      loteSugerido: () => this.setState(s => {
+        const rs = Object.assign({}, s.respostas);
+        marcadas.forEach(id => {
+          const c = s.consultas.filter(x => x.id === id)[0];
+          if (c) rs[id] = Object.assign({}, rs[id] || {}, { cache: c.sugerido.toLocaleString('pt-BR'), parecer: 'Valor conforme tabela de referência vigente.' });
+        });
+        return { respostas: rs, marcadas: {} };
+      }),
+      loteIndisponivel: () => this.setState(s => {
+        const rs = Object.assign({}, s.respostas);
+        marcadas.forEach(id => { rs[id] = Object.assign({}, rs[id] || {}, { enviada: true }); });
+        return { respostas: rs, marcadas: {} };
+      }),
+      loteDevolver: () => this.setState(s => {
+        const rs = Object.assign({}, s.respostas);
+        marcadas.forEach(id => { rs[id] = Object.assign({}, rs[id] || {}, { enviada: true }); });
+        return { respostas: rs, marcadas: {} };
+      }),
+      naFila: naFila, aba: st.aba,
+      mostrarEnviados: !naFila,
+      semEnviados: !naFila && enviados.length === 0,
+      listaWrapStyle: { maxHeight: '620px', overflow: 'auto', display: naFila ? 'block' : 'none' },
+      enviadosCards: enviados.map((c, i) => {
+        const rr = this.resp(c.id);
+        const estado = rr.liberado ? 'liberado' : rr.pedido ? 'pedido' : 'enviado';
+        const tag = { enviado: 'Enviado ao solicitante', pedido: 'Aguardando liberação do solicitante', liberado: 'Liberado para ajuste' }[estado];
+        const cor = { enviado: ['#0F7B6C', '#E6F6F2'], pedido: ['#8A6A00', '#FFF7E0'], liberado: ['#12111A', '#C8F000'] }[estado];
+        return {
+          talento: c.talento, marca: c.marca, programa: c.programa, protocolo: c.protocolo, initials: ini(c.talento),
+          valor: rr.cache ? 'R$ ' + rr.cache : 'Indisponível',
+          validade: rr.validade ? 'válido até ' + rr.validade : 'sem validade definida',
+          parecer: rr.parecer || 'sem parecer registrado',
+          tag: tag,
+          tagStyle: { fontSize: '10.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap', color: cor[0], background: cor[1] },
+          avatarStyle: { width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '11.5px', fontWeight: 700 },
+          podePedir: estado === 'enviado',
+          aguardando: estado === 'pedido',
+          liberado: estado === 'liberado',
+          onPedir: () => this.setResp(c.id, 'pedido', true),
+          onSimular: () => this.setState(s => ({ respostas: Object.assign({}, s.respostas, { [c.id]: Object.assign({}, this.resp(c.id), { liberado: true }) }) })),
+          onEditar: () => this.setState({ aba: 'tudo', sel: c.id })
+        };
+      }),
+      fila: lista.map((c, i) => {
+        const p = this.prazoDe(c.dias);
+        const on = atual && atual.id === c.id;
+        const mk = !!st.marcadas[c.id];
+        const rr = this.resp(c.id);
+        return {
+          talento: c.talento, marca: c.marca, programa: c.programa, categoria: c.categoria, initials: ini(c.talento),
+          escopo: c.escopo[1][1],
+          verba: brl(c.verba), sugerido: brl(c.sugerido),
+          prazo: p.label,
+          prazoStyle: { fontSize: '11px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap', color: p.fg, background: p.bg },
+          catStyle: { fontSize: '10px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#FFFFFF', background: CAT_COLOR[c.categoria], padding: '3px 8px', borderRadius: '999px' },
+          temFlag: !!c.flag || !!rr.cache,
+          flag: rr.cache ? 'rascunho salvo' : c.flag,
+          flagStyle: { fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', color: rr.cache ? '#0F7B6C' : '#B3121B', background: rr.cache ? '#E6F6F2' : '#FDF1F1' },
+          avatarStyle: { width: '34px', height: '34px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '12px', fontWeight: 700 },
+          checkStyle: { width: '20px', height: '20px', marginTop: '8px', flexShrink: 0, borderRadius: '5px', border: '1.5px solid ' + (mk ? '#C7168C' : '#CFCDDD'), background: mk ? '#C7168C' : '#FFFFFF', color: mk ? '#FFFFFF' : 'transparent', fontSize: '10px', fontWeight: 700, cursor: 'pointer', padding: 0 },
+          wrapStyle: { padding: '11px 14px', borderBottom: '1px solid #F0EFF5', borderLeft: '3px solid ' + (on ? '#C7168C' : 'transparent'), background: on ? '#FDF0F8' : '#FFFFFF' },
+          onSelect: () => this.setState({ sel: c.id }),
+          onCheck: () => this.setState(s => ({ marcadas: Object.assign({}, s.marcadas, { [c.id]: !s.marcadas[c.id] }) }))
+        };
+      }),
+      filaVazia: naFila && lista.length === 0,
+      temAtual: !!atual && naFila, semAtual: !atual || !naFila,
+      semAtualTitulo: naFila ? 'Fila zerada' : 'Orçamentos enviados',
+      semAtualTexto: naFila
+        ? 'Todas as consultas da ViU foram respondidas. Novos pedidos aparecem aqui e chegam por e-mail em PPC-VIU@g.globo.'
+        : 'Selecione um orçamento à esquerda. Para corrigir um valor já enviado, use Solicitar ajuste — a edição abre só depois da liberação do solicitante.',
+      posicao: atual ? (idx + 1) + ' de ' + lista.length : '',
+      anterior: () => irPara(-1),
+      proximo: () => irPara(1),
+      headerStyle: { background: atual ? CAT_COLOR[atual.categoria] : '#C7168C', padding: '18px 20px' },
+      atual: atual ? {
+        talento: atual.talento, marca: atual.marca, programa: atual.programa, dataProjeto: atual.dataProjeto,
+        protocolo: atual.protocolo, solicitante: atual.solicitante, initials: ini(atual.talento),
+        avatarStyle: { width: '54px', height: '54px', flexShrink: 0, borderRadius: '999px', background: 'rgba(255,255,255,0.22)', border: '2px solid rgba(255,255,255,0.5)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '17px', fontWeight: 700 },
+        prazoLongo: this.prazoDe(atual.dias).longo,
+        prazoChipStyle: { fontSize: '11.5px', fontWeight: 700, padding: '6px 12px', borderRadius: '999px', color: this.prazoDe(atual.dias).chipFg, background: this.prazoDe(atual.dias).chipBg },
+        temAlerta: !!atual.alerta,
+        alertaTitulo: atual.flag || 'Atenção',
+        alertaTexto: atual.alerta,
+        alertaStyle: { background: '#FDF1F1', borderBottom: '1px solid #F3B4B4', padding: '13px 20px', display: 'flex', flexDirection: 'column', gap: '4px' },
+        cache: r.cache, parecer: r.parecer, validade: r.validade,
+        onCache: e => this.setResp(atual.id, 'cache', maskMoney(e.target.value)),
+        onParecer: e => this.setResp(atual.id, 'parecer', e.target.value),
+        onValidade: e => this.setResp(atual.id, 'validade', maskDate(e.target.value)),
+        sugerido: brl(atual.sugerido),
+        usarSugerido: () => this.setResp(atual.id, 'cache', moneyFrom(atual.sugerido)),
+        ajustes: [-10, -5, 5, 10].map(p => ({
+          label: (p > 0 ? '+' : '') + p + '%',
+          onClick: () => this.setResp(atual.id, 'cache', moneyFrom(Math.round(atual.sugerido * (1 + p / 100))))
+        })),
+        rascunhoLabel: r.rascunho ? 'Rascunho salvo' : 'Salvar rascunho',
+        rascunhoStyle: { height: '42px', padding: '0 16px', borderRadius: '999px', border: '1px solid ' + (r.rascunho ? '#A9DED2' : '#DCDAE6'), background: r.rascunho ? '#E6F6F2' : '#FFFFFF', color: r.rascunho ? '#0F7B6C' : '#12111A', fontSize: '13px', fontWeight: 600, cursor: 'pointer' },
+        onRascunho: () => this.setResp(atual.id, 'rascunho', true),
+        emEdicao: !!r.liberado,
+        edicaoTexto: 'O solicitante liberou o ajuste deste orçamento. Ao enviar, ele recebe a versão corrigida.',
+        delta: cacheNum ? (delta === 0 ? 'igual ao sugerido' : (delta > 0 ? '+' : '') + delta + '% vs. sugerido · verba do solicitante ' + brl(atual.verba)) : 'informe o valor para comparar',
+        deltaStyle: { fontSize: '11.5px', fontWeight: 700, color: !cacheNum ? '#A19FB2' : Math.abs(delta) <= 10 ? '#3D6B18' : '#8A6A00' },
+        frases: [
+          { label: 'Inclui exclusividade', texto: 'Valor considera a exclusividade de segmento informada no briefing.' },
+          { label: 'Inclui diária', texto: 'Valor inclui a diária de gravação prevista.' },
+          { label: 'Sem impulsionamento', texto: 'Valor não contempla impulsionamento; mídia paga precisa ser negociada à parte.' }
+        ].map(f => ({
+          label: f.label,
+          onClick: () => this.setResp(atual.id, 'parecer', (r.parecer ? r.parecer + ' ' : '') + f.texto)
+        })),
+        dica: cacheNum ? 'Enter envia e abre a próxima' : 'Informe o cachê para enviar',
+        enviarStyle: { height: '44px', padding: '0 22px', borderRadius: '999px', border: 'none', cursor: cacheNum ? 'pointer' : 'not-allowed', background: cacheNum ? '#C7168C' : '#EAE8F1', color: cacheNum ? '#FFFFFF' : '#A19FB2', fontFamily: 'Outfit, sans-serif', fontSize: '14px', fontWeight: 700 },
+        onEnviar: enviar,
+        onIndisponivel: enviar,
+        onDevolver: enviar,
+        resumo: [
+          { label: 'Verba do solicitante', value: brl(atual.verba) },
+          { label: 'Sugerido pela base', value: brl(atual.sugerido) },
+          { label: 'Entregas', value: atual.escopo[1][1] },
+          { label: 'Tipo de projeto', value: atual.contexto[3][1] }
+        ],
+        secoes: [
+          { id: 'escopo', titulo: 'Escopo da entrega', nota: 'o que foi pedido', itens: atual.escopo },
+          { id: 'contexto', titulo: 'Contexto do projeto', nota: 'briefing do solicitante', itens: atual.contexto },
+          { id: 'producao', titulo: 'Produção e captação', nota: 'esforço do talento', itens: atual.producao },
+          { id: 'distribuicao', titulo: 'Distribuição e exclusividade', nota: 'impacta o valor', itens: atual.distribuicao }
+        ].map(s => ({
+          titulo: s.titulo, nota: s.nota,
+          open: !!st.secOpen[s.id],
+          chevronStyle: { fontSize: '15px', lineHeight: '9px', color: '#A19FB2', transform: st.secOpen[s.id] ? 'rotate(180deg)' : 'none' },
+          onToggle: () => this.setState(x => ({ secOpen: Object.assign({}, x.secOpen, { [s.id]: !x.secOpen[s.id] }) })),
+          itens: s.itens.map((it, i2) => ({ label: it[0], value: it[1], wrap: { gridColumn: it[1].length > 70 ? 'span 2' : 'span 1' } }))
+        })),
+        historico: atual.historico.map(h => ({ projeto: h[0], data: h[1], status: h[2], cache: h[3] })),
+        media: atual.historico.filter(h => h[3] !== '—').length
+          ? brl(atual.historico.filter(h => h[3] !== '—').reduce((a, h) => a + num(h[3].replace('R$ ', '')), 0) / atual.historico.filter(h => h[3] !== '—').length)
+          : '—',
+        contato: atual.contato.map(c => ({ label: c[0], value: c[1] }))
+      } : {}
+    };
+  }
+}
+</script>
+</body>
+</html>

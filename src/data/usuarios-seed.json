@@ -1,0 +1,74 @@
+[
+  {
+    "email": "nubia.andrade@g.globo",
+    "nome": "Nubia Andrade",
+    "cargo": "Dev",
+    "equipe": "Planejamento & Portfólio",
+    "perfis": ["Proprietário"],
+    "estado": "ativo",
+    "etiqueta": "Você (Proprietário)"
+  },
+  {
+    "email": "ricardo.alencar@globo.com",
+    "nome": "Ricardo Alencar",
+    "cargo": "Head de negócios com talentos",
+    "equipe": "Territórios",
+    "perfis": ["Proprietário"],
+    "estado": "ativo",
+    "etiqueta": "Proprietário"
+  },
+  {
+    "email": "mariana.vasques@globo.com",
+    "nome": "Mariana Vasques",
+    "cargo": "Coordenadora de projetos comerciais",
+    "equipe": "Variedades",
+    "perfis": ["Solicitante"],
+    "estado": "ativo",
+    "etiqueta": "Solicitante"
+  },
+  {
+    "email": "thiago.bastos@globo.com",
+    "nome": "Thiago Bastos",
+    "cargo": "Analista ViU",
+    "equipe": "Entretenimento Digital",
+    "perfis": ["Aprovador ViU"],
+    "estado": "ativo",
+    "etiqueta": "Aprovador ViU"
+  },
+  {
+    "email": "rafael.prado@globo.com",
+    "nome": "Rafael Prado",
+    "cargo": "Analista de elenco",
+    "equipe": "Dramaturgia",
+    "perfis": ["Aprovador Gestão de Elenco"],
+    "estado": "ativo",
+    "etiqueta": "Aprovador Elenco"
+  },
+  {
+    "email": "camile.nogueira@globo.com",
+    "nome": "Camile Nogueira",
+    "cargo": "Gerente ViU",
+    "equipe": "Entretenimento Digital",
+    "perfis": ["Gerente ViU", "Aprovador ViU"],
+    "estado": "ativo",
+    "etiqueta": "Gerente ViU"
+  },
+  {
+    "email": "fernanda.aguiar@globo.com",
+    "nome": "Fernanda Aguiar",
+    "cargo": "Gerente de Gestão de Elenco",
+    "equipe": "Dramaturgia",
+    "perfis": ["Gerente Gestão de Elenco"],
+    "estado": "ativo",
+    "etiqueta": "Gerente Elenco"
+  },
+  {
+    "email": "juliana.prado@globo.com",
+    "nome": "Juliana Prado",
+    "cargo": "Produtora regional",
+    "equipe": "Regionais",
+    "perfis": ["Solicitante"],
+    "estado": "suspenso",
+    "etiqueta": "Acesso suspenso"
+  }
+]

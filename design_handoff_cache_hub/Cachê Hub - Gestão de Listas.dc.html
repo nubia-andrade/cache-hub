@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  a:hover { color: #FF1BA0; }
+  input, select, button { font-family: inherit; }
+  input:focus { outline: 2px solid #FF1BA0; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Gestão de listas · Proprietário</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Todos os campos de lista do Hub, num só lugar</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Itens em uso são <strong>inativados</strong>, nunca apagados — somem dos seletores novos e continuam legíveis no histórico. O upload em massa passa por conferência antes de aplicar.</p>
+  </div>
+
+  <div id="18a" style="width: 1340px; height: 800px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); display: grid; grid-template-columns: 246px 1fr 330px; grid-template-rows: minmax(0, 1fr)">
+
+    <div style="background: #F7F6FA; border-right: 1px solid #E7E6EE; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0">
+      <div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: 700; color: #12111A; padding: 0 8px 12px; flex-shrink: 0">Gestão de listas</div>
+      <sc-for list="{{ listasMenu }}" as="l" hint-placeholder-count="8">
+        <button onClick="{{ l.onClick }}" style="{{ l.style }}">
+          <span style="flex: 1; text-align: left">{{ l.label }}</span>
+          <span style="color: #A19FB2; font-weight: 500; font-size: 11.5px">{{ l.count }}</span>
+        </button>
+      </sc-for>
+      <div style="margin-top: 14px; padding: 0 8px; font-size: 11px; line-height: 1.5; color: #85839A">Só o Proprietário edita — os campos ficam disponíveis como seleção no formulário e nas outras telas.</div>
+    </div>
+
+    <div style="padding: 24px 28px; overflow: auto; border-right: 1px solid #E7E6EE; min-height: 0">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 4px">
+        <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 600; color: #12111A">{{ listaAtualLabel }}</div>
+        <div style="display: flex; align-items: center; gap: 7px">
+          <div style="font-size: 11.5px; color: #85839A">Ordem</div>
+          <select value="{{ ordem }}" onChange="{{ onOrdem }}" style="height: 30px; border: 1px solid #DCDAE6; border-radius: 7px; padding: 0 8px; font-size: 12px; color: #12111A; background: #FFFFFF">
+            <option value="Alfabética">Alfabética</option>
+            <option value="Manual">Manual (cadastro)</option>
+            <option value="Mais usados">Mais usados</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #85839A; margin-bottom: 14px">{{ contagemAtual }}</div>
+
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px">
+        <input value="{{ busca }}" onChange="{{ onBusca }}" placeholder="Buscar nesta lista…" style="flex: 1; height: 36px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 13px; font-size: 12.5px; color: #12111A" />
+        <button onClick="{{ onToggleInativos }}" style="{{ verInativosStyle }}">{{ verInativosLabel }}</button>
+      </div>
+
+      <sc-if value="{{ ehMarcas }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="border: 1px solid #E7E6EE; border-radius: 11px; padding: 13px 14px; display: flex; flex-direction: column; gap: 10px; background: #FBFAFD">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div style="font-size: 12px; font-weight: 700; color: #12111A">Cadastrar marca</div>
+              <div style="font-size: 11px; color: #85839A">o anunciante é criado junto se ainda não existir</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 9px">
+              <input value="{{ novaMarca.anunciante }}" onChange="{{ novaMarca.onAnunciante }}" placeholder="Anunciante" list="anunciantes-existentes" style="height: 36px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 12.5px; color: #12111A" />
+              <datalist id="anunciantes-existentes">
+                <sc-for list="{{ anunciantesDerivados }}" as="an" hint-placeholder-count="5">
+                  <option value="{{ an }}"></option>
+                </sc-for>
+              </datalist>
+              <input value="{{ novaMarca.marca }}" onChange="{{ novaMarca.onMarca }}" placeholder="Marca" style="height: 36px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 12.5px; color: #12111A" />
+              <select value="{{ novaMarca.setor }}" onChange="{{ novaMarca.onSetor }}" style="height: 36px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ setoresOptions }}" as="o" hint-placeholder-count="6">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ novaMarca.segmento }}" onChange="{{ novaMarca.onSegmento }}" style="height: 36px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ segmentosOptions }}" as="o" hint-placeholder-count="4">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <button onClick="{{ novaMarca.onAdicionar }}" style="{{ novaMarca.btnStyle }}">+ Adicionar marca</button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div style="font-size: 12px; color: #56546B">Filtrar por anunciante:</div>
+            <select value="{{ marcaAnunciante }}" onChange="{{ onMarcaAnunciante }}" style="height: 32px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ anunciantesOptions }}" as="an" hint-placeholder-count="5">
+                <option value="{{ an }}">{{ an }}</option>
+              </sc-for>
+            </select>
+          </div>
+
+          <div style="border: 1px solid #E7E6EE; border-radius: 11px; overflow: hidden">
+            <div style="display: grid; grid-template-columns: 1.15fr 1.05fr 0.95fr 0.95fr 66px 96px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6B6A7C">
+              <div style="padding: 9px 11px">Marca</div>
+              <div style="padding: 9px 11px">Anunciante</div>
+              <div style="padding: 9px 11px">Setor</div>
+              <div style="padding: 9px 11px">Segmento</div>
+              <div style="padding: 9px 6px">Uso</div>
+              <div style="padding: 9px 6px"></div>
+            </div>
+            <sc-for list="{{ marcasCadastro }}" as="m" hint-placeholder-count="6">
+              <div style="{{ m.rowStyle }}">
+                <div style="padding: 9px 11px; display: flex; align-items: center; gap: 6px">
+                  <div style="{{ m.nomeStyle }}">{{ m.marca }}</div>
+                  <sc-if value="{{ m.inativo }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #8A6A00; background: #FFF7E0; padding: 2px 6px; border-radius: 999px">inativa</span>
+                  </sc-if>
+                </div>
+                <div style="padding: 9px 11px; font-size: 12px; color: #56546B">{{ m.anunciante }}</div>
+                <div style="padding: 9px 11px; font-size: 11.5px; color: #56546B">{{ m.setor }}</div>
+                <div style="padding: 9px 11px; font-size: 11.5px; color: #56546B">{{ m.segmento }}</div>
+                <div style="padding: 9px 6px; font-size: 11px; color: #A19FB2">{{ m.uso }}</div>
+                <div style="padding: 9px 6px"><button onClick="{{ m.onToggle }}" style="{{ m.btnStyle }}">{{ m.btnLabel }}</button></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ ehListaSimples }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; gap: 8px">
+            <input value="{{ novoItem }}" onChange="{{ onNovoItem }}" placeholder="Novo item…" style="flex: 1; height: 38px; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 12px; font-size: 13px; color: #12111A" />
+            <button onClick="{{ onAdicionarItem }}" style="height: 38px; padding: 0 15px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 12.5px; font-weight: 700; cursor: pointer">+ Adicionar</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{ itensAtuais }}" as="it" hint-placeholder-count="6">
+              <div style="{{ it.wrapStyle }}">
+                <sc-if value="{{ it.editando }}" hint-placeholder-val="{{ false }}">
+                  <input value="{{ it.valorEdit }}" onChange="{{ it.onChangeEdit }}" style="flex: 1; height: 30px; border: 1px solid #C7168C; border-radius: 7px; padding: 0 9px; font-size: 13px; color: #12111A" />
+                  <button onClick="{{ it.onSalvar }}" style="border: none; background: transparent; color: #0F7B6C; font-size: 12px; font-weight: 700; cursor: pointer">Salvar</button>
+                </sc-if>
+                <sc-if value="{{ it.naoEditando }}" hint-placeholder-val="{{ true }}">
+                  <div style="{{ it.valorStyle }}">{{ it.valor }}</div>
+                  <sc-if value="{{ it.inativo }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #8A6A00; background: #FFF7E0; padding: 2px 6px; border-radius: 999px">inativo</span>
+                  </sc-if>
+                  <div style="font-size: 11px; color: #A19FB2">{{ it.uso }}</div>
+                  <button onClick="{{ it.onEditar }}" style="border: none; background: transparent; color: #6B6A7C; cursor: pointer">✎</button>
+                  <button onClick="{{ it.onToggle }}" style="{{ it.btnStyle }}">{{ it.btnLabel }}</button>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ semItens }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 30px; text-align: center; font-size: 13px; color: #85839A">Nenhum item encontrado nesta lista.</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; min-height: 0">
+      <div style="font-family: Outfit, sans-serif; font-size: 15px; font-weight: 700; color: #12111A">Upload em massa</div>
+      <div style="font-size: 12px; line-height: 1.5; color: #56546B">{{ uploadDescricao }}</div>
+
+      <sc-if value="{{ semPreview }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="border: 1.5px dashed #CFCDDD; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; background: #FBFAFD">
+            <div style="font-size: 20px">📄</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: #12111A">Arraste a planilha ou clique</div>
+            <div style="font-size: 11px; color: #85839A">{{ uploadColunas }}</div>
+            <button onClick="{{ onSimularUpload }}" style="margin-top: 4px; height: 30px; padding: 0 13px; border-radius: 999px; border: none; background: #8B2FD6; color: #FFFFFF; font-size: 11.5px; font-weight: 700; cursor: pointer">Selecionar arquivo</button>
+          </div>
+          <button onClick="{{ onBaixarModelo }}" style="height: 32px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 12px; font-weight: 600; cursor: pointer">⬇ Baixar modelo de planilha</button>
+          <div style="display: flex; gap: 8px">
+            <button style="{{ modoSubstituirStyle }}" onClick="{{ onModoSubstituir }}">Substituir lista</button>
+            <button style="{{ modoAcrescentarStyle }}" onClick="{{ onModoAcrescentar }}">Acrescentar</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ temPreview }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px solid #DCD7EC; background: #F7F5FD; border-radius: 12px; padding: 13px 14px; display: flex; flex-direction: column; gap: 11px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div style="font-size: 12.5px; font-weight: 700; color: #12111A">Conferir antes de aplicar</div>
+            <div style="flex: 1"></div>
+            <div style="font-family: ui-monospace, monospace; font-size: 10.5px; color: #8B2FD6">{{ previewArquivo }}</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{ previewResumo }}" as="p" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 9px; background: #FFFFFF; border-radius: 8px; padding: 8px 10px">
+                <div style="{{ p.dotStyle }}"></div>
+                <div style="flex: 1; font-size: 12px; color: #2C2B3A">{{ p.label }}</div>
+                <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 700; color: #12111A">{{ p.valor }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ temErrosPreview }}" hint-placeholder-val="{{ true }}">
+            <div style="background: #FDF1F1; border: 1px solid #F3B4B4; border-radius: 8px; padding: 9px 11px; display: flex; flex-direction: column; gap: 4px">
+              <sc-for list="{{ previewErros }}" as="er" hint-placeholder-count="2">
+                <div style="font-size: 11.5px; color: #B3121B">{{ er }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="font-size: 11px; color: #56546B">Modo: <strong>{{ modoLabel }}</strong>. As linhas com erro são ignoradas.</div>
+          <div style="display: flex; gap: 8px">
+            <button onClick="{{ onCancelarUpload }}" style="flex: 1; height: 34px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 12px; font-weight: 600; cursor: pointer">Cancelar</button>
+            <button onClick="{{ onAplicarUpload }}" style="flex: 1; height: 34px; border-radius: 999px; border: none; background: #8B2FD6; color: #FFFFFF; font-size: 12px; font-weight: 700; cursor: pointer">Aplicar importação</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="border-top: 1px solid #F0EFF5; padding-top: 13px; display: flex; flex-direction: column; gap: 9px">
+        <div style="display: flex; align-items: center; gap: 7px">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #85839A">Alterações recentes</div>
+          <div style="font-size: 10.5px; color: #A19FB2">vão para o log de auditoria</div>
+        </div>
+        <sc-for list="{{ log }}" as="lg" hint-placeholder-count="3">
+          <div style="display: flex; gap: 9px; align-items: flex-start">
+            <div style="{{ lg.dotStyle }}"></div>
+            <div style="display: flex; flex-direction: column; gap: 1px; flex: 1">
+              <div style="font-size: 11.5px; color: #2C2B3A; line-height: 1.4">{{ lg.texto }}</div>
+              <div style="font-size: 10px; color: #A19FB2">{{ lg.quando }} · {{ lg.quem }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ semLog }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size: 11.5px; color: #A19FB2">Nenhuma alteração nesta sessão.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1450}}">
+const MARCAS_CADASTRO = [
+  { marca: 'Westwing Brasil', anunciante: 'Westwing', setor: 'Casa e decoração', segmento: 'Móveis planejados' },
+  { marca: 'Verão Lager', anunciante: 'Ambev', setor: 'Bebidas alcoólicas', segmento: 'Cerveja premium' },
+  { marca: 'Skol Beats', anunciante: 'Ambev', setor: 'Bebidas alcoólicas', segmento: 'Cerveja premium' },
+  { marca: 'Nutrilar', anunciante: 'Nutrilar', setor: 'Alimentos', segmento: 'Skincare' },
+  { marca: 'Banco Vértice', anunciante: 'Banco Vértice', setor: 'Financeiro', segmento: 'Cartão de crédito' },
+  { marca: 'Dermáurea', anunciante: 'Dermáurea', setor: 'Beleza', segmento: 'Skincare' }
+];
+const LISTAS_DEF = [
+  { id: 'marcas', label: 'Marcas e anunciantes', itens: [] },
+  { id: 'setoresCliente', label: 'Setor do cliente', itens: ['Bebidas alcoólicas', 'Beleza', 'Financeiro', 'Casa e decoração', 'Alimentos', 'Bets'] },
+  { id: 'segmentosMarca', label: 'Segmento da marca', itens: ['Cerveja premium', 'Skincare', 'Cartão de crédito', 'Móveis planejados'] },
+  { id: 'programas', label: 'Programa / Projeto', itens: ['Mais Você', 'Big Brother Brasil', 'Altas Horas', 'Encontro', 'gshow'] },
+  { id: 'canaisTV', label: 'Canais TV', itens: ['Rede Globo', 'GNT', 'Multishow', 'Bandeirantes'] },
+  { id: 'canaisDigital', label: 'Canais Digital', itens: ['Instagram', 'TikTok', 'YouTube', 'X (Twitter)', 'Facebook', 'Site/Blog'] },
+  { id: 'verticais', label: 'Verticais', itens: ['Multishow', 'Globo', 'GNT', 'gshow', 'Receitas'] },
+  { id: 'formatos', label: 'Formatos', itens: ['Ação de Conteúdo', 'Chamada', 'Conteúdo no Break', 'Comercial', 'Insert', 'Vinheta', 'Social'] },
+  { id: 'entregasSociais', label: 'Entregas sociais (unitárias)', itens: ['Post Carrossel', 'Stories', 'Reels', 'Vídeo TikTok', 'Tweet (texto/foto)', 'Vídeo YouTube'] },
+  { id: 'direcaoRedacao', label: 'Direção e redação', itens: ['Produtora', 'Globo'] },
+  { id: 'responsaveis', label: 'Responsáveis (roteiro, make, figurino, logística)', itens: ['Creator / Talento', 'ViU', 'Linear'] },
+  { id: 'responsabilidadeTV', label: 'Responsabilidade TV (make e figurino)', itens: ['Responsabilidade Globo', 'Talento'] },
+  { id: 'localRepost', label: 'Local Repost', itens: ['Perfis Globo', 'Perfis do Anunciante', 'Ambos'] },
+  { id: 'localImpulsionamento', label: 'Local Impulsionamento', itens: ['Perfis Globo', 'Perfis do Anunciante', 'Redes Creator / Talento', 'Ambos'] },
+  { id: 'ufs', label: 'UF de gravação', itens: ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'] },
+  { id: 'categoriasTalento', label: 'Categorias de talento', itens: ['Talento Globo', 'Agenciado', 'Influenciador', 'Creator'] },
+  { id: 'tiposProjeto', label: 'Tipo de projeto', itens: ['Pacote', 'Patrocínio', 'Sob demanda'] },
+  { id: 'tamanhos', label: 'Tamanho de audiência', itens: ['Nano', 'Micro', 'Médio', 'Macro', 'Mega', 'Super', 'Celebridade'] },
+  { id: 'equipes', label: 'Equipes', itens: ['Dramaturgia', 'Realities', 'Variedades', 'Esportes', 'Notícias Digital', 'Notícias Linear', 'Territórios', 'Regionais', 'Entretenimento Digital'] },
+  { id: 'restricoesTipo', label: 'Tipos de restrição', itens: ['Segmento de cliente', 'Patrocinador concorrente'] }
+];
+// uso simulado: quantas solicitações referenciam cada valor
+function usoDe(listaId, valor) {
+  let h = 0;
+  const s = listaId + '|' + valor;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 97;
+  return h % 4 === 0 ? 0 : h;
+}
+function agora() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getDate()) + '/' + p(d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+class Component extends DCLogic {
+  state = {
+    atual: 'marcas',
+    listas: LISTAS_DEF.reduce((a, l) => { a[l.id] = l.itens.slice(); return a; }, {}),
+    marcasCadastro: MARCAS_CADASTRO.slice(),
+    inativos: {},
+    marcaAnunciante: 'Todos os anunciantes',
+    novaMarca: { anunciante: '', marca: '', setor: '', segmento: '' },
+    novoItem: '', editIdx: null, editValor: '', modo: 'acrescentar',
+    busca: '', ordem: 'Alfabética', verInativos: false,
+    preview: null, log: []
+  };
+
+  registrar(texto) {
+    this.setState(s => ({ log: [{ texto: texto, quando: agora(), quem: 'Ricardo Alencar' }].concat(s.log).slice(0, 6) }));
+  }
+  estaInativo(listaId, valor) {
+    return (this.state.inativos[listaId] || []).indexOf(valor) >= 0;
+  }
+  alternarAtivo(listaId, valor) {
+    const inativo = this.estaInativo(listaId, valor);
+    this.setState(s => {
+      const atuais = (s.inativos[listaId] || []).slice();
+      const next = inativo ? atuais.filter(v => v !== valor) : atuais.concat([valor]);
+      return { inativos: Object.assign({}, s.inativos, { [listaId]: next }) };
+    });
+    this.registrar((inativo ? 'Reativou' : 'Inativou') + ' "' + valor + '"');
+  }
+
+  renderVals() {
+    const st = this.state;
+    const atualDef = LISTAS_DEF.filter(l => l.id === st.atual)[0];
+    const q = st.busca.trim().toLowerCase();
+    const ehMarcas = st.atual === 'marcas';
+
+    const ordenar = (arr, chave) => {
+      const a = arr.slice();
+      if (st.ordem === 'Alfabética') a.sort((x, y) => String(chave(x)).localeCompare(String(chave(y)), 'pt-BR'));
+      if (st.ordem === 'Mais usados') a.sort((x, y) => usoDe(st.atual, chave(y)) - usoDe(st.atual, chave(x)));
+      return a;
+    };
+
+    let itens = (st.listas[st.atual] || []).filter(v => (st.verInativos || !this.estaInativo(st.atual, v)) && (!q || v.toLowerCase().indexOf(q) >= 0));
+    itens = ordenar(itens, v => v);
+
+    let marcas = st.marcasCadastro.filter(m => {
+      if (!st.verInativos && this.estaInativo('marcas', m.marca)) return false;
+      if (st.marcaAnunciante !== 'Todos os anunciantes' && m.anunciante !== st.marcaAnunciante) return false;
+      if (q && (m.marca + ' ' + m.anunciante + ' ' + m.setor + ' ' + m.segmento).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+    marcas = ordenar(marcas, m => m.marca);
+
+    const marcaOk = !!(st.novaMarca.marca.trim() && st.novaMarca.anunciante.trim() && st.novaMarca.setor && st.novaMarca.segmento);
+    const anunciantesDerivados = st.marcasCadastro.map(m => m.anunciante).filter((v, i, a) => a.indexOf(v) === i).sort();
+    const inativosDaLista = (st.inativos[st.atual] || []).length;
+
+    const btnDe = (listaId, valor) => {
+      const inativo = this.estaInativo(listaId, valor);
+      const uso = usoDe(listaId, valor);
+      return {
+        inativo: inativo,
+        uso: uso ? uso + ' usos' : 'sem uso',
+        btnLabel: inativo ? 'Reativar' : (uso ? 'Inativar' : 'Excluir'),
+        btnStyle: { height: '26px', padding: '0 9px', borderRadius: '999px', border: '1px solid ' + (inativo ? '#0F7B6C' : uso ? '#DCDAE6' : '#F3B4B4'), background: '#FFFFFF', color: inativo ? '#0F7B6C' : uso ? '#56546B' : '#B3121B', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+      };
+    };
+
+    return {
+      listasMenu: LISTAS_DEF.map(l => ({
+        label: l.label,
+        count: String(l.id === 'marcas' ? st.marcasCadastro.length : (st.listas[l.id] || []).length),
+        style: { display: 'flex', alignItems: 'center', gap: '6px', minHeight: '34px', flexShrink: 0, padding: '0 10px', borderRadius: '9px', border: 'none', background: st.atual === l.id ? '#FFFFFF' : 'transparent', color: st.atual === l.id ? '#C7168C' : '#56546B', fontWeight: st.atual === l.id ? 700 : 500, fontSize: '12.5px', cursor: 'pointer', textAlign: 'left', boxShadow: st.atual === l.id ? '0 1px 3px rgba(18,17,26,0.08)' : 'none' },
+        onClick: () => this.setState({ atual: l.id, editIdx: null, novoItem: '', busca: '', preview: null })
+      })),
+      listaAtualLabel: atualDef ? atualDef.label : '',
+      ehMarcas: ehMarcas, ehListaSimples: !ehMarcas,
+      contagemAtual: (ehMarcas ? marcas.length : itens.length) + ' item(ns) visível(is)' + (inativosDaLista ? ' · ' + inativosDaLista + ' inativo(s)' : ''),
+      busca: st.busca, onBusca: e => this.setState({ busca: e.target.value }),
+      ordem: st.ordem, onOrdem: e => this.setState({ ordem: e.target.value }),
+      verInativosLabel: st.verInativos ? 'Ocultar inativos' : 'Mostrar inativos',
+      verInativosStyle: { height: '34px', padding: '0 13px', borderRadius: '999px', border: '1px solid ' + (st.verInativos ? '#8A6A00' : '#DCDAE6'), background: st.verInativos ? '#FFF7E0' : '#FFFFFF', color: st.verInativos ? '#8A6A00' : '#56546B', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' },
+      onToggleInativos: () => this.setState({ verInativos: !st.verInativos }),
+
+      marcaAnunciante: st.marcaAnunciante,
+      anunciantesDerivados: anunciantesDerivados,
+      anunciantesOptions: ['Todos os anunciantes'].concat(anunciantesDerivados),
+      setoresOptions: [''].concat(st.listas.setoresCliente),
+      segmentosOptions: [''].concat(st.listas.segmentosMarca),
+      onMarcaAnunciante: e => this.setState({ marcaAnunciante: e.target.value }),
+      novaMarca: {
+        anunciante: st.novaMarca.anunciante, marca: st.novaMarca.marca, setor: st.novaMarca.setor, segmento: st.novaMarca.segmento,
+        onAnunciante: e => this.setState(s => ({ novaMarca: Object.assign({}, s.novaMarca, { anunciante: e.target.value }) })),
+        onMarca: e => this.setState(s => ({ novaMarca: Object.assign({}, s.novaMarca, { marca: e.target.value }) })),
+        onSetor: e => this.setState(s => ({ novaMarca: Object.assign({}, s.novaMarca, { setor: e.target.value }) })),
+        onSegmento: e => this.setState(s => ({ novaMarca: Object.assign({}, s.novaMarca, { segmento: e.target.value }) })),
+        btnStyle: { alignSelf: 'flex-start', height: '34px', padding: '0 14px', borderRadius: '999px', border: 'none', cursor: marcaOk ? 'pointer' : 'not-allowed', background: marcaOk ? '#C7168C' : '#EAE8F1', color: marcaOk ? '#FFFFFF' : '#A19FB2', fontSize: '12.5px', fontWeight: 700 },
+        onAdicionar: () => {
+          if (!marcaOk) return;
+          const nm = st.novaMarca;
+          this.setState(s => ({
+            marcasCadastro: s.marcasCadastro.concat([{ marca: nm.marca.trim(), anunciante: nm.anunciante.trim(), setor: nm.setor, segmento: nm.segmento }]),
+            novaMarca: { anunciante: '', marca: '', setor: '', segmento: '' }
+          }));
+          this.registrar('Cadastrou a marca "' + nm.marca.trim() + '" (' + nm.anunciante.trim() + ')');
+        }
+      },
+      marcasCadastro: marcas.map((m, i) => {
+        const b = btnDe('marcas', m.marca);
+        return {
+          marca: m.marca, anunciante: m.anunciante, setor: m.setor || '—', segmento: m.segmento || '—',
+          inativo: b.inativo, uso: b.uso, btnLabel: b.btnLabel, btnStyle: b.btnStyle,
+          nomeStyle: { fontSize: '12.5px', fontWeight: 600, color: b.inativo ? '#A19FB2' : '#12111A', textDecoration: b.inativo ? 'line-through' : 'none' },
+          rowStyle: { display: 'grid', gridTemplateColumns: '1.15fr 1.05fr 0.95fr 0.95fr 66px 96px', alignItems: 'center', borderBottom: '1px solid #F0EFF5', background: b.inativo ? '#FDFCF7' : (i % 2 ? '#FDFDFE' : '#FFFFFF') },
+          onToggle: () => {
+            if (!b.inativo && b.uso === 'sem uso') {
+              this.setState(s => ({ marcasCadastro: s.marcasCadastro.filter(x => !(x.marca === m.marca && x.anunciante === m.anunciante)) }));
+              this.registrar('Excluiu a marca "' + m.marca + '" (sem uso)');
+            } else {
+              this.alternarAtivo('marcas', m.marca);
+            }
+          }
+        };
+      }),
+
+      itensAtuais: itens.map((v, i) => {
+        const b = btnDe(st.atual, v);
+        const idxReal = (st.listas[st.atual] || []).indexOf(v);
+        return {
+          valor: v, inativo: b.inativo, uso: b.uso, btnLabel: b.btnLabel, btnStyle: b.btnStyle,
+          editando: st.editIdx === idxReal, naoEditando: st.editIdx !== idxReal, valorEdit: st.editIdx === idxReal ? st.editValor : v,
+          valorStyle: { flex: 1, fontSize: '13px', color: b.inativo ? '#A19FB2' : '#12111A', textDecoration: b.inativo ? 'line-through' : 'none' },
+          wrapStyle: { display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #E7E6EE', borderRadius: '9px', padding: '7px 10px', background: b.inativo ? '#FDFCF7' : '#FFFFFF' },
+          onChangeEdit: e => this.setState({ editValor: e.target.value }),
+          onEditar: () => this.setState({ editIdx: idxReal, editValor: v }),
+          onSalvar: () => {
+            const val = st.editValor.trim();
+            this.setState(s => {
+              const arr = (s.listas[s.atual] || []).slice();
+              arr[idxReal] = val || arr[idxReal];
+              return { listas: Object.assign({}, s.listas, { [s.atual]: arr }), editIdx: null };
+            });
+            if (val && val !== v) this.registrar('Renomeou "' + v + '" para "' + val + '"');
+          },
+          onToggle: () => {
+            if (!b.inativo && b.uso === 'sem uso') {
+              this.setState(s => ({ listas: Object.assign({}, s.listas, { [s.atual]: (s.listas[s.atual] || []).filter(x => x !== v) }) }));
+              this.registrar('Excluiu "' + v + '" (sem uso)');
+            } else {
+              this.alternarAtivo(st.atual, v);
+            }
+          }
+        };
+      }),
+      semItens: (ehMarcas ? marcas.length : itens.length) === 0,
+      novoItem: st.novoItem, onNovoItem: e => this.setState({ novoItem: e.target.value }),
+      onAdicionarItem: () => {
+        const val = st.novoItem.trim();
+        if (!val) return;
+        this.setState(s => ({ listas: Object.assign({}, s.listas, { [s.atual]: (s.listas[s.atual] || []).concat([val]) }), novoItem: '' }));
+        this.registrar('Incluiu "' + val + '" em ' + (atualDef ? atualDef.label : ''));
+      },
+
+      uploadDescricao: ehMarcas
+        ? 'Importe marcas em massa — o Hub usa esse cadastro para preencher setor e segmento automaticamente no formulário.'
+        : 'Importe itens desta lista a partir de uma planilha com uma coluna de valores.',
+      uploadColunas: ehMarcas ? '4 colunas: anunciante · marca · setor · segmento' : '1 coluna: valor',
+      modoSubstituirStyle: { flex: 1, height: '32px', borderRadius: '999px', border: '1px solid ' + (st.modo === 'substituir' ? '#8B2FD6' : '#DCDAE6'), background: st.modo === 'substituir' ? '#F4F2FC' : '#FFFFFF', color: st.modo === 'substituir' ? '#8B2FD6' : '#56546B', fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
+      modoAcrescentarStyle: { flex: 1, height: '32px', borderRadius: '999px', border: '1px solid ' + (st.modo === 'acrescentar' ? '#8B2FD6' : '#DCDAE6'), background: st.modo === 'acrescentar' ? '#F4F2FC' : '#FFFFFF', color: st.modo === 'acrescentar' ? '#8B2FD6' : '#56546B', fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
+      onModoSubstituir: () => this.setState({ modo: 'substituir' }),
+      onModoAcrescentar: () => this.setState({ modo: 'acrescentar' }),
+      modoLabel: st.modo === 'substituir' ? 'substituir a lista inteira' : 'acrescentar aos itens atuais',
+      onBaixarModelo: () => this.registrar('Baixou o modelo de planilha de ' + (atualDef ? atualDef.label : '')),
+      semPreview: !st.preview, temPreview: !!st.preview,
+      previewArquivo: st.preview ? st.preview.arquivo : '',
+      previewResumo: st.preview ? [
+        { label: 'Itens novos', valor: String(st.preview.novos), cor: '#3D6B18', bg: '#F2FBE8' },
+        { label: 'Itens atualizados', valor: String(st.preview.atualizados), cor: '#8A6A00', bg: '#FFF7E0' },
+        { label: 'Linhas com erro', valor: String(st.preview.erros.length), cor: '#B3121B', bg: '#FDF1F1' }
+      ].map(p => ({ label: p.label, valor: p.valor, dotStyle: { width: '9px', height: '9px', borderRadius: '999px', background: p.cor } })) : [],
+      temErrosPreview: !!(st.preview && st.preview.erros.length),
+      previewErros: st.preview ? st.preview.erros : [],
+      onSimularUpload: () => this.setState({
+        preview: {
+          arquivo: ehMarcas ? 'marcas-2026.xlsx' : 'lista-' + st.atual + '.xlsx',
+          novos: ehMarcas ? 6 : 4, atualizados: 2,
+          erros: ehMarcas
+            ? ['Linha 4: anunciante em branco', 'Linha 9: setor "Bebida alcólica" não existe na lista']
+            : ['Linha 7: valor duplicado']
+        }
+      }),
+      onCancelarUpload: () => this.setState({ preview: null }),
+      onAplicarUpload: () => {
+        const p = st.preview;
+        this.setState({ preview: null });
+        this.registrar('Importou ' + p.arquivo + ' — ' + p.novos + ' novos, ' + p.atualizados + ' atualizados, ' + p.erros.length + ' ignorados');
+      },
+
+      log: st.log.map(l => ({
+        texto: l.texto, quando: l.quando, quem: l.quem,
+        dotStyle: { width: '7px', height: '7px', flexShrink: 0, borderRadius: '999px', background: '#C7168C', marginTop: '5px' }
+      })),
+      semLog: st.log.length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

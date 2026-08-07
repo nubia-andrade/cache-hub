@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  a:hover { color: #FF1BA0; }
+  input, select, textarea, button { font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #FF1BA0; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 1000px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 12 · Detalhe do projeto</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">A página que junta todas as consultas de um projeto</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Três práticas guiam <a href="#12a">12a</a>: <strong>uma linha do tempo única</strong> em vez de N telas soltas, <strong>status agregado do projeto</strong> (não só de cada talento) e o caminho de <strong>"plugar" uma nova consulta</strong> sempre visível, herdando o cabeçalho já preenchido — o cenário que você descreveu na home.</p>
+  </div>
+
+  <div id="12a" style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">12a</div>
+      <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Visão do projeto: talentos, timeline e adicionar</div>
+      <div style="font-size: 13px; color: #6B6A7C">interativo — clique nos talentos e nos eventos da timeline</div>
+    </div>
+
+    <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+      <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+        <div style="display: flex; align-items: center; gap: 13px">
+          <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+          <div style="display: flex; flex-direction: column">
+            <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+            <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+            <div style="{{ n.style }}">{{ n.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="width: 34px; height: 34px; border-radius: 999px; background: #12111A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">MV</div>
+        </div>
+      </div>
+
+      <div style="padding: 20px 26px 0; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #85839A">
+        <div style="cursor: pointer">Início</div><div>›</div><div style="cursor: pointer">Projetos</div><div>›</div><div style="color: #12111A; font-weight: 600">Westwing · Mais Você</div>
+      </div>
+
+      <div style="padding: 14px 26px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 22px">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div style="width: 52px; height: 52px; border-radius: 13px; background: #F4F2FC; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 18px; font-weight: 700; color: #2020EE">W</div>
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div style="font-family: Outfit, sans-serif; font-size: 26px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Westwing · Mais Você</div>
+              <div style="{{ statusProjetoStyle }}">{{ statusProjeto }}</div>
+            </div>
+            <div style="font-size: 13px; color: #6B6A7C">Anunciante Westwing Brasil · Segmento Casa e decoração · Data 07/08/2026 · Aberto por Mariana Vasques</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <button style="height: 38px; padding: 0 15px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A">Editar cabeçalho</button>
+          <button onClick="{{ onAdicionar }}" style="height: 38px; padding: 0 17px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">+ Adicionar talento a este projeto</button>
+        </div>
+      </div>
+
+      <div style="margin: 18px 26px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+          <div style="{{ k.style }}">
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+            <div style="font-family: Outfit, sans-serif; font-size: 22px; font-weight: 700; color: #12111A">{{ k.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin: 20px 26px 26px; display: grid; grid-template-columns: 470px 1fr; gap: 16px; align-items: start">
+
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+            <div style="background: #F7F6FA; padding: 11px 14px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between">
+              <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Talentos do projeto</div>
+              <div style="font-size: 11.5px; color: #85839A">{{ totalTalentos }}</div>
+            </div>
+            <sc-for list="{{ talentos }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onSelect }}" style="{{ t.wrapStyle }}">
+                <div style="display: flex; align-items: center; gap: 11px">
+                  <div style="{{ t.avatarStyle }}">{{ t.initials }}</div>
+                  <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1">
+                    <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600; color: #12111A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.nome }}</div>
+                    <div style="font-size: 11.5px; color: #85839A">{{ t.area }} · {{ t.protocolo }}</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+                    <div style="{{ t.statusStyle }}">{{ t.status }}</div>
+                    <div style="font-size: 11.5px; font-weight: 700; color: #12111A">{{ t.valor }}</div>
+                  </div>
+                </div>
+              </button>
+            </sc-for>
+            <button onClick="{{ onAdicionar }}" style="width: 100%; box-sizing: border-box; border: none; background: #FBFAFD; padding: 12px 14px; display: flex; align-items: center; gap: 9px; cursor: pointer; color: #C7168C; font-size: 13px; font-weight: 700" style-hover="background: #FDF0F8">
+              <div style="width: 20px; height: 20px; border-radius: 999px; border: 1.5px dashed #C7168C; display: flex; align-items: center; justify-content: center; font-size: 12px">+</div>
+              Adicionar outro talento a este projeto
+            </button>
+          </div>
+
+          <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+            <div style="background: #F7F6FA; padding: 11px 14px; border-bottom: 1px solid #E7E6EE; font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Pessoas envolvidas</div>
+            <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+              <sc-for list="{{ pessoas }}" as="p" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div style="{{ p.avatarStyle }}">{{ p.initials }}</div>
+                  <div style="display: flex; flex-direction: column; gap: 1px">
+                    <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ p.nome }}</div>
+                    <div style="font-size: 11px; color: #85839A">{{ p.papel }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; padding: 11px 14px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between">
+            <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Linha do tempo do projeto</div>
+            <div style="display: flex; align-items: center; gap: 6px">
+              <sc-for list="{{ filtrosTimeline }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding: 18px 20px 22px; max-height: 700px; overflow: auto">
+            <div style="display: flex; flex-direction: column">
+              <sc-for list="{{ eventos }}" as="e" hint-placeholder-count="8">
+                <div style="display: flex; gap: 14px">
+                  <div style="display: flex; flex-direction: column; align-items: center; width: 14px; flex-shrink: 0">
+                    <div style="{{ e.dotStyle }}"></div>
+                    <div style="{{ e.lineStyle }}"></div>
+                  </div>
+                  <div style="{{ e.cardWrap }}">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <div style="{{ e.avatarStyle }}">{{ e.initials }}</div>
+                        <div style="font-size: 13px; font-weight: 700; color: #12111A">{{ e.titulo }}</div>
+                      </div>
+                      <div style="font-size: 11px; color: #A19FB2; white-space: nowrap">{{ e.quando }}</div>
+                    </div>
+                    <sc-if value="{{ e.temDetalhe }}" hint-placeholder-val="{{ false }}">
+                      <div style="{{ e.detalheStyle }}">{{ e.detalhe }}</div>
+                    </sc-if>
+                    <sc-if value="{{ e.temTag }}" hint-placeholder-val="{{ false }}">
+                      <div style="{{ e.tagStyle }}">{{ e.tag }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ modalAberto }}" hint-placeholder-val="{{ false }}">
+      <div style="position: fixed; inset: 0; background: rgba(18,17,26,0.55); display: flex; align-items: center; justify-content: center; z-index: 20">
+        <div style="width: 560px; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.35)">
+          <div style="background: #C7168C; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between">
+            <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 700; color: #FFFFFF">Adicionar talento — Westwing · Mais Você</div>
+            <button onClick="{{ fecharModal }}" style="width: 28px; height: 28px; border-radius: 999px; border: none; background: rgba(255,255,255,0.2); color: #FFFFFF; font-size: 14px; cursor: pointer">✕</button>
+          </div>
+          <div style="padding: 22px; display: flex; flex-direction: column; gap: 14px">
+            <div style="font-size: 13px; line-height: 1.55; color: #56546B">O cabeçalho comercial — marca, segmento, programa e data — já vem preenchido deste projeto. Você só busca ou cria o talento e define o escopo dele.</div>
+            <div style="background: #F4F2FC; border: 1px solid #DCD7EC; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px">
+              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #2020EE">Cabeçalho herdado</div>
+              <div style="font-size: 12.5px; color: #2C2B3A">Westwing Brasil · Casa e decoração · Mais Você · 07/08/2026</div>
+            </div>
+            <input placeholder="Buscar talento no banco…" style="width: 100%; box-sizing: border-box; height: 42px; border: 1px solid #DCDAE6; border-radius: 10px; padding: 0 13px; font-size: 13.5px; color: #12111A" />
+            <div style="display: flex; justify-content: flex-end; gap: 10px">
+              <button onClick="{{ fecharModal }}" style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13px; font-weight: 600; cursor: pointer">Cancelar</button>
+              <button style="height: 40px; padding: 0 18px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer">Continuar para escopo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1450}}">
+const AV = ['#C7168C', '#2020EE', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+const STATUS_COLOR = {
+  'Em análise': ['#8A6A00', '#FFF7E0'], 'Orçada': ['#0F7B6C', '#E6F6F2'], 'Aprovada': ['#3D6B18', '#F2FBE8'],
+  'Fechada': ['#12111A', '#EDECF2'], 'Recusada': ['#B3121B', '#FDF1F1'], 'Indisponível': ['#B3121B', '#FDF1F1']
+};
+
+class Component extends DCLogic {
+  state = {
+    filtroTL: 'tudo', selTalento: 't2', modal: false,
+    talentos: [
+      { id: 't1', nome: 'Manu Ferraz', area: 'ViU', protocolo: '#ORC-0431', status: 'Em análise', valor: 'R$ 110.000 (verba)' },
+      { id: 't2', nome: 'Bruno Tavares', area: 'ViU', protocolo: '#ORC-0419', status: 'Orçada', valor: 'R$ 125.000' },
+      { id: 't3', nome: 'Helena Barreto', area: 'Gestão de Elenco', protocolo: '#ORC-0402', status: 'Aprovada', valor: 'R$ 152.000' }
+    ]
+  };
+
+  renderVals() {
+    const st = this.state;
+    const eventosBase = [
+      { tipo: 'talento', quem: 'Mariana Vasques', titulo: 'Projeto criado', detalhe: 'Westwing · Mais Você aberto com segmento Casa e decoração.', quando: '02/08 09:14', tag: '' },
+      { tipo: 'talento', quem: 'Mariana Vasques', titulo: 'Helena Barreto incluída', detalhe: 'Talento Globo — roteado para Gestão de Elenco.', quando: '02/08 09:16', tag: 'Gestão de Elenco' },
+      { tipo: 'aprovacao', quem: 'Letícia Moura', titulo: 'Helena Barreto — orçamento enviado', detalhe: 'R$ 152.000, validade 30/09/2026. Considera exclusividade de 90 dias.', quando: '03/08 14:02', tag: 'Aprovada' },
+      { tipo: 'talento', quem: 'Mariana Vasques', titulo: 'Bruno Tavares incluído', detalhe: 'Influenciador — roteado para ViU.', quando: '04/08 10:30', tag: 'ViU' },
+      { tipo: 'aprovacao', quem: 'Thiago Bastos', titulo: 'Bruno Tavares — orçamento enviado', detalhe: 'R$ 125.000. Inclui exclusividade de segmento por 90 dias.', quando: '05/08 11:47', tag: 'Orçada' },
+      { tipo: 'talento', quem: 'Caio Bastos', titulo: 'Manu Ferraz incluída', detalhe: 'Influenciadora — roteado para ViU, projeto vinculado a este mesmo cabeçalho.', quando: '05/08 16:20', tag: 'ViU' },
+      { tipo: 'sistema', quem: 'Sistema', titulo: 'Alerta de restrição verificado', detalhe: 'Segmento do cliente Bebidas alcoólicas cruzado com a base de restrições — nenhum bloqueio para Bruno Tavares e Helena Barreto.', quando: '05/08 16:21', tag: '' },
+      { tipo: 'sistema', quem: 'Sistema', titulo: 'Manu Ferraz — conflito de restrição sinalizado', detalhe: 'Categoria de bebidas alcoólicas requer aprovação prévia da ViU.', quando: '05/08 16:22', tag: 'Atenção' }
+    ];
+    const eventosFiltrados = eventosBase.filter(e => st.filtroTL === 'tudo' || e.tipo === st.filtroTL);
+
+    const statusProjeto = st.talentos.every(t => t.status === 'Aprovada' || t.status === 'Fechada') ? 'Aprovado' : st.talentos.some(t => t.status === 'Em análise') ? 'Em andamento' : 'Parcialmente orçado';
+    const spc = statusProjeto === 'Aprovado' ? ['#3D6B18', '#F2FBE8'] : statusProjeto === 'Em andamento' ? ['#8A6A00', '#FFF7E0'] : ['#0F7B6C', '#E6F6F2'];
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Relatórios' }, { label: 'Usuários' }]
+        .map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: 500, color: '#56546B', cursor: 'pointer' } })),
+      statusProjeto: statusProjeto,
+      statusProjetoStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 11px', borderRadius: '999px', color: spc[0], background: spc[1] },
+      onAdicionar: () => this.setState({ modal: true }),
+      modalAberto: st.modal,
+      fecharModal: () => this.setState({ modal: false }),
+      kpis: [
+        { label: 'Talentos', value: String(st.talentos.length) },
+        { label: 'Orçado até aqui', value: 'R$ 277 mil' },
+        { label: 'Pendentes', value: String(st.talentos.filter(t => t.status === 'Em análise').length) },
+        { label: 'Áreas envolvidas', value: '2' },
+        { label: 'Dias em aberto', value: '3' }
+      ].map(k => ({ label: k.label, value: k.value, style: { display: 'flex', flexDirection: 'column', gap: '3px', padding: '13px 15px', borderRadius: '12px', background: '#F7F6FA' } })),
+      totalTalentos: st.talentos.length + ' talento(s)',
+      talentos: st.talentos.map((t, i) => {
+        const on = st.selTalento === t.id;
+        const sc = STATUS_COLOR[t.status] || ['#56546B', '#F2F0F8'];
+        return {
+          nome: t.nome, area: t.area, protocolo: t.protocolo, status: t.status, valor: t.valor, initials: ini(t.nome),
+          avatarStyle: { width: '36px', height: '36px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '12.5px', fontWeight: 700 },
+          statusStyle: { fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', color: sc[0], background: sc[1] },
+          wrapStyle: { width: '100%', boxSizing: 'border-box', border: 'none', borderTop: '1px solid #F0EFF5', borderLeft: '3px solid ' + (on ? '#C7168C' : 'transparent'), background: on ? '#FDF0F8' : '#FFFFFF', padding: '12px 14px', cursor: 'pointer', textAlign: 'left' },
+          onSelect: () => this.setState({ selTalento: t.id })
+        };
+      }),
+      pessoas: [
+        { nome: 'Mariana Vasques', papel: 'Solicitante · Variedades' },
+        { nome: 'Letícia Moura', papel: 'Aprovadora · Gestão de Elenco' },
+        { nome: 'Thiago Bastos', papel: 'Aprovador · ViU' }
+      ].map((p, i) => ({ nome: p.nome, papel: p.papel, initials: ini(p.nome), avatarStyle: { width: '30px', height: '30px', borderRadius: '999px', background: AV[(i + 2) % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '11px', fontWeight: 700 } })),
+      filtrosTimeline: [
+        { id: 'tudo', label: 'Tudo' }, { id: 'talento', label: 'Talentos' }, { id: 'aprovacao', label: 'Aprovações' }, { id: 'sistema', label: 'Sistema' }
+      ].map(f => ({ label: f.label, style: { height: '26px', padding: '0 10px', borderRadius: '999px', border: '1px solid ' + (st.filtroTL === f.id ? '#C7168C' : '#DCDAE6'), background: st.filtroTL === f.id ? '#FDF0F8' : '#FFFFFF', color: st.filtroTL === f.id ? '#C7168C' : '#56546B', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }, onClick: () => this.setState({ filtroTL: f.id }) })),
+      eventos: eventosFiltrados.map((e, i) => ({
+        titulo: e.titulo, quando: e.quando, initials: ini(e.quem),
+        avatarStyle: { width: '20px', height: '20px', borderRadius: '999px', background: e.tipo === 'sistema' ? '#EAE8F1' : AV[i % AV.length], color: e.tipo === 'sistema' ? '#56546B' : '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8.5px', fontWeight: 700 },
+        dotStyle: { width: '9px', height: '9px', borderRadius: '999px', background: e.tag === 'Atenção' ? '#B3121B' : '#C7168C', marginTop: '3px', flexShrink: 0 },
+        lineStyle: { width: '1.5px', flex: 1, background: '#EEECF3', marginTop: '4px', display: i === eventosFiltrados.length - 1 ? 'none' : 'block' },
+        cardWrap: { flex: 1, paddingBottom: '20px', display: 'flex', flexDirection: 'column', gap: '5px' },
+        temDetalhe: !!e.detalhe,
+        detalhe: e.detalhe,
+        detalheStyle: { fontSize: '12.5px', lineHeight: '1.5', color: '#56546B', textWrap: 'pretty' },
+        temTag: !!e.tag,
+        tag: e.tag,
+        tagStyle: { alignSelf: 'flex-start', fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', color: e.tag === 'Atenção' ? '#B3121B' : (STATUS_COLOR[e.tag] || ['#2020EE', '#EDECFB'])[0], background: e.tag === 'Atenção' ? '#FDF1F1' : (STATUS_COLOR[e.tag] || ['#2020EE', '#EDECFB'])[1] }
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

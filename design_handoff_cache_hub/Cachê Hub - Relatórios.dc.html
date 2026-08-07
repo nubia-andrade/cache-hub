@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, button { font-family: inherit; }
+  input:focus, select:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 960px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 6 · Relatórios</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Dashboard de cachês</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Todos os filtros da barra recalculam os indicadores, os gráficos e a tabela na hora — o botão <strong>Exportar Excel</strong> leva exatamente o recorte visível. Troque o período ou clique num time para ver a diferença.</p>
+  </div>
+
+  <div id="6a" style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #2B2ADB; padding: 5px 11px; border-radius: 999px">6a</div>
+      <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Dashboard com filtros interativos</div>
+      <div style="font-size: 13px; color: #6B6A7C">orçado, fechado, conversão e ranking</div>
+    </div>
+
+    <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+      <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+        <div style="display: flex; align-items: center; gap: 13px">
+          <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+          <div style="display: flex; flex-direction: column">
+            <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+            <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 22px">
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+            <div style="{{ n.style }}">{{ n.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; align-items: flex-end">
+            <div style="font-size: 13px; font-weight: 600; color: #12111A">Ricardo Alencar</div>
+            <div style="font-size: 11px; color: #85839A">Gestor · relatórios</div>
+          </div>
+          <div style="width: 34px; height: 34px; border-radius: 999px; background: #12111A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">RA</div>
+        </div>
+      </div>
+
+      <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Relatórios de cachê</div>
+          <div style="font-size: 13px; color: #6B6A7C">{{ recorteLabel }}</div>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button onClick="{{ limpar }}" style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A">Limpar filtros</button>
+          <button style="height: 40px; padding: 0 20px; border-radius: 999px; border: none; background: #0F7B3C; color: #FFFFFF; font-size: 13.5px; font-weight: 700; cursor: pointer" style-hover="background: #0B6231">Exportar Excel</button>
+        </div>
+      </div>
+
+      <div style="margin: 18px 26px 0; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+        <div style="background: #F7F6FA; padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid #E7E6EE">
+          <div style="display: flex; gap: 4px; background: #EAE8F1; padding: 3px; border-radius: 999px">
+            <sc-for list="{{ periodos }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.onClick }}" style="{{ p.style }}">{{ p.label }}</button>
+            </sc-for>
+          </div>
+          <select value="{{ fEquipe }}" onChange="{{ onEquipe }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ equipeOptions }}" as="o" hint-placeholder-count="4">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fArea }}" onChange="{{ onArea }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ areaOptions }}" as="o" hint-placeholder-count="4">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fCat }}" onChange="{{ onCat }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ catOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fStatus }}" onChange="{{ onStatus }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ statusOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fAnunciante }}" onChange="{{ onAnunciante }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ anuncianteOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fMarca }}" onChange="{{ onMarca }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ marcaOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fPrograma }}" onChange="{{ onPrograma }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ programaOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <select value="{{ fAprovador }}" onChange="{{ onAprovador }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+            <sc-for list="{{ aprovadorOptions }}" as="o" hint-placeholder-count="5">
+              <option value="{{ o }}">{{ o }}</option>
+            </sc-for>
+          </select>
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar anunciante, marca, programa ou talento" style="flex: 1; min-width: 200px; height: 34px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 14px; font-size: 13px; color: #12111A; background: #FFFFFF" />
+        </div>
+
+        <div style="padding: 14px 16px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">Filtros ativos</div>
+          <sc-for list="{{ chips }}" as="c" hint-placeholder-count="2">
+            <button onClick="{{ c.onClear }}" style="height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid #DCD7EC; background: #F4F2FC; color: #2B2ADB; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 7px" style-hover="border-color: #2B2ADB">
+              <span>{{ c.label }}</span>
+              <span style="font-size: 13px; line-height: 1">×</span>
+            </button>
+          </sc-for>
+          <div style="{{ semFiltroStyle }}">nenhum além do período</div>
+        </div>
+      </div>
+
+      <div style="padding: 18px 26px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+        <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+          <div style="{{ k.style }}">
+            <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+            <div style="font-family: Outfit, sans-serif; font-size: 28px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">{{ k.value }}</div>
+            <div style="{{ k.noteStyle }}">{{ k.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding: 16px 26px 0; display: grid; grid-template-columns: 1.45fr 1fr; gap: 16px">
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #2B2ADB"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Orçado x fechado por mês</div>
+            <div style="flex: 1"></div>
+            <div style="display: flex; align-items: center gap: 12px">
+              <div style="display: flex; align-items: center; gap: 14px">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #56546B"><span style="width: 9px; height: 9px; border-radius: 2px; background: #C7CBF5"></span>Orçado</div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #56546B"><span style="width: 9px; height: 9px; border-radius: 2px; background: #2B2ADB"></span>Fechado</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding: 18px 16px 16px">
+            <div style="display: flex; align-items: flex-end; gap: 18px; height: 208px">
+              <sc-for list="{{ meses }}" as="m" hint-placeholder-count="6">
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%">
+                  <div style="flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 5px">
+                    <div style="{{ m.barOrcStyle }}" title="{{ m.orcLabel }}"></div>
+                    <div style="{{ m.barFecStyle }}" title="{{ m.fecLabel }}"></div>
+                  </div>
+                  <div style="font-size: 11.5px; font-weight: 600; color: #56546B">{{ m.label }}</div>
+                  <div style="font-size: 11px; color: #A19FB2">{{ m.fecLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ semDados }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 20px 0 0; text-align: center; font-size: 13px; color: #85839A">Nenhuma consulta neste recorte.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #C7168C"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Funil das consultas</div>
+          </div>
+          <div style="padding: 16px; display: flex; flex-direction: column; gap: 11px">
+            <sc-for list="{{ funil }}" as="f" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ f.label }}</div>
+                  <div style="font-size: 12px; color: #85839A">{{ f.qtd }} · {{ f.pct }}</div>
+                </div>
+                <div style="height: 10px; border-radius: 999px; background: #F2F0F8; overflow: hidden">
+                  <div style="{{ f.fillStyle }}"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 26px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #8B2FD6"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Cachê fechado por área</div>
+          </div>
+          <div style="padding: 16px; display: flex; flex-direction: column; gap: 13px">
+            <sc-for list="{{ areas }}" as="a" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <span style="{{ a.dotStyle }}"></span>
+                    <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ a.label }}</div>
+                    <div style="font-size: 11.5px; color: #A19FB2">{{ a.qtd }} consultas</div>
+                  </div>
+                  <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 700; color: #12111A">{{ a.valor }}</div>
+                </div>
+                <div style="height: 9px; border-radius: 999px; background: #F2F0F8; overflow: hidden">
+                  <div style="{{ a.fillStyle }}"></div>
+                </div>
+                <div style="font-size: 11.5px; color: #85839A">SLA médio de retorno: {{ a.sla }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #00A38C"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Times solicitantes</div>
+            <div style="font-size: 11.5px; color: #85839A">clique para filtrar</div>
+          </div>
+          <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+            <sc-for list="{{ times }}" as="t" hint-placeholder-count="5">
+              <button onClick="{{ t.onClick }}" style="{{ t.rowStyle }}">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%">
+                  <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ t.label }}</div>
+                  <div style="display: flex; align-items: baseline; gap: 9px">
+                    <div style="font-size: 11.5px; color: #A19FB2">{{ t.qtd }}</div>
+                    <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 700; color: #12111A">{{ t.valor }}</div>
+                  </div>
+                </div>
+                <div style="height: 8px; border-radius: 999px; background: #F2F0F8; overflow: hidden; width: 100%">
+                  <div style="{{ t.fillStyle }}"></div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 26px 0; display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px">
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #8B2FD6"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Anunciantes e marcas</div>
+            <div style="font-size: 11.5px; color: #85839A">expanda para ver as marcas</div>
+          </div>
+          <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{ anunciantes }}" as="a" hint-placeholder-count="5">
+              <div style="{{ a.rowStyle }}">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <button onClick="{{ a.onToggle }}" style="width: 20px; height: 20px; border: none; background: transparent; cursor: pointer; padding: 0">
+                    <span style="{{ a.chevronStyle }}">⌄</span>
+                  </button>
+                  <button onClick="{{ a.onFilter }}" style="flex: 1; border: none; background: transparent; cursor: pointer; padding: 0; text-align: left">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                      <div style="display: flex; flex-direction: column; gap: 2px">
+                        <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ a.anunciante }}</div>
+                        <div style="font-size: 11px; color: #A19FB2">{{ a.qtd }} · {{ a.marcasLabel }}</div>
+                      </div>
+                      <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 700; color: #12111A">{{ a.valor }}</div>
+                    </div>
+                  </button>
+                </div>
+                <div style="height: 8px; border-radius: 999px; background: #F2F0F8; overflow: hidden">
+                  <div style="{{ a.fillStyle }}"></div>
+                </div>
+                <sc-if value="{{ a.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 30px">
+                    <sc-for list="{{ a.marcas }}" as="m" hint-placeholder-count="2">
+                      <button onClick="{{ m.onClick }}" style="{{ m.style }}">
+                        <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ m.marca }}</div>
+                        <div style="flex: 1"></div>
+                        <div style="font-size: 11px; color: #A19FB2">{{ m.qtd }}</div>
+                        <div style="font-size: 12.5px; font-weight: 700; color: #12111A">{{ m.valor }}</div>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #C7168C"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Programas e projetos</div>
+            <div style="font-size: 11.5px; color: #85839A">clique para filtrar</div>
+          </div>
+          <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{ programas }}" as="p" hint-placeholder-count="6">
+              <button onClick="{{ p.onClick }}" style="{{ p.rowStyle }}">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; width: 100%">
+                  <div style="display: flex; flex-direction: column; gap: 2px">
+                    <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ p.programa }}</div>
+                    <div style="font-size: 11px; color: #A19FB2">{{ p.qtd }} · {{ p.orc }}</div>
+                  </div>
+                  <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 700; color: #12111A">{{ p.valor }}</div>
+                </div>
+                <div style="height: 8px; border-radius: 999px; background: #F2F0F8; overflow: hidden; width: 100%">
+                  <div style="{{ p.fillStyle }}"></div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 16px 26px 0">
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #2B2ADB"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Desempenho dos aprovadores</div>
+            <div style="font-size: 11px; font-weight: 700; color: #FFFFFF; background: #12111A; padding: 4px 10px; border-radius: 999px">visível para Gerentes e Proprietário</div>
+            <div style="font-size: 11.5px; color: #85839A">clique na linha para filtrar o dashboard</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.6fr 1.15fr 0.8fr 0.8fr 0.9fr 1fr 1fr 0.9fr; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+            <div style="padding: 10px 12px">Aprovador</div>
+            <div style="padding: 10px 12px">Área</div>
+            <div style="padding: 10px 12px">Recebidas</div>
+            <div style="padding: 10px 12px">Respondidas</div>
+            <div style="padding: 10px 12px">Pendentes</div>
+            <div style="padding: 10px 12px">Orçado</div>
+            <div style="padding: 10px 12px">Fechado</div>
+            <div style="padding: 10px 12px">Prazo médio</div>
+          </div>
+          <sc-for list="{{ aprovadores }}" as="a" hint-placeholder-count="5">
+            <button onClick="{{ a.onClick }}" style="{{ a.rowStyle }}">
+              <div style="padding: 9px 12px; display: flex; align-items: center; gap: 10px; text-align: left">
+                <div style="{{ a.avatarStyle }}">{{ a.initials }}</div>
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1">
+                  <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 600; color: #12111A">{{ a.nome }}</div>
+                  <div style="height: 6px; border-radius: 999px; background: #F2F0F8; overflow: hidden; width: 100%">
+                    <div style="{{ a.barStyle }}"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding: 9px 12px; text-align: left"><span style="{{ a.areaStyle }}">{{ a.area }}</span></div>
+              <div style="padding: 9px 12px; font-size: 13px; color: #2C2B3A; text-align: left">{{ a.total }}</div>
+              <div style="padding: 9px 12px; font-size: 13px; color: #2C2B3A; text-align: left">{{ a.respondidas }}</div>
+              <div style="padding: 9px 12px; text-align: left"><span style="{{ a.pendStyle }}">{{ a.pendentes }}</span></div>
+              <div style="padding: 9px 12px; font-size: 13px; color: #56546B; text-align: left">{{ a.orcado }}</div>
+              <div style="padding: 9px 12px; font-size: 13px; font-weight: 700; color: #12111A; text-align: left">{{ a.fechado }}</div>
+              <div style="padding: 9px 12px; text-align: left"><span style="{{ a.slaStyle }}">{{ a.sla }}</span></div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding: 16px 26px 26px">
+        <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #C7168C"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Talentos mais consultados</div>
+            <div style="flex: 1"></div>
+            <div style="font-size: 11.5px; color: #85839A">{{ linhasLabel }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1.1fr 0.8fr 1fr 1fr 1fr; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+            <div style="padding: 10px 12px">Talento</div>
+            <div style="padding: 10px 12px">Categoria</div>
+            <div style="padding: 10px 12px">Área</div>
+            <div style="padding: 10px 12px">Consultas</div>
+            <div style="padding: 10px 12px">Orçado</div>
+            <div style="padding: 10px 12px">Fechado</div>
+            <div style="padding: 10px 12px">Conversão</div>
+          </div>
+          <sc-for list="{{ ranking }}" as="r" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 1.6fr 1.1fr 1.1fr 0.8fr 1fr 1fr 1fr; border-bottom: 1px solid #F0EFF5; align-items: center">
+              <div style="padding: 9px 12px; display: flex; align-items: center; gap: 10px">
+                <div style="{{ r.avatarStyle }}">{{ r.initials }}</div>
+                <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 600; color: #12111A">{{ r.talento }}</div>
+              </div>
+              <div style="padding: 9px 12px"><span style="{{ r.catStyle }}">{{ r.categoria }}</span></div>
+              <div style="padding: 9px 12px; font-size: 12.5px; color: #56546B">{{ r.area }}</div>
+              <div style="padding: 9px 12px; font-size: 13px; color: #2C2B3A">{{ r.qtd }}</div>
+              <div style="padding: 9px 12px; font-size: 13px; color: #56546B">{{ r.orcado }}</div>
+              <div style="padding: 9px 12px; font-size: 13px; font-weight: 700; color: #12111A">{{ r.fechado }}</div>
+              <div style="padding: 9px 12px"><span style="{{ r.convStyle }}">{{ r.conv }}</span></div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ semDados }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 34px; text-align: center; font-size: 13.5px; color: #85839A">Nenhuma consulta neste recorte. Ajuste os filtros.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const EQUIPES = ['Dramaturgia', 'Realities', 'Variedades', 'Esportes', 'Notícias Digital', 'Notícias Linear', 'Territórios', 'Regionais', 'Entretenimento Digital'];
+const AREA_COLOR = { 'Gestão de Elenco': '#2B2ADB', 'ViU': '#C7168C', 'Agenciamento': '#8B2FD6' };
+const CAT_COLOR = { 'Talento Globo': '#2B2ADB', 'Agenciado': '#8B2FD6', 'Influenciador': '#C7168C', 'Creator': '#00A38C' };
+const AV = ['#C7168C', '#2B2ADB', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+const MESES = ['mar', 'abr', 'mai', 'jun', 'jul', 'ago'];
+const CAT_AREA = { 'Talento Globo': 'Gestão de Elenco', 'Agenciado': 'Agenciamento', 'Influenciador': 'ViU', 'Creator': 'ViU' };
+const AREA_SLA = { 'Gestão de Elenco': '4,6 dias', 'ViU': '2,8 dias', 'Agenciamento': '3,5 dias' };
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+function brl(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function mi(v) { return v >= 1000000 ? 'R$ ' + (v / 1000000).toFixed(1).replace('.', ',') + ' mi' : v >= 1000 ? 'R$ ' + Math.round(v / 1000) + ' mil' : brl(v); }
+
+const TALENTOS = [
+  ['Helena Barreto', 'Talento Globo'], ['Rodrigo Sampaio', 'Talento Globo'], ['Diego Lemos', 'Talento Globo'],
+  ['Manu Ferraz', 'Influenciador'], ['Bruno Tavares', 'Influenciador'], ['Pri Anjos', 'Influenciador'],
+  ['Léo Vasques', 'Creator'], ['Tati Rocha', 'Creator'], ['Camila Duarte', 'Agenciado']
+];
+const GRUPOS = [
+  { anunciante: 'Westwing Brasil', marcas: ['Westwing', 'Westwing Now'] },
+  { anunciante: 'Grupo Vértice', marcas: ['Banco Vértice', 'Vértice Seguros'] },
+  { anunciante: 'Cervejaria Litoral', marcas: ['Verão Lager', 'Litoral IPA'] },
+  { anunciante: 'Nutrilar Alimentos', marcas: ['Nutrilar', 'Nutrilar Kids'] },
+  { anunciante: 'Movtech', marcas: ['Movtech'] },
+  { anunciante: 'Dermáurea Cosméticos', marcas: ['Dermáurea', 'Áurea Hair'] },
+  { anunciante: 'Trilha Motors', marcas: ['Trilha Motors'] },
+  { anunciante: 'Casa Lume', marcas: ['Casa Lume'] }
+];
+const APROVADORES = {
+  'Gestão de Elenco': ['Rafael Prado', 'Letícia Moura'],
+  'ViU': ['Camile Nogueira', 'Thiago Bastos'],
+  'Agenciamento': ['Sônia Vilela']
+};
+const PROGRAMAS = ['Mais Você', 'Encontro', 'Big Brother Brasil', 'É de Casa', 'Cartola Express', 'Novela das Nove', 'Bahia Meio-Dia', 'The Voice', 'Altas Horas'];
+const STATUSES = ['Em análise', 'Orçada', 'Aprovada', 'Recusada', 'Bloqueada por restrição'];
+
+function seedData() {
+  const out = [];
+  let s = 7;
+  const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+  for (let i = 0; i < 148; i++) {
+    const t = TALENTOS[Math.floor(rnd() * TALENTOS.length)];
+    const mes = Math.min(5, Math.floor(rnd() * 6));
+    const equipe = EQUIPES[Math.floor(rnd() * EQUIPES.length)];
+    const r = rnd();
+    const status = r < 0.42 ? 'Aprovada' : r < 0.62 ? 'Orçada' : r < 0.82 ? 'Em análise' : r < 0.93 ? 'Recusada' : 'Bloqueada por restrição';
+    const base = t[1] === 'Talento Globo' ? 120000 : t[1] === 'Agenciado' ? 60000 : 45000;
+    const estimado = Math.round((base * (0.7 + rnd() * 0.9)) / 1000) * 1000;
+    const orcado = status === 'Em análise' || status === 'Bloqueada por restrição' ? 0 : Math.round((estimado * (0.9 + rnd() * 0.35)) / 1000) * 1000;
+    const fechado = status === 'Aprovada' ? Math.round((orcado * (0.9 + rnd() * 0.12)) / 1000) * 1000 : 0;
+    const g = GRUPOS[Math.floor(rnd() * GRUPOS.length)];
+    const area = CAT_AREA[t[1]];
+    const aps = APROVADORES[area];
+    out.push({
+      id: 'c' + i, talento: t[0], categoria: t[1], area: area, equipe: equipe,
+      aprovador: aps[Math.floor(rnd() * aps.length)],
+      dias: Math.round((1 + rnd() * 7) * 10) / 10,
+      anunciante: g.anunciante, marca: g.marcas[Math.floor(rnd() * g.marcas.length)],
+      programa: PROGRAMAS[Math.floor(rnd() * PROGRAMAS.length)],
+      mes: mes, status: status, estimado: estimado, orcado: orcado, fechado: fechado
+    });
+  }
+  return out;
+}
+
+class Component extends DCLogic {
+  state = {
+    periodo: '6 meses', fEquipe: 'Todas as equipes', fArea: 'Todas as áreas',
+    fCat: 'Todas as categorias', fStatus: 'Todos os status', query: '',
+    fAnunciante: 'Todos os anunciantes', fMarca: 'Todas as marcas', fPrograma: 'Todos os programas',
+    fAprovador: 'Todos os aprovadores',
+    openAnun: {},
+    dados: seedData()
+  };
+
+  mesesAtivos() {
+    const p = this.state.periodo;
+    return p === '30 dias' ? [5] : p === '90 dias' ? [3, 4, 5] : p === '6 meses' ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5];
+  }
+
+  filtrar() {
+    const st = this.state;
+    const ms = this.mesesAtivos();
+    const q = st.query.trim().toLowerCase();
+    return st.dados.filter(d => {
+      if (ms.indexOf(d.mes) < 0) return false;
+      if (st.fEquipe !== 'Todas as equipes' && d.equipe !== st.fEquipe) return false;
+      if (st.fArea !== 'Todas as áreas' && d.area !== st.fArea) return false;
+      if (st.fCat !== 'Todas as categorias' && d.categoria !== st.fCat) return false;
+      if (st.fStatus !== 'Todos os status' && d.status !== st.fStatus) return false;
+      if (st.fAnunciante !== 'Todos os anunciantes' && d.anunciante !== st.fAnunciante) return false;
+      if (st.fMarca !== 'Todas as marcas' && d.marca !== st.fMarca) return false;
+      if (st.fPrograma !== 'Todos os programas' && d.programa !== st.fPrograma) return false;
+      if (st.fAprovador !== 'Todos os aprovadores' && d.aprovador !== st.fAprovador) return false;
+      if (q && (d.talento + ' ' + d.marca + ' ' + d.anunciante + ' ' + d.programa + ' ' + d.equipe).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+
+  renderVals() {
+    const st = this.state;
+    const rows = this.filtrar();
+    const ms = this.mesesAtivos();
+    const sum = (a, k) => a.reduce((x, d) => x + d[k], 0);
+
+    const orcadoTotal = sum(rows, 'orcado');
+    const fechadoTotal = sum(rows, 'fechado');
+    const aprovadas = rows.filter(d => d.status === 'Aprovada');
+    const conv = rows.length ? Math.round(aprovadas.length / rows.length * 100) : 0;
+    const ticket = aprovadas.length ? fechadoTotal / aprovadas.length : 0;
+    const economia = orcadoTotal ? Math.round((1 - fechadoTotal / (sum(aprovadas, 'orcado') || 1)) * 100) : 0;
+    const talentosUnicos = [];
+    rows.forEach(d => { if (talentosUnicos.indexOf(d.talento) < 0) talentosUnicos.push(d.talento); });
+
+    const mesData = ms.map(m => {
+      const sub = rows.filter(d => d.mes === m);
+      return { m: m, label: MESES[m], orc: sum(sub, 'orcado'), fec: sum(sub, 'fechado') };
+    });
+    const maxMes = Math.max(1, ...mesData.map(x => Math.max(x.orc, x.fec)));
+
+    const funilDefs = [
+      { label: 'Consultas abertas', n: rows.length, color: '#2B2ADB' },
+      { label: 'Orçadas pela área', n: rows.filter(d => d.orcado > 0).length, color: '#8B2FD6' },
+      { label: 'Aprovadas / fechadas', n: aprovadas.length, color: '#0F7B6C' },
+      { label: 'Recusadas', n: rows.filter(d => d.status === 'Recusada').length, color: '#C41A22' },
+      { label: 'Bloqueadas por restrição', n: rows.filter(d => d.status === 'Bloqueada por restrição').length, color: '#12111A' }
+    ];
+
+    const areasDefs = ['Gestão de Elenco', 'ViU', 'Agenciamento'].map(a => {
+      const sub = rows.filter(d => d.area === a);
+      return { label: a, qtd: sub.length, valor: sum(sub, 'fechado'), color: AREA_COLOR[a] };
+    }).sort((x, y) => y.valor - x.valor);
+    const maxArea = Math.max(1, ...areasDefs.map(a => a.valor));
+
+    const timesDefs = EQUIPES.map(e => {
+      const sub = rows.filter(d => d.equipe === e);
+      return { label: e, qtd: sub.length, valor: sum(sub, 'fechado') };
+    }).filter(t => t.qtd > 0).sort((x, y) => y.valor - x.valor).slice(0, 6);
+    const maxTime = Math.max(1, ...timesDefs.map(t => t.valor));
+
+    const rankDefs = talentosUnicos.map((nome, i) => {
+      const sub = rows.filter(d => d.talento === nome);
+      const ap = sub.filter(d => d.status === 'Aprovada');
+      return {
+        talento: nome, categoria: sub[0].categoria, area: sub[0].area, qtd: sub.length,
+        orcado: sum(sub, 'orcado'), fechado: sum(sub, 'fechado'),
+        conv: sub.length ? Math.round(ap.length / sub.length * 100) : 0, i: i
+      };
+    }).sort((a, b) => b.qtd - a.qtd || b.fechado - a.fechado).slice(0, 8);
+
+    const chips = [];
+    if (st.fEquipe !== 'Todas as equipes') chips.push({ label: 'Equipe: ' + st.fEquipe, onClear: () => this.setState({ fEquipe: 'Todas as equipes' }) });
+    if (st.fArea !== 'Todas as áreas') chips.push({ label: 'Área: ' + st.fArea, onClear: () => this.setState({ fArea: 'Todas as áreas' }) });
+    if (st.fCat !== 'Todas as categorias') chips.push({ label: 'Categoria: ' + st.fCat, onClear: () => this.setState({ fCat: 'Todas as categorias' }) });
+    if (st.fStatus !== 'Todos os status') chips.push({ label: 'Status: ' + st.fStatus, onClear: () => this.setState({ fStatus: 'Todos os status' }) });
+    if (st.fAnunciante !== 'Todos os anunciantes') chips.push({ label: 'Anunciante: ' + st.fAnunciante, onClear: () => this.setState({ fAnunciante: 'Todos os anunciantes', fMarca: 'Todas as marcas' }) });
+    if (st.fMarca !== 'Todas as marcas') chips.push({ label: 'Marca: ' + st.fMarca, onClear: () => this.setState({ fMarca: 'Todas as marcas' }) });
+    if (st.fPrograma !== 'Todos os programas') chips.push({ label: 'Programa: ' + st.fPrograma, onClear: () => this.setState({ fPrograma: 'Todos os programas' }) });
+    if (st.fAprovador !== 'Todos os aprovadores') chips.push({ label: 'Aprovador: ' + st.fAprovador, onClear: () => this.setState({ fAprovador: 'Todos os aprovadores' }) });
+    if (st.query.trim()) chips.push({ label: 'Busca: ' + st.query.trim(), onClear: () => this.setState({ query: '' }) });
+
+    const apNomes = [];
+    Object.keys(APROVADORES).forEach(a => APROVADORES[a].forEach(n => apNomes.push({ nome: n, area: a })));
+    const apDefs = apNomes.map((x, i) => {
+      const sub = rows.filter(d => d.aprovador === x.nome);
+      const respondidas = sub.filter(d => d.orcado > 0);
+      const pend = sub.filter(d => d.status === 'Em análise');
+      const ap = sub.filter(d => d.status === 'Aprovada');
+      const dias = respondidas.length ? respondidas.reduce((a, d) => a + d.dias, 0) / respondidas.length : 0;
+      return {
+        nome: x.nome, area: x.area, i: i, total: sub.length, respondidas: respondidas.length, pendentes: pend.length,
+        orcado: sum(sub, 'orcado'), fechado: sum(sub, 'fechado'),
+        conv: sub.length ? Math.round(ap.length / sub.length * 100) : 0, dias: dias
+      };
+    }).filter(x => x.total > 0).sort((a, b) => b.total - a.total);
+    const maxAp = Math.max(1, ...apDefs.map(a => a.total));
+
+    const anunNomes = [];
+    rows.forEach(d => { if (anunNomes.indexOf(d.anunciante) < 0) anunNomes.push(d.anunciante); });
+    const anunDefs = anunNomes.map(a => {
+      const sub = rows.filter(d => d.anunciante === a);
+      const marcas = [];
+      sub.forEach(d => { if (marcas.indexOf(d.marca) < 0) marcas.push(d.marca); });
+      return { anunciante: a, qtd: sub.length, valor: sum(sub, 'fechado'), marcas: marcas.map(m => {
+        const ms2 = sub.filter(d => d.marca === m);
+        return { marca: m, qtd: ms2.length, valor: sum(ms2, 'fechado') };
+      }).sort((x, y) => y.valor - x.valor) };
+    }).sort((x, y) => y.valor - x.valor).slice(0, 6);
+    const maxAnun = Math.max(1, ...anunDefs.map(a => a.valor));
+
+    const progNomes = [];
+    rows.forEach(d => { if (progNomes.indexOf(d.programa) < 0) progNomes.push(d.programa); });
+    const progDefs = progNomes.map(p => {
+      const sub = rows.filter(d => d.programa === p);
+      return { programa: p, qtd: sub.length, valor: sum(sub, 'fechado'), orc: sum(sub, 'orcado') };
+    }).sort((x, y) => y.valor - x.valor).slice(0, 7);
+    const maxProg = Math.max(1, ...progDefs.map(p => p.valor));
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Relatórios', active: true }, { label: 'Usuários' }]
+        .map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer' } })),
+      recorteLabel: rows.length + ' consultas · ' + st.periodo + ' · ' + (st.fEquipe === 'Todas as equipes' ? 'todas as equipes' : st.fEquipe),
+      periodos: ['30 dias', '90 dias', '6 meses', 'Ano'].map(p => {
+        const on = st.periodo === p;
+        return {
+          label: p,
+          style: { height: '30px', padding: '0 14px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: on ? '#12111A' : '#6B6A7C', background: on ? '#FFFFFF' : 'transparent', boxShadow: on ? '0 1px 3px rgba(18,17,26,0.12)' : 'none' },
+          onClick: () => this.setState({ periodo: p })
+        };
+      }),
+      equipeOptions: ['Todas as equipes'].concat(EQUIPES),
+      areaOptions: ['Todas as áreas', 'Gestão de Elenco', 'ViU', 'Agenciamento'],
+      catOptions: ['Todas as categorias', 'Talento Globo', 'Agenciado', 'Influenciador', 'Creator'],
+      statusOptions: ['Todos os status'].concat(STATUSES),
+      fEquipe: st.fEquipe, fArea: st.fArea, fCat: st.fCat, fStatus: st.fStatus, query: st.query,
+      onEquipe: e => this.setState({ fEquipe: e.target.value }),
+      onArea: e => this.setState({ fArea: e.target.value }),
+      onCat: e => this.setState({ fCat: e.target.value }),
+      onStatus: e => this.setState({ fStatus: e.target.value }),
+      onQuery: e => this.setState({ query: e.target.value }),
+      limpar: () => this.setState({ fEquipe: 'Todas as equipes', fArea: 'Todas as áreas', fCat: 'Todas as categorias', fStatus: 'Todos os status', fAnunciante: 'Todos os anunciantes', fMarca: 'Todas as marcas', fPrograma: 'Todos os programas', fAprovador: 'Todos os aprovadores', query: '' }),
+      fAnunciante: st.fAnunciante, fMarca: st.fMarca, fPrograma: st.fPrograma, fAprovador: st.fAprovador,
+      aprovadorOptions: ['Todos os aprovadores'].concat(apNomes.map(x => x.nome)),
+      onAprovador: e => this.setState({ fAprovador: e.target.value }),
+      aprovadores: apDefs.map(a => {
+        const on = st.fAprovador === a.nome;
+        return {
+          nome: a.nome, area: a.area, initials: ini(a.nome),
+          total: String(a.total), respondidas: String(a.respondidas), pendentes: String(a.pendentes),
+          orcado: mi(a.orcado), fechado: mi(a.fechado), conv: a.conv + '%',
+          sla: a.dias ? a.dias.toFixed(1).replace('.', ',') + ' dias' : '—',
+          rowStyle: { display: 'grid', gridTemplateColumns: '1.6fr 1.15fr 0.8fr 0.8fr 0.9fr 1fr 1fr 0.9fr', alignItems: 'center', width: '100%', border: 'none', borderBottom: '1px solid #F0EFF5', borderLeft: '3px solid ' + (on ? '#C7168C' : 'transparent'), background: on ? '#FDF0F8' : '#FFFFFF', cursor: 'pointer', padding: 0 },
+          avatarStyle: { width: '28px', height: '28px', flexShrink: 0, borderRadius: '999px', background: AV[a.i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '10.5px', fontWeight: 700 },
+          areaStyle: { fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#FFFFFF', background: AREA_COLOR[a.area], padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap' },
+          pendStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', color: a.pendentes > 6 ? '#B3121B' : a.pendentes > 2 ? '#8A6A00' : '#3D6B18', background: a.pendentes > 6 ? '#FDF1F1' : a.pendentes > 2 ? '#FFF7E0' : '#F2FBE8' },
+          slaStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', color: a.dias > 5 ? '#B3121B' : a.dias > 3.5 ? '#8A6A00' : '#3D6B18', background: a.dias > 5 ? '#FDF1F1' : a.dias > 3.5 ? '#FFF7E0' : '#F2FBE8' },
+          barStyle: { height: '6px', width: Math.max(3, Math.round(a.total / maxAp * 100)) + '%', borderRadius: '999px', background: on ? '#C7168C' : '#C7CBF5' },
+          onClick: () => this.setState({ fAprovador: on ? 'Todos os aprovadores' : a.nome })
+        };
+      }),
+      anuncianteOptions: ['Todos os anunciantes'].concat(GRUPOS.map(g => g.anunciante)),
+      marcaOptions: ['Todas as marcas'].concat(
+        st.fAnunciante === 'Todos os anunciantes'
+          ? GRUPOS.reduce((a, g) => a.concat(g.marcas), [])
+          : (GRUPOS.filter(g => g.anunciante === st.fAnunciante)[0] || { marcas: [] }).marcas
+      ),
+      programaOptions: ['Todos os programas'].concat(PROGRAMAS),
+      onAnunciante: e => this.setState({ fAnunciante: e.target.value, fMarca: 'Todas as marcas' }),
+      onMarca: e => this.setState({ fMarca: e.target.value }),
+      onPrograma: e => this.setState({ fPrograma: e.target.value }),
+      anunciantes: anunDefs.map(a => {
+        const on = st.fAnunciante === a.anunciante;
+        const aberto = !!st.openAnun[a.anunciante];
+        return {
+          anunciante: a.anunciante, qtd: a.qtd + ' consultas', valor: mi(a.valor),
+          marcasLabel: a.marcas.length + ' marca(s)',
+          open: aberto,
+          rowStyle: { display: 'flex', flexDirection: 'column', gap: '7px', width: '100%', padding: '10px 12px', borderRadius: '10px', background: on ? '#F4F2FC' : 'transparent', border: '1px solid ' + (on ? '#C7CBF5' : 'transparent') },
+          fillStyle: { height: '8px', width: Math.max(2, Math.round(a.valor / maxAnun * 100)) + '%', borderRadius: '999px', background: on ? '#2B2ADB' : '#8B2FD6' },
+          chevronStyle: { fontSize: '13px', color: '#A19FB2', transform: aberto ? 'rotate(180deg)' : 'none' },
+          onToggle: () => this.setState(s => ({ openAnun: Object.assign({}, s.openAnun, { [a.anunciante]: !s.openAnun[a.anunciante] }) })),
+          onFilter: () => this.setState({ fAnunciante: on ? 'Todos os anunciantes' : a.anunciante, fMarca: 'Todas as marcas' }),
+          marcas: a.marcas.map(m => {
+            const mOn = st.fMarca === m.marca;
+            return {
+              marca: m.marca, qtd: m.qtd + 'x', valor: mi(m.valor),
+              style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '7px 10px', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', background: mOn ? '#FDF0F8' : '#FBFAFD', border: '1px solid ' + (mOn ? '#C7168C' : '#EEECF3') },
+              onClick: () => this.setState({ fMarca: mOn ? 'Todas as marcas' : m.marca, fAnunciante: a.anunciante })
+            };
+          })
+        };
+      }),
+      programas: progDefs.map(p => {
+        const on = st.fPrograma === p.programa;
+        return {
+          programa: p.programa, qtd: p.qtd + ' consultas', valor: mi(p.valor), orc: 'orçado ' + mi(p.orc),
+          rowStyle: { display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', padding: '9px 11px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', background: on ? '#FDF0F8' : 'transparent', border: '1px solid ' + (on ? '#F0BBDD' : 'transparent') },
+          fillStyle: { height: '100%', width: Math.max(2, Math.round(p.valor / maxProg * 100)) + '%', borderRadius: '999px', background: on ? '#C7168C' : '#E77BB8' },
+          onClick: () => this.setState({ fPrograma: on ? 'Todos os programas' : p.programa })
+        };
+      }),
+      chips: chips,
+      semFiltroStyle: chips.length ? { display: 'none' } : { fontSize: '12px', color: '#A19FB2' },
+      kpis: [
+        { label: 'Consultas de cachê', value: String(rows.length), note: talentosUnicos.length + ' talentos distintos' },
+        { label: 'Cachê orçado', value: mi(orcadoTotal), note: 'soma das respostas das áreas' },
+        { label: 'Cachê fechado', value: mi(fechadoTotal), note: economia > 0 ? economia + '% abaixo do orçado' : 'em linha com o orçado' },
+        { label: 'Taxa de fechamento', value: conv + '%', note: 'ticket médio ' + brl(ticket) }
+      ].map((k, i) => ({
+        label: k.label, value: k.value, note: k.note,
+        noteStyle: { fontSize: '11.5px', color: i === 2 && economia > 0 ? '#0F7B6C' : '#85839A', fontWeight: i === 2 && economia > 0 ? 700 : 400 },
+        style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '15px 17px', borderRadius: '12px', background: i === 3 ? '#F4F2FC' : '#F7F6FA' }
+      })),
+      meses: mesData.map(x => ({
+        label: x.label, orcLabel: mi(x.orc), fecLabel: mi(x.fec),
+        barOrcStyle: { width: '26px', height: Math.max(2, Math.round(x.orc / maxMes * 100)) + '%', borderRadius: '5px 5px 0 0', background: '#C7CBF5' },
+        barFecStyle: { width: '26px', height: Math.max(2, Math.round(x.fec / maxMes * 100)) + '%', borderRadius: '5px 5px 0 0', background: '#2B2ADB' }
+      })),
+      funil: funilDefs.map(f => ({
+        label: f.label, qtd: String(f.n),
+        pct: (rows.length ? Math.round(f.n / rows.length * 100) : 0) + '%',
+        fillStyle: { height: '100%', width: (rows.length ? Math.round(f.n / rows.length * 100) : 0) + '%', borderRadius: '999px', background: f.color }
+      })),
+      areas: areasDefs.map(a => ({
+        label: a.label, qtd: String(a.qtd), valor: mi(a.valor), sla: AREA_SLA[a.label],
+        dotStyle: { width: '9px', height: '9px', borderRadius: '999px', background: a.color, display: 'inline-block' },
+        fillStyle: { height: '100%', width: Math.max(2, Math.round(a.valor / maxArea * 100)) + '%', borderRadius: '999px', background: a.color }
+      })),
+      times: timesDefs.map(t => {
+        const on = st.fEquipe === t.label;
+        return {
+          label: t.label, qtd: t.qtd + ' consultas', valor: mi(t.valor),
+          rowStyle: { display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', padding: '9px 11px', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', background: on ? '#F4F2FC' : 'transparent', border: '1px solid ' + (on ? '#C7CBF5' : 'transparent') },
+          fillStyle: { height: '100%', width: Math.max(2, Math.round(t.valor / maxTime * 100)) + '%', borderRadius: '999px', background: on ? '#2B2ADB' : '#00A38C' },
+          onClick: () => this.setState({ fEquipe: on ? 'Todas as equipes' : t.label })
+        };
+      }),
+      ranking: rankDefs.map(r => ({
+        talento: r.talento, categoria: r.categoria, area: r.area, qtd: String(r.qtd),
+        orcado: mi(r.orcado), fechado: mi(r.fechado), conv: r.conv + '%',
+        initials: ini(r.talento),
+        avatarStyle: { width: '28px', height: '28px', flexShrink: 0, borderRadius: '999px', background: AV[r.i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '10.5px', fontWeight: 700 },
+        catStyle: { fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#FFFFFF', background: CAT_COLOR[r.categoria], padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap' },
+        convStyle: { fontSize: '11.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', color: r.conv >= 50 ? '#3D6B18' : r.conv >= 25 ? '#8A6A00' : '#B3121B', background: r.conv >= 50 ? '#F2FBE8' : r.conv >= 25 ? '#FFF7E0' : '#FDF1F1' }
+      })),
+      linhasLabel: 'top ' + Math.min(8, rankDefs.length) + ' de ' + talentosUnicos.length,
+      semDados: rows.length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

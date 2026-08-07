@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, button { font-family: inherit; }
+  input:focus, select:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 960px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 3 · Home do solicitante</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Consultas dos últimos 10 dias</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Um <strong>projeto</strong> é a chave <em>cliente + programa + data</em>; várias consultas de orçamento se penduram nele. <a href="#3a">3a</a> é uma lista densa agrupada por projeto, <a href="#3b">3b</a> um mural de cards. <a href="#3c">3c</a> é o perfil do usuário com avatar e o novo perfil <strong>Proprietário</strong>. O pedido de acesso agora sai da tela de login (arquivo <em>Cachê Hub - Login</em>); quem concede os perfis é o Proprietário, em <a href="#3d">3d</a>.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="3a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">3a</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Lista densa agrupada por projeto</div>
+        <div style="font-size: 13px; color: #6B6A7C">muitas linhas visíveis, expande para ver as consultas</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); position: relative">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 22px">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+              <div style="{{ n.style }}">{{ n.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="position: relative; width: 30px; height: 30px; border-radius: 8px; border: 1px solid #E4E2EC; display: flex; align-items: center; justify-content: center; font-size: 14px">◔<div style="position: absolute; top: -4px; right: -4px; width: 15px; height: 15px; border-radius: 999px; background: #C7168C; color: #FFFFFF; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center">{{ pendentes }}</div></div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end">
+              <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ user.nome }}</div>
+              <div style="font-size: 11px; color: #85839A">{{ user.equipe }}</div>
+            </div>
+            <div style="{{ user.avatarStyle }}">{{ user.initials }}</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Consultas dos últimos 10 dias</div>
+            <div style="font-size: 13px; color: #6B6A7C">Antes de abrir uma nova, veja se o projeto já existe e pendure sua consulta nele.</div>
+          </div>
+          <button style="height: 42px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">+ Nova solicitação</button>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="{{ k.style }}">
+              <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #85839A">{{ k.label }}</div>
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <div style="font-family: Outfit, sans-serif; font-size: 26px; font-weight: 700; color: #12111A">{{ k.value }}</div>
+                <div style="font-size: 12px; color: #85839A">{{ k.note }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin: 20px 26px 0; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid #E7E6EE">
+            <div style="display: flex; gap: 4px; background: #EAE8F1; padding: 3px; border-radius: 999px">
+              <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+                <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }} <span style="{{ t.countStyle }}">{{ t.count }}</span></button>
+              </sc-for>
+            </div>
+            <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar por marca, programa, talento ou protocolo" style="flex: 1; min-width: 260px; height: 34px; border: 1px solid #DCDAE6; border-radius: 999px; padding: 0 14px; font-size: 13px; color: #12111A; background: #FFFFFF" />
+            <select value="{{ fStatus }}" onChange="{{ onStatus }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ statusOptions }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ fArea }}" onChange="{{ onArea }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ areaOptions }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ fEquipe }}" onChange="{{ onEquipe }}" style="height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 9px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+              <sc-for list="{{ equipeOptions }}" as="o" hint-placeholder-count="3">
+                <option value="{{ o }}">{{ o }}</option>
+              </sc-for>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 26px 1.35fr 1.05fr 0.9fr 1fr 1fr 0.9fr 0.8fr 210px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+            <div></div>
+            <div style="padding: 10px 11px">Marca / anunciante</div>
+            <div style="padding: 10px 11px">Programa</div>
+            <div style="padding: 10px 11px">Data do projeto</div>
+            <div style="padding: 10px 11px">Segmento do cliente</div>
+            <div style="padding: 10px 11px">Talentos</div>
+            <div style="padding: 10px 11px">Status</div>
+            <div style="padding: 10px 11px">Solicitado em</div>
+            <div style="padding: 10px 11px">Prazo</div>
+          </div>
+
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="6">
+            <div style="{{ p.blockStyle }}">
+              <div style="display: grid; grid-template-columns: 26px 1.35fr 1.05fr 0.9fr 1fr 1fr 0.9fr 0.8fr 210px; align-items: center; border-bottom: 1px solid #F0EFF5">
+                <button onClick="{{ p.onToggle }}" style="{{ p.chevronStyle }}">⌄</button>
+                <div style="padding: 11px 11px; display: flex; flex-direction: column; gap: 3px">
+                  <div style="font-family: Outfit, sans-serif; font-size: 14.5px; font-weight: 600; color: #12111A">{{ p.cliente }}</div>
+                  <div style="font-size: 11.5px; color: #85839A">{{ p.equipeLabel }}</div>
+                </div>
+                <div style="padding: 11px 11px; font-size: 13px; color: #2C2B3A">{{ p.programa }}</div>
+                <div style="padding: 11px 11px; font-size: 13px; color: #2C2B3A">{{ p.data }}</div>
+                <div style="padding: 11px 11px; font-size: 12.5px; color: #56546B">{{ p.segmento }}</div>
+                <div style="padding: 11px 11px; display: flex; align-items: center">
+                  <sc-for list="{{ p.avatars }}" as="a" hint-placeholder-count="2">
+                    <div style="{{ a.style }}" title="{{ a.nome }}">{{ a.initials }}</div>
+                  </sc-for>
+                  <div style="{{ p.moreStyle }}">{{ p.moreLabel }}</div>
+                </div>
+                <div style="padding: 11px 11px"><span style="{{ p.statusStyle }}">{{ p.status }}</span></div>
+                <div style="padding: 11px 11px; font-size: 12.5px; color: #56546B">{{ p.criadoEm }}</div>
+                <div style="padding: 11px 11px; display: flex; align-items: center; gap: 8px">
+                  <span style="{{ p.slaStyle }}">{{ p.sla }}</span>
+                  <button onClick="{{ p.onPlug }}" title="Adicionar talento a este projeto" style="height: 26px; padding: 0 10px; border-radius: 999px; border: 1px dashed #C7168C; background: #FFFFFF; color: #C7168C; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap" style-hover="background: #FDF0F8">+ talento</button>
+                </div>
+              </div>
+
+              <sc-if value="{{ p.open }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #FBFAFD; border-bottom: 1px solid #F0EFF5; padding: 12px 16px 14px 37px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">{{ p.consultasLabel }}</div>
+                  <sc-for list="{{ p.consultas }}" as="c" hint-placeholder-count="2">
+                    <div style="display: grid; grid-template-columns: 110px 1.4fr 1fr 0.9fr 130px 130px 210px; align-items: center; background: #FFFFFF; border: 1px solid #E7E6EE; border-radius: 10px; padding: 9px 12px">
+                      <div style="font-family: ui-monospace, monospace; font-size: 11.5px; color: #6B6A7C">{{ c.protocolo }}</div>
+                      <div style="display: flex; align-items: center; gap: 8px">
+                        <div style="{{ c.avatarStyle }}">{{ c.initials }}</div>
+                        <div style="display: flex; flex-direction: column">
+                          <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ c.talento }}</div>
+                          <div style="font-size: 11px; color: #85839A">{{ c.categoria }}</div>
+                        </div>
+                      </div>
+                      <div style="font-size: 12px; color: #56546B">{{ c.area }}</div>
+                      <div><span style="{{ c.statusStyle }}">{{ c.status }}</span></div>
+                      <div style="font-size: 12px; color: #56546B">Estimado {{ c.estimado }}</div>
+                      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+                        <div style="font-size: 12.5px; font-weight: 700; color: #12111A">{{ c.orcado }}</div>
+                        <sc-if value="{{ c.temValidade }}" hint-placeholder-val="{{ false }}">
+                          <div style="{{ c.validadeStyle }}">{{ c.validadeLabel }}</div>
+                        </sc-if>
+                      </div>
+                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 7px">
+                        <sc-if value="{{ c.pedeDesfecho }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; align-items: center; gap: 7px">
+                            <div style="font-size: 11px; color: #85839A" title="Solicitante ou Gerente da área podem informar">Projeto vendido?</div>
+                            <button onClick="{{ c.onVendido }}" style="height: 26px; padding: 0 11px; border-radius: 999px; border: 1px solid #A9CE00; background: #F4FFCC; color: #3D6B18; font-size: 11.5px; font-weight: 700; cursor: pointer" style-hover="background: #C8F000">Sim</button>
+                            <button onClick="{{ c.onNaoVendido }}" style="height: 26px; padding: 0 11px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #85839A; font-size: 11.5px; font-weight: 700; cursor: pointer" style-hover="border-color: #85839A">Não</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.temDesfecho }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: flex; align-items: center; gap: 7px">
+                            <div style="{{ c.desfechoStyle }}">{{ c.desfechoLabel }}</div>
+                            <sc-if value="{{ c.expirado }}" hint-placeholder-val="{{ false }}">
+                              <button onClick="{{ c.onLimparDesfecho }}" title="A área define nova validade e a consulta volta a Orçada" style="height: 24px; padding: 0 10px; border-radius: 999px; border: 1px solid #2020EE; background: #FFFFFF; color: #2020EE; font-size: 11px; font-weight: 700; cursor: pointer" style-hover="background: #F2F2FE">Revalidar</button>
+                            </sc-if>
+                            <button onClick="{{ c.onLimparDesfecho }}" title="Reabrir" style="width: 22px; height: 22px; border-radius: 6px; border: 1px solid #E4E2EC; background: #FFFFFF; color: #A19FB2; font-size: 12px; line-height: 1; cursor: pointer; padding: 0">↺</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ p.restrito }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 9px; font-size: 12px; color: #85839A; background: #F4F3F7; border-radius: 9px; padding: 9px 12px">
+                      <span style="font-size: 13px">🔒</span>
+                      <span>Projeto de outra equipe ({{ p.equipe }}) — valores de cachê ficam ocultos. Você pode se plugar ao projeto e sua consulta ficará visível para o seu time.</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ vazio }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 40px; text-align: center; font-size: 13.5px; color: #85839A">Nenhuma solicitação encontrada com esses filtros.</div>
+          </sc-if>
+        </div>
+
+        <div style="padding: 14px 26px 26px; font-size: 12px; color: #85839A">Mostrando {{ visiveis }} projeto(s) · janela de 26/07 a 04/08/2026</div>
+
+        <sc-if value="{{ reqOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; background: rgba(18,17,26,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 70px 0">
+            <div style="width: 720px; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.3)">
+              <div style="background: #12111A; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 600; color: #FFFFFF">Solicitar acesso ao Cachê Hub</div>
+                  <div style="font-size: 12.5px; color: rgba(255,255,255,0.7)">O Proprietário define os perfis de acesso na aprovação</div>
+                </div>
+                <button onClick="{{ closeReq }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); background: transparent; color: #FFFFFF; font-size: 16px; line-height: 1; cursor: pointer">×</button>
+              </div>
+
+              <sc-if value="{{ reqSent }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 40px 30px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+                  <div style="width: 50px; height: 50px; border-radius: 999px; background: #C8F000; display: flex; align-items: center; justify-content: center; font-size: 23px; color: #12111A">✓</div>
+                  <div style="font-family: Outfit, sans-serif; font-size: 21px; font-weight: 600; color: #12111A">Solicitação enviada</div>
+                  <div style="font-size: 13.5px; line-height: 1.6; color: #56546B; max-width: 420px">O Proprietário do Cachê Hub recebeu uma notificação e vai definir seus perfis de acesso. Você será avisado por e-mail quando o acesso for liberado.</div>
+                  <button onClick="{{ closeReq }}" style="margin-top: 8px; height: 40px; padding: 0 22px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Fechar</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ reqNotSent }}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <div style="padding: 22px; display: grid; grid-template-columns: 170px 1fr; gap: 22px">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+                      <div style="width: 120px; height: 120px; border-radius: 999px; border: 3px dashed #CFCDDD; background: #F7F6FA; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #A19FB2">＋</div>
+                      <button style="width: 100%; height: 34px; border-radius: 999px; border: none; background: #2B2ADB; color: #FFFFFF; font-size: 12.5px; font-weight: 700; cursor: pointer" style-hover="background: #1E1BB0">Enviar foto</button>
+                      <div style="font-family: ui-monospace, monospace; font-size: 10px; line-height: 1.6; color: #A19FB2; text-align: center">avatar quadrado<br />mínimo 400×400</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px 16px; align-content: start">
+                      <sc-for list="{{ reqFields }}" as="f" hint-placeholder-count="3">
+                        <div style="{{ f.wrap }}">
+                          <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">{{ f.label }}</div>
+                          <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.hint }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                        </div>
+                      </sc-for>
+                      <div style="grid-column: span 6">
+                        <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Equipe</div>
+                        <select value="{{ reqForm.equipe }}" onChange="{{ onReqEquipe }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                          <sc-for list="{{ equipes }}" as="o" hint-placeholder-count="4">
+                            <option value="{{ o }}">{{ o }}</option>
+                          </sc-for>
+                        </select>
+                      </div>
+                      <div style="grid-column: span 6">
+                        <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Notificações</div>
+                        <select value="{{ reqForm.notif }}" onChange="{{ onReqNotif }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                          <option value="E-mail e no app">E-mail e no app</option>
+                          <option value="Somente no app">Somente no app</option>
+                          <option value="Resumo diário">Resumo diário</option>
+                        </select>
+                      </div>
+                      <div style="grid-column: span 12">
+                        <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Por que precisa de acesso</div>
+                        <textarea value="{{ reqForm.justificativa }}" onChange="{{ onReqJust }}" placeholder="Descreva o que você fará no Cachê Hub — ajuda o Proprietário a escolher os perfis certos" rows="3" style="width: 100%; box-sizing: border-box; border: 1px solid #DCDAE6; border-radius: 8px; padding: 9px 10px; font-size: 13px; line-height: 1.55; color: #12111A; resize: vertical"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding: 16px 22px; border-top: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between">
+                    <div style="font-size: 12.5px; color: #85839A">Os perfis de acesso não aparecem aqui — quem define é o Proprietário.</div>
+                    <div style="display: flex; gap: 10px">
+                      <button onClick="{{ closeReq }}" style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancelar</button>
+                      <button onClick="{{ sendReq }}" style="height: 40px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13.5px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">Enviar solicitação</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div id="3b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #2B2ADB; padding: 5px 11px; border-radius: 999px">3b</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Mural de projetos</div>
+        <div style="font-size: 13px; color: #6B6A7C">cards com as consultas já aninhadas</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 22px">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+              <div style="{{ n.style }}">{{ n.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="display: flex; flex-direction: column; align-items: flex-end">
+              <div style="font-size: 13px; font-weight: 600; color: #12111A">{{ user.nome }}</div>
+              <div style="font-size: 11px; color: #85839A">{{ user.equipe }}</div>
+            </div>
+            <div style="{{ user.avatarStyle }}">{{ user.initials }}</div>
+          </div>
+        </div>
+
+        <div style="background: #C7168C; padding: 22px 26px; display: flex; align-items: center; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #C8F000">Últimos 10 dias</div>
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #FFFFFF">Projetos em consulta</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Buscar projeto, marca ou talento" style="width: 320px; height: 40px; border: none; border-radius: 999px; padding: 0 16px; font-size: 13.5px; color: #12111A" />
+            <button style="height: 40px; padding: 0 20px; border-radius: 999px; border: none; background: #C8F000; color: #12111A; font-size: 13.5px; font-weight: 700; cursor: pointer">+ Nova solicitação</button>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <div style="display: flex; gap: 4px; background: #EAE8F1; padding: 3px; border-radius: 999px">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }} <span style="{{ t.countStyle }}">{{ t.count }}</span></button>
+            </sc-for>
+          </div>
+          <div style="flex: 1"></div>
+          <sc-for list="{{ statusChips }}" as="c" hint-placeholder-count="5">
+            <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="padding: 18px 26px 28px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
+            <div style="{{ p.cardStyle }}">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">{{ p.cliente }}</div>
+                  <div style="font-size: 13px; color: #56546B">{{ p.programa }} · {{ p.data }}</div>
+                  <div style="font-size: 11.5px; color: #85839A">{{ p.segmento }} · {{ p.equipeLabel }}</div>
+                </div>
+                <span style="{{ p.statusStyle }}">{{ p.status }}</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 7px">
+                <sc-for list="{{ p.consultas }}" as="c" hint-placeholder-count="2">
+                  <div style="display: flex; align-items: center; gap: 10px; background: #FBFAFD; border: 1px solid #EEECF3; border-radius: 10px; padding: 8px 11px">
+                    <div style="{{ c.avatarStyle }}">{{ c.initials }}</div>
+                    <div style="display: flex; flex-direction: column; min-width: 0">
+                      <div style="font-size: 13px; font-weight: 600; color: #12111A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ c.talento }}</div>
+                      <div style="font-size: 11px; color: #85839A">{{ c.area }}</div>
+                    </div>
+                    <div style="flex: 1"></div>
+                    <div style="font-size: 12px; font-weight: 700; color: #12111A">{{ c.orcado }}</div>
+                    <span style="{{ c.statusStyle }}">{{ c.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px dashed #E4E2EC; padding-top: 12px">
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span style="{{ p.slaStyle }}">{{ p.sla }}</span>
+                  <span style="font-size: 11.5px; color: #85839A">solicitado em {{ p.criadoEm }}</span>
+                </div>
+                <button onClick="{{ p.onPlug }}" style="height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid #C7168C; background: #FFFFFF; color: #C7168C; font-size: 12.5px; font-weight: 700; cursor: pointer" style-hover="background: #FDF0F8">Adicionar talento a este projeto</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div id="3c" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #8B2FD6; padding: 5px 11px; border-radius: 999px">3c</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Perfil do usuário</div>
+        <div style="font-size: 13px; color: #6B6A7C">avatar, equipe e perfis de acesso</div>
+      </div>
+
+      <div style="width: 760px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="background: #12111A; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between">
+          <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 600; color: #FFFFFF">Meu perfil</div>
+          <div style="font-size: 12px; color: rgba(255,255,255,0.6)">Cachê Hub · acesso interno</div>
+        </div>
+        <div style="padding: 24px; display: grid; grid-template-columns: 190px 1fr; gap: 26px">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
+            <div style="{{ user.bigAvatarStyle }}">{{ user.initials }}</div>
+            <div style="display: flex; flex-direction: column; gap: 7px; width: 100%">
+              <button style="height: 36px; border-radius: 999px; border: none; background: #2B2ADB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer" style-hover="background: #1E1BB0">Enviar foto</button>
+              <button style="height: 36px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="border-color: #C7168C; color: #C7168C">Remover</button>
+            </div>
+            <div style="font-family: ui-monospace, monospace; font-size: 10.5px; line-height: 1.6; color: #A19FB2; text-align: center">JPG ou PNG quadrado<br />mínimo 400×400</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 6px">Nome</div>
+              <input value="{{ user.nome }}" onChange="{{ user.onNome }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 11px; font-size: 13.5px; color: #12111A" />
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 6px">E-mail corporativo</div>
+              <input value="{{ user.email }}" onChange="{{ user.onEmail }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 11px; font-size: 13.5px; color: #12111A" />
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 6px">Equipe</div>
+              <select value="{{ user.equipe }}" onChange="{{ user.onEquipe }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 9px; font-size: 13.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ equipes }}" as="o" hint-placeholder-count="4">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 6px">Notificações</div>
+              <select value="{{ user.notif }}" onChange="{{ user.onNotif }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 9px; font-size: 13.5px; color: #12111A; background: #FFFFFF">
+                <option value="E-mail e no app">E-mail e no app</option>
+                <option value="Somente no app">Somente no app</option>
+                <option value="Resumo diário">Resumo diário</option>
+              </select>
+            </div>
+            <div style="grid-column: span 2">
+              <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 8px">
+                <div style="font-size: 12px; font-weight: 700; color: #12111A">Perfis de acesso</div>
+                <div style="font-size: 11px; font-weight: 600; color: #85839A; background: #F2F0F8; padding: 3px 9px; border-radius: 999px">somente leitura · concedido pelo Proprietário</div>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <sc-for list="{{ meusPerfis }}" as="p" hint-placeholder-count="1">
+                  <div style="{{ p.style }}">{{ p.label }}</div>
+                </sc-for>
+              </div>
+              <div style="font-size: 12px; color: #85839A; margin-top: 9px">Para incluir ou remover um perfil, solicite ao Proprietário do Cachê Hub.</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 16px 24px; border-top: 1px solid #E7E6EE; display: flex; justify-content: flex-end; gap: 10px">
+          <button style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancelar</button>
+          <button style="height: 40px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13.5px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">Salvar perfil</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="3d" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #12111A; padding: 5px 11px; border-radius: 999px">3d</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Aprovação de acessos · Proprietário</div>
+        <div style="font-size: 13px; color: #6B6A7C">marca os perfis e libera o acesso</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Administração de usuários e acessos</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="font-size: 13px; color: #6B6A7C">Ricardo Alencar · Proprietário</div>
+            <div style="width: 34px; height: 34px; border-radius: 999px; background: #12111A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">RA</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Solicitações de acesso</div>
+            <div style="font-size: 13px; color: #6B6A7C">Marque os perfis de cada usuário e libere o acesso. {{ pendentes }} pendente(s).</div>
+          </div>
+        </div>
+
+        <div style="margin: 18px 26px 26px; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="display: grid; grid-template-columns: 26px 1.5fr 1.2fr 1fr 0.9fr 1.5fr 180px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+            <div></div>
+            <div style="padding: 10px 11px">Usuário</div>
+            <div style="padding: 10px 11px">Cargo / função</div>
+            <div style="padding: 10px 11px">Equipe</div>
+            <div style="padding: 10px 11px">Solicitado em</div>
+            <div style="padding: 10px 11px">Perfis</div>
+            <div style="padding: 10px 11px">Situação</div>
+          </div>
+
+          <sc-for list="{{ pedidos }}" as="p" hint-placeholder-count="3">
+            <div>
+              <div style="{{ p.rowStyle }}">
+                <button onClick="{{ p.onToggle }}" style="{{ p.chevronStyle }}">⌄</button>
+                <div style="padding: 10px 11px; display: flex; align-items: center; gap: 10px">
+                  <div style="{{ p.avatarStyle }}">{{ p.initials }}</div>
+                  <div style="display: flex; flex-direction: column; min-width: 0">
+                    <div style="font-family: Outfit, sans-serif; font-size: 14px; font-weight: 600; color: #12111A">{{ p.nome }}</div>
+                    <div style="font-size: 11.5px; color: #85839A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ p.email }}</div>
+                  </div>
+                </div>
+                <div style="padding: 10px 11px; font-size: 12.5px; color: #2C2B3A">{{ p.cargo }}</div>
+                <div style="padding: 10px 11px; font-size: 12.5px; color: #2C2B3A">{{ p.equipe }}</div>
+                <div style="padding: 10px 11px; font-size: 12.5px; color: #56546B">{{ p.em }}</div>
+                <div style="padding: 10px 11px; font-size: 12.5px; color: #56546B">{{ p.perfisResumo }}</div>
+                <div style="padding: 10px 11px"><span style="{{ p.decisaoStyle }}">{{ p.situacao }}</span></div>
+              </div>
+
+              <sc-if value="{{ p.open }}" hint-placeholder-val="{{ true }}">
+                <div style="background: #FBFAFD; border-bottom: 1px solid #F0EFF5; padding: 14px 16px 16px 37px; display: flex; flex-direction: column; gap: 12px">
+                  <div style="display: flex; flex-direction: column; gap: 5px">
+                    <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">Justificativa do pedido</div>
+                    <div style="font-size: 13px; line-height: 1.55; color: #2C2B3A; text-wrap: pretty; max-width: 900px">{{ p.justificativa }}</div>
+                  </div>
+                  <sc-if value="{{ p.pendente }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px">
+                      <div style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #85839A">Perfis de acesso a conceder</div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                        <sc-for list="{{ p.flags }}" as="fl" hint-placeholder-count="7">
+                          <button onClick="{{ fl.onClick }}" style="{{ fl.style }}">
+                            <span style="{{ fl.boxStyle }}">✓</span>
+                            <span>{{ fl.label }}</span>
+                          </button>
+                        </sc-for>
+                      </div>
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px dashed #E4E2EC; padding-top: 12px">
+                        <div style="{{ p.semPerfilStyle }}">{{ p.semPerfilText }}</div>
+                        <div style="display: flex; gap: 10px">
+                          <button onClick="{{ p.onReject }}" style="height: 38px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #B3121B; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #B3121B">Recusar</button>
+                          <button onClick="{{ p.onApprove }}" style="{{ p.approveStyle }}">Aprovar acesso</button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ p.decidido }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; gap: 12px">
+                      <span style="{{ p.decisaoStyle }}">{{ p.decisaoLabel }}</span>
+                      <button onClick="{{ p.onReopen }}" style="height: 32px; padding: 0 13px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #56546B; font-size: 12.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A; color: #12111A">Reabrir e reavaliar</button>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const EQUIPES = ['Dramaturgia', 'Realities', 'Variedades', 'Esportes', 'Notícias Digital', 'Notícias Linear', 'Territórios', 'Regionais', 'Entretenimento Digital'];
+const AREA_COLOR = { 'Gestão de Elenco': '#2B2ADB', 'ViU': '#C7168C', 'Agenciamento': '#8B2FD6' };
+const STATUS = {
+  'Rascunho': { fg: '#6B6A7C', bg: '#F2F0F8' },
+  'Enviada': { fg: '#2B2ADB', bg: '#EDEDFD' },
+  'Em análise': { fg: '#8A6A00', bg: '#FFF7E0' },
+  'Orçada': { fg: '#0F7B6C', bg: '#E6F6F2' },
+  'Aprovada': { fg: '#3D6B18', bg: '#F2FBE8' },
+  'Recusada': { fg: '#B3121B', bg: '#FDF1F1' },
+  'Bloqueada por restrição': { fg: '#B3121B', bg: '#FDF1F1' },
+  'Fechada': { fg: '#12111A', bg: '#C8F000' },
+  'Expirada': { fg: '#85839A', bg: '#F4F3F7' },
+  'Cancelada': { fg: '#85839A', bg: '#F4F3F7' }
+};
+const AV = ['#C7168C', '#2B2ADB', '#8B2FD6', '#00A38C', '#E8112D', '#6B4BE8'];
+const PERFIS = ['Proprietário', 'Solicitante', 'Aprovador · Gestão de Elenco', 'Aprovador · ViU', 'Aprovador · Agenciamento', 'Admin de talentos e restrições', 'Gestor · relatórios'];
+const ORDER = ['Rascunho', 'Enviada', 'Em análise', 'Orçada', 'Aprovada', 'Bloqueada por restrição', 'Recusada', 'Fechada', 'Expirada', 'Cancelada'];
+function ini(n) { return (n || '?').split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase(); }
+
+class Component extends DCLogic {
+  state = {
+    tab: 'todas',
+    query: '',
+    fStatus: 'Todos os status',
+    fArea: 'Todas as áreas',
+    fEquipe: 'Todas as equipes',
+    open: { p1: true },
+    desfecho: { '#ORC-0388': 'Vendido' },
+    user: { nome: 'Mariana Vasques', email: 'mariana.vasques@globo.com', equipe: 'Variedades', notif: 'E-mail e no app', perfis: ['Solicitante'] },
+    reqOpen: false,
+    pedOpen: {},
+    reqForm: { nome: '', email: '', equipe: 'Variedades', cargo: '', justificativa: '', notif: 'E-mail e no app' },
+    reqSent: false,
+    pedidos: [
+      { id: 'r1', nome: 'Fernanda Aguiar', email: 'fernanda.aguiar@globo.com', equipe: 'Realities', cargo: 'Coordenadora de projetos comerciais', justificativa: 'Preciso abrir consultas de cachê para as ações do BBB e acompanhar os retornos da ViU.', em: '04/08/2026 09:12', perfis: ['Solicitante'], estado: 'pendente' },
+      { id: 'r2', nome: 'Otávio Ramalho', email: 'otavio.ramalho@globo.com', equipe: 'Esportes', cargo: 'Gerente de conteúdo', justificativa: 'Vou responder os orçamentos dos talentos de elenco ligados a Esportes.', em: '03/08/2026 17:40', perfis: [], estado: 'pendente' },
+      { id: 'r3', nome: 'Bianca Toledo', email: 'bianca.toledo@globo.com', equipe: 'Territórios', cargo: 'Analista de talentos', justificativa: 'Manutenção do banco de talentos e das restrições das praças regionais.', em: '03/08/2026 11:05', perfis: [], estado: 'pendente' }
+    ],
+    projetos: [
+      { id: 'p1', cliente: 'Westwing', programa: 'Mais Você', data: '07/08/2026', segmento: 'Casa e decoração', equipe: 'Variedades', solicitante: 'Mariana Vasques', criadoEm: '02/08/2026', sla: '2 dias', consultas: [
+        { protocolo: '#ORC-0418', talento: 'Helena Barreto', categoria: 'Talento Globo', area: 'Gestão de Elenco', status: 'Em análise', estimado: 'R$ 140.000', orcado: '—' },
+        { protocolo: '#ORC-0419', talento: 'Manu Ferraz', categoria: 'Influenciador', area: 'ViU', status: 'Orçada', estimado: 'R$ 110.000', orcado: 'R$ 125.000', validade: '30/09/2026' }
+      ] },
+      { id: 'p2', cliente: 'Banco Vértice', programa: 'Encontro', data: '12/08/2026', segmento: 'Financeiro', equipe: 'Variedades', solicitante: 'Mariana Vasques', criadoEm: '31/07/2026', sla: 'hoje', consultas: [
+        { protocolo: '#ORC-0402', talento: 'Camila Duarte', categoria: 'Agenciado', area: 'Agenciamento', status: 'Enviada', estimado: 'R$ 90.000', orcado: '—' }
+      ] },
+      { id: 'p3', cliente: 'Verão Lager', programa: 'Big Brother Brasil', data: '20/08/2026', segmento: 'Bebidas alcoólicas', equipe: 'Realities', solicitante: 'Caio Bastos', criadoEm: '03/08/2026', sla: '3 dias', consultas: [
+        { protocolo: '#ORC-0431', talento: 'Rodrigo Sampaio', categoria: 'Talento Globo', area: 'Gestão de Elenco', status: 'Bloqueada por restrição', estimado: 'R$ 200.000', orcado: '—' },
+        { protocolo: '#ORC-0432', talento: 'Léo Vasques', categoria: 'Creator', area: 'ViU', status: 'Em análise', estimado: 'R$ 60.000', orcado: '—' }
+      ] },
+      { id: 'p4', cliente: 'Nutrilar', programa: 'É de Casa', data: '15/08/2026', segmento: 'Alimentos', equipe: 'Variedades', solicitante: 'Paulo Menezes', criadoEm: '30/07/2026', sla: 'vencido', consultas: [
+        { protocolo: '#ORC-0388', talento: 'Tati Rocha', categoria: 'Creator', area: 'ViU', status: 'Aprovada', estimado: 'R$ 45.000', orcado: 'R$ 48.000', validade: '31/08/2026' },
+        { protocolo: '#ORC-0389', talento: 'Bruno Tavares', categoria: 'Influenciador', area: 'ViU', status: 'Aprovada', estimado: 'R$ 70.000', orcado: 'R$ 66.000', validade: '15/08/2026' }
+      ] },
+      { id: 'p5', cliente: 'Movtech', programa: 'Cartola Express', data: '10/08/2026', segmento: 'Tecnologia', equipe: 'Esportes', solicitante: 'Renata Coelho', criadoEm: '01/08/2026', sla: '1 dia', consultas: [
+        { protocolo: '#ORC-0410', talento: 'Diego Lemos', categoria: 'Talento Globo', area: 'Gestão de Elenco', status: 'Em análise', estimado: 'R$ 130.000', orcado: '—' }
+      ] },
+      { id: 'p6', cliente: 'Dermáurea', programa: 'Vídeo Show Digital', data: '25/08/2026', segmento: 'Beleza', equipe: 'Entretenimento Digital', solicitante: 'Aline Souza', criadoEm: '29/07/2026', sla: '4 dias', consultas: [
+        { protocolo: '#ORC-0371', talento: 'Manu Ferraz', categoria: 'Influenciador', area: 'ViU', status: 'Orçada', estimado: 'R$ 95.000', orcado: 'R$ 102.000' }
+      ] },
+      { id: 'p7', cliente: 'Trilha Motors', programa: 'Novela das Nove', data: '02/09/2026', segmento: 'Automotivo', equipe: 'Dramaturgia', solicitante: 'Sérgio Farias', criadoEm: '28/07/2026', sla: 'vencido', consultas: [
+        { protocolo: '#ORC-0355', talento: 'Diego Lemos', categoria: 'Talento Globo', area: 'Gestão de Elenco', status: 'Recusada', estimado: 'R$ 180.000', orcado: '—' }
+      ] },
+      { id: 'p8', cliente: 'Prefeitura de Salvador', programa: 'Bahia Meio-Dia', data: '18/08/2026', segmento: 'Varejo', equipe: 'Regionais', solicitante: 'Juliana Prado', criadoEm: '27/07/2026', sla: '5 dias', consultas: [
+        { protocolo: '#ORC-0340', talento: 'Camila Duarte', categoria: 'Agenciado', area: 'Agenciamento', status: 'Rascunho', estimado: 'R$ 35.000', orcado: '—' }
+      ] }
+    ]
+  };
+
+  projStatus(p) {
+    const s = p.consultas.map(c => c.status);
+    for (let i = 0; i < ORDER.length; i++) { if (s.indexOf(ORDER[i]) >= 0) return ORDER[i]; }
+    return 'Enviada';
+  }
+
+  matches(p) {
+    const st = this.state;
+    const u = st.user;
+    if (st.tab === 'equipe' && p.equipe !== u.equipe) return false;
+    if (st.tab === 'minhas' && p.solicitante !== u.nome) return false;
+    if (st.tab === 'acao' && p.sla !== 'vencido' && p.sla !== 'hoje') return false;
+    if (st.fEquipe !== 'Todas as equipes' && p.equipe !== st.fEquipe) return false;
+    if (st.fStatus !== 'Todos os status' && !p.consultas.some(c => c.status === st.fStatus)) return false;
+    if (st.fArea !== 'Todas as áreas' && !p.consultas.some(c => c.area === st.fArea)) return false;
+    const q = st.query.trim().toLowerCase();
+    if (q) {
+      const hay = (p.cliente + ' ' + p.programa + ' ' + p.segmento + ' ' + p.equipe + ' ' + p.consultas.map(c => c.talento + ' ' + c.protocolo).join(' ')).toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  }
+
+  count(tab) {
+    const u = this.state.user;
+    return this.state.projetos.filter(p =>
+      tab === 'todas' ? true :
+      tab === 'equipe' ? p.equipe === u.equipe :
+      tab === 'minhas' ? p.solicitante === u.nome :
+      p.sla === 'vencido' || p.sla === 'hoje'
+    ).length;
+  }
+
+  slaStyle(sla) {
+    const bad = sla === 'vencido', warn = sla === 'hoje';
+    return {
+      fontSize: '11.5px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap',
+      color: bad ? '#B3121B' : warn ? '#8A6A00' : '#3D6B18',
+      background: bad ? '#FDF1F1' : warn ? '#FFF7E0' : '#F2FBE8'
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const u = st.user;
+    const chip = s => ({ fontSize: '11px', fontWeight: 700, letterSpacing: '0.03em', padding: '5px 10px', borderRadius: '999px', color: STATUS[s].fg, background: STATUS[s].bg, whiteSpace: 'nowrap' });
+
+    const list = st.projetos.filter(p => this.matches(p));
+
+    const projects = list.map(p => {
+      const restrito = p.equipe !== u.equipe;
+      const status = this.projStatus(p);
+      const av = p.consultas.map((c, i) => ({
+        nome: c.talento, initials: ini(c.talento),
+        style: { width: '30px', height: '30px', marginLeft: i ? '-8px' : '0', borderRadius: '999px', border: '2px solid #FFFFFF', background: AV[(p.id.charCodeAt(1) + i) % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '10.5px', fontWeight: 700 }
+      }));
+      return {
+        cliente: p.cliente, programa: p.programa, data: p.data, segmento: p.segmento, equipe: p.equipe,
+        equipeLabel: p.equipe + ' · ' + p.solicitante,
+        criadoEm: p.criadoEm, sla: p.sla === 'vencido' ? 'Prazo vencido' : p.sla === 'hoje' ? 'Vence hoje' : 'Faltam ' + p.sla,
+        slaStyle: this.slaStyle(p.sla),
+        status: status, statusStyle: chip(status),
+        avatars: av.slice(0, 3),
+        moreLabel: p.consultas.length > 3 ? '+' + (p.consultas.length - 3) : '',
+        moreStyle: p.consultas.length > 3 ? { marginLeft: '6px', fontSize: '11.5px', fontWeight: 700, color: '#85839A' } : { display: 'none' },
+        restrito: restrito,
+        consultasLabel: p.consultas.length + ' consulta(s) neste projeto',
+        open: !!st.open[p.id],
+        chevronStyle: { width: '26px', height: '100%', minHeight: '44px', border: 'none', background: 'transparent', color: '#A19FB2', fontSize: '15px', cursor: 'pointer', transform: st.open[p.id] ? 'rotate(180deg)' : 'none' },
+        blockStyle: { background: st.open[p.id] ? '#FFFFFF' : '#FFFFFF' },
+        cardStyle: { display: 'flex', flexDirection: 'column', gap: '13px', border: '1px solid ' + (restrito ? '#E7E6EE' : '#DCD7EC'), borderLeft: '4px solid ' + (restrito ? '#E0DEE9' : '#C7168C'), borderRadius: '14px', padding: '16px 18px', background: '#FFFFFF' },
+        onToggle: () => this.setState(s => ({ open: Object.assign({}, s.open, { [p.id]: !s.open[p.id] }) })),
+        onPlug: () => this.setState(s => ({ open: Object.assign({}, s.open, { [p.id]: true }) })),
+        consultas: p.consultas.map((c, i) => ({
+          protocolo: c.protocolo, talento: c.talento, categoria: c.categoria, area: c.area,
+          status: st.desfecho[c.protocolo] === 'Vendido' ? 'Fechada' : st.desfecho[c.protocolo] === 'Não vendido' ? 'Expirada' : c.status,
+          pedeDesfecho: !restrito && !!c.validade && !st.desfecho[c.protocolo],
+          temDesfecho: !restrito && !!st.desfecho[c.protocolo],
+          expirado: st.desfecho[c.protocolo] === 'Não vendido',
+          desfechoLabel: st.desfecho[c.protocolo] === 'Vendido' ? 'Vendido · fechada' : 'Não vendido · expirada',
+          desfechoStyle: { fontSize: '10.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', whiteSpace: 'nowrap', color: st.desfecho[c.protocolo] === 'Vendido' ? '#12111A' : '#85839A', background: st.desfecho[c.protocolo] === 'Vendido' ? '#C8F000' : '#F4F3F7' },
+          onVendido: () => this.setState(s => ({ desfecho: Object.assign({}, s.desfecho, { [c.protocolo]: 'Vendido' }) })),
+          onNaoVendido: () => this.setState(s => ({ desfecho: Object.assign({}, s.desfecho, { [c.protocolo]: 'Não vendido' }) })),
+          onLimparDesfecho: () => this.setState(s => { const d = Object.assign({}, s.desfecho); delete d[c.protocolo]; return { desfecho: d }; }),
+          estimado: restrito ? '—' : c.estimado,
+          orcado: restrito ? 'restrito' : c.orcado,
+          temValidade: !restrito && !!c.validade,
+          validadeLabel: c.validade ? 'válido até ' + c.validade : '',
+          validadeStyle: { fontSize: '10.5px', fontWeight: 700, color: '#8A6A00', background: '#FFF7E0', padding: '3px 8px', borderRadius: '999px', whiteSpace: 'nowrap' },
+          statusStyle: chip(c.status),
+          avatarStyle: { width: '28px', height: '28px', flexShrink: 0, borderRadius: '999px', background: AV[(p.id.charCodeAt(1) + i) % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '10.5px', fontWeight: 700 },
+          initials: ini(c.talento)
+        }))
+      };
+    });
+
+    const tabDefs = [
+      { id: 'todas', label: 'Todas' },
+      { id: 'equipe', label: 'Minha equipe' },
+      { id: 'minhas', label: 'Minhas' },
+      { id: 'acao', label: 'Aguardando ação' }
+    ];
+
+    const totalConsultas = st.projetos.reduce((a, p) => a + p.consultas.length, 0);
+    const minhas = st.projetos.filter(p => p.solicitante === u.nome);
+    const aguardando = st.projetos.reduce((a, p) => a + p.consultas.filter(c => c.status === 'Em análise' || c.status === 'Enviada').length, 0);
+    const bloqueadas = st.projetos.reduce((a, p) => a + p.consultas.filter(c => c.status === 'Bloqueada por restrição').length, 0);
+
+    return {
+      nav: [
+        { label: 'Início', active: true }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Relatórios' }, { label: 'Usuários' }
+      ].map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer' } })),
+      user: {
+        nome: u.nome, email: u.email, equipe: u.equipe, notif: u.notif, initials: ini(u.nome),
+        avatarStyle: { width: '34px', height: '34px', borderRadius: '999px', background: '#C8F000', color: '#12111A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '12.5px', fontWeight: 700 },
+        bigAvatarStyle: { width: '130px', height: '130px', borderRadius: '999px', background: '#C8F000', color: '#12111A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '40px', fontWeight: 700, border: '3px dashed #A9CE00' },
+        onNome: e => this.setState(s => ({ user: Object.assign({}, s.user, { nome: e.target.value }) })),
+        onEmail: e => this.setState(s => ({ user: Object.assign({}, s.user, { email: e.target.value }) })),
+        onEquipe: e => this.setState(s => ({ user: Object.assign({}, s.user, { equipe: e.target.value }) })),
+        onNotif: e => this.setState(s => ({ user: Object.assign({}, s.user, { notif: e.target.value }) }))
+      },
+      equipes: EQUIPES,
+      meusPerfis: (u.perfis.length ? u.perfis : ['Nenhum perfil concedido']).map(p => {
+        const owner = p === 'Proprietário';
+        return {
+          label: p,
+          style: { height: '32px', padding: '0 14px', borderRadius: '999px', display: 'flex', alignItems: 'center', fontSize: '12.5px', fontWeight: owner ? 700 : 600, color: '#FFFFFF', background: owner ? '#12111A' : '#8B2FD6' }
+        };
+      }),
+      pendentes: String(st.pedidos.filter(p => p.estado === 'pendente').length),
+      hasPendentes: st.pedidos.filter(p => p.estado === 'pendente').length > 0,
+      reqOpen: st.reqOpen, reqSent: st.reqSent, reqNotSent: !st.reqSent, reqForm: st.reqForm,
+      openReq: () => this.setState({ reqOpen: true, reqSent: false }),
+      closeReq: () => this.setState({ reqOpen: false }),
+      sendReq: () => this.setState(s => ({
+        reqSent: true,
+        pedidos: s.pedidos.concat([{
+          id: 'r' + Date.now(), nome: s.reqForm.nome || 'Novo usuário', email: s.reqForm.email, equipe: s.reqForm.equipe,
+          cargo: s.reqForm.cargo, justificativa: s.reqForm.justificativa, em: 'agora', perfis: [], estado: 'pendente'
+        }])
+      })),
+      reqFields: [
+        { k: 'nome', label: 'Nome completo', span: 6, hint: 'Como aparece no crachá' },
+        { k: 'email', label: 'E-mail corporativo', span: 6, hint: 'nome@globo.com' },
+        { k: 'cargo', label: 'Cargo / função', span: 6, hint: 'Ex.: analista de projetos comerciais' }
+      ].map(fl => ({
+        label: fl.label, hint: fl.hint, value: st.reqForm[fl.k] || '',
+        wrap: { gridColumn: 'span ' + fl.span },
+        onChange: e => this.setState(s => ({ reqForm: Object.assign({}, s.reqForm, { [fl.k]: e.target.value }) }))
+      })),
+      onReqEquipe: e => this.setState(s => ({ reqForm: Object.assign({}, s.reqForm, { equipe: e.target.value }) })),
+      onReqJust: e => this.setState(s => ({ reqForm: Object.assign({}, s.reqForm, { justificativa: e.target.value }) })),
+      onReqNotif: e => this.setState(s => ({ reqForm: Object.assign({}, s.reqForm, { notif: e.target.value }) })),
+      pedidos: st.pedidos.map((p, i) => ({
+        nome: p.nome, email: p.email, equipe: p.equipe, cargo: p.cargo, justificativa: p.justificativa, em: p.em,
+        initials: ini(p.nome),
+        pendente: p.estado === 'pendente',
+        decidido: p.estado !== 'pendente',
+        open: st.pedOpen[p.id] === undefined ? p.estado === 'pendente' : !!st.pedOpen[p.id],
+        situacao: p.estado === 'pendente' ? 'Aguardando aprovação' : p.estado === 'aprovado' ? 'Aprovado' : 'Recusado',
+        perfisResumo: p.perfis.length ? p.perfis.join(' · ') : 'nenhum selecionado',
+        decisaoLabel: p.estado === 'aprovado' ? 'Acesso aprovado · ' + (p.perfis.join(' · ') || 'sem perfil') : 'Acesso recusado',
+        decisaoStyle: { fontSize: '11px', fontWeight: 700, padding: '5px 10px', borderRadius: '999px', whiteSpace: 'nowrap', color: p.estado === 'pendente' ? '#8A6A00' : p.estado === 'aprovado' ? '#3D6B18' : '#B3121B', background: p.estado === 'pendente' ? '#FFF7E0' : p.estado === 'aprovado' ? '#F2FBE8' : '#FDF1F1' },
+        rowStyle: { display: 'grid', gridTemplateColumns: '26px 1.5fr 1.2fr 1fr 0.9fr 1.5fr 180px', alignItems: 'center', borderBottom: '1px solid #F0EFF5', background: '#FFFFFF' },
+        chevronStyle: { width: '26px', minHeight: '44px', border: 'none', background: 'transparent', color: '#A19FB2', fontSize: '15px', cursor: 'pointer', transform: (st.pedOpen[p.id] === undefined ? p.estado === 'pendente' : st.pedOpen[p.id]) ? 'rotate(180deg)' : 'none' },
+        onToggle: () => this.setState(s => {
+          const cur = s.pedOpen[p.id] === undefined ? p.estado === 'pendente' : s.pedOpen[p.id];
+          return { pedOpen: Object.assign({}, s.pedOpen, { [p.id]: !cur }) };
+        }),
+        avatarStyle: { width: '32px', height: '32px', flexShrink: 0, borderRadius: '999px', background: AV[i % AV.length], color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '11.5px', fontWeight: 700 },
+        semPerfil: p.perfis.length === 0,
+        semPerfilText: p.perfis.length ? p.perfis.length + ' perfil(is) selecionado(s)' : 'Selecione ao menos um perfil para liberar a aprovação',
+        semPerfilStyle: { fontSize: '12.5px', fontWeight: 600, color: p.perfis.length ? '#3D6B18' : '#8A6A00' },
+        flags: PERFIS.map(x => {
+          const on = p.perfis.indexOf(x) >= 0;
+          const owner = x === 'Proprietário';
+          return {
+            label: x,
+            style: { height: '30px', padding: '0 13px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: owner ? 700 : 600, color: on ? '#FFFFFF' : '#56546B', background: on ? (owner ? '#12111A' : '#8B2FD6') : '#FFFFFF', border: '1px solid ' + (on ? (owner ? '#12111A' : '#8B2FD6') : '#DCDAE6'), display: 'flex', alignItems: 'center', gap: '7px' },
+            boxStyle: { width: '13px', height: '13px', borderRadius: '3px', border: '1.5px solid ' + (on ? '#FFFFFF' : '#CFCDDD'), background: on ? '#FFFFFF' : 'transparent', color: on ? (owner ? '#12111A' : '#8B2FD6') : 'transparent', fontSize: '9px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+            onClick: () => this.setState(s => ({
+              pedidos: s.pedidos.map(q => q.id !== p.id ? q : Object.assign({}, q, { perfis: q.perfis.indexOf(x) >= 0 ? q.perfis.filter(y => y !== x) : q.perfis.concat([x]) }))
+            }))
+          };
+        }),
+        approveStyle: { height: '38px', padding: '0 20px', borderRadius: '999px', border: 'none', cursor: p.perfis.length ? 'pointer' : 'not-allowed', background: p.perfis.length ? '#C7168C' : '#EAE8F1', color: p.perfis.length ? '#FFFFFF' : '#A19FB2', fontSize: '13.5px', fontWeight: 700 },
+        onApprove: () => { if (p.perfis.length) this.setState(s => ({ pedidos: s.pedidos.map(q => q.id === p.id ? Object.assign({}, q, { estado: 'aprovado' }) : q) })); },
+        onReject: () => this.setState(s => ({ pedidos: s.pedidos.map(q => q.id === p.id ? Object.assign({}, q, { estado: 'recusado', perfis: [] }) : q) })),
+        onReopen: () => this.setState(s => ({ pedidos: s.pedidos.map(q => q.id === p.id ? Object.assign({}, q, { estado: 'pendente' }) : q) }))
+      })),
+      kpis: [
+        { label: 'Projetos na janela', value: String(st.projetos.length), note: 'últimos 10 dias' },
+        { label: 'Consultas abertas', value: String(aguardando), note: 'aguardando retorno' },
+        { label: 'Minhas solicitações', value: String(minhas.length), note: 'em ' + u.equipe },
+        { label: 'Bloqueadas por restrição', value: String(bloqueadas), note: 'exigem tratativa' }
+      ].map((k, i) => ({ label: k.label, value: k.value, note: k.note, style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '14px 16px', borderRadius: '12px', background: i === 3 && bloqueadas > 0 ? '#FDF1F1' : '#F7F6FA', border: '1px solid ' + (i === 3 && bloqueadas > 0 ? '#F3B4B4' : 'transparent') } })),
+      tabs: tabDefs.map(t => {
+        const on = st.tab === t.id;
+        return {
+          label: t.label, count: String(this.count(t.id)),
+          style: { height: '30px', padding: '0 14px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: on ? '#12111A' : '#6B6A7C', background: on ? '#FFFFFF' : 'transparent', boxShadow: on ? '0 1px 3px rgba(18,17,26,0.12)' : 'none' },
+          countStyle: { marginLeft: '5px', fontSize: '11px', fontWeight: 700, color: on ? '#C7168C' : '#A19FB2' },
+          onClick: () => this.setState({ tab: t.id })
+        };
+      }),
+      statusChips: ['Todos os status'].concat(ORDER).slice(0, 6).map(s => {
+        const on = st.fStatus === s;
+        return {
+          label: s,
+          style: { height: '30px', padding: '0 13px', borderRadius: '999px', cursor: 'pointer', fontSize: '12.5px', fontWeight: 600, color: on ? '#FFFFFF' : '#56546B', background: on ? '#12111A' : '#FFFFFF', border: '1px solid ' + (on ? '#12111A' : '#DCDAE6') },
+          onClick: () => this.setState({ fStatus: s })
+        };
+      }),
+      query: st.query,
+      onQuery: e => this.setState({ query: e.target.value }),
+      fStatus: st.fStatus, fArea: st.fArea, fEquipe: st.fEquipe,
+      statusOptions: ['Todos os status'].concat(ORDER),
+      areaOptions: ['Todas as áreas', 'Gestão de Elenco', 'ViU', 'Agenciamento'],
+      equipeOptions: ['Todas as equipes'].concat(EQUIPES),
+      onStatus: e => this.setState({ fStatus: e.target.value }),
+      onArea: e => this.setState({ fArea: e.target.value }),
+      onEquipe: e => this.setState({ fEquipe: e.target.value }),
+      projects: projects,
+      vazio: projects.length === 0,
+      visiveis: String(projects.length),
+      totalConsultas: String(totalConsultas)
+    };
+  }
+}
+</script>
+</body>
+</html>

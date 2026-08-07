@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2020EE; text-decoration: none; }
+  a:hover { color: #FF1BA0; }
+</style>
+</helmet>
+
+<div style="max-width: 1180px; margin: 0 auto; padding: 56px 40px 90px; display: flex; flex-direction: column; gap: 34px">
+
+  <div style="background: #2020EE; border-radius: 20px; overflow: hidden; position: relative">
+    <div style="position: relative; height: 230px; overflow: hidden">
+      <img src="assets/login-hero.png" alt="Talentos Globo" style="position: absolute; top: 0; right: 0; height: 100%; width: auto; display: block" />
+      <div style="position: absolute; inset: 0; background: linear-gradient(90deg, #2020EE 0%, #2020EE 38%, rgba(32,32,238,0) 62%)"></div>
+      <div style="position: absolute; top: 28px; left: 36px; display: flex; align-items: center; gap: 13px">
+        <img src="assets/logo-globo.png" alt="Globo" style="width: 34px; height: 34px; object-fit: contain; filter: brightness(0) invert(1)" />
+        <div style="width: 1px; height: 22px; background: rgba(255,255,255,0.4)"></div>
+        <div style="font-family: Outfit, sans-serif; font-size: 17px; font-weight: 700; color: #FFFFFF">Cachê Hub</div>
+      </div>
+      <div style="position: absolute; left: 36px; bottom: 30px; max-width: 520px; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 700; line-height: 1.08; color: #FFFFFF; letter-spacing: -0.02em">Gestão de Talentos e<br />Orçamentos de Cachê</div>
+        <div style="font-size: 13.5px; color: rgba(255,255,255,0.85)">Aplicação interna · 10 telas desenhadas nesta rodada</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #FF1BA0">Fluxo completo</div>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <sc-for list="{{ fluxo }}" as="f" hint-placeholder-count="7">
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div style="{{ f.style }}">{{ f.label }}</div>
+          <div style="{{ f.arrowStyle }}">→</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+    <sc-for list="{{ telas }}" as="t" hint-placeholder-count="8">
+      <a href="{{ t.href }}" style="display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E7E6EE; border-radius: 16px; padding: 20px 22px; text-decoration: none" style-hover="border-color: #2020EE; box-shadow: 0 12px 30px rgba(18,17,26,0.10)">
+        <div style="display: flex; align-items: center; gap: 11px">
+          <div style="{{ t.numStyle }}">{{ t.num }}</div>
+          <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">{{ t.titulo }}</div>
+          <div style="flex: 1"></div>
+          <div style="{{ t.perfilStyle }}">{{ t.perfil }}</div>
+        </div>
+        <div style="font-size: 13.5px; line-height: 1.55; color: #56546B; text-wrap: pretty">{{ t.desc }}</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px">
+          <sc-for list="{{ t.tags }}" as="g" hint-placeholder-count="3">
+            <div style="font-size: 11px; font-weight: 600; color: #56546B; background: #F4F3F7; padding: 4px 9px; border-radius: 999px">{{ g }}</div>
+          </sc-for>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #E7E6EE; border-radius: 16px; overflow: hidden">
+    <div style="background: #12111A; padding: 16px 22px; display: flex; align-items: center; gap: 12px">
+      <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #FFFFFF">Ciclo de vida da consulta</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.6)">status e transições automáticas</div>
+    </div>
+    <div style="padding: 20px 22px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="9">
+          <div style="{{ s.style }}">{{ s.label }}</div>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px">
+        <sc-for list="{{ regras }}" as="r" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 5px; padding: 14px 16px; border-radius: 12px; background: #FBFAFD; border: 1px solid #EEECF3">
+            <div style="font-family: Outfit, sans-serif; font-size: 13.5px; font-weight: 700; color: #12111A">{{ r.titulo }}</div>
+            <div style="font-size: 12.5px; line-height: 1.5; color: #56546B; text-wrap: pretty">{{ r.texto }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #E7E6EE; border-radius: 16px; overflow: hidden">
+    <div style="background: #F7F6FA; padding: 14px 22px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; gap: 11px">
+      <div style="width: 4px; height: 15px; border-radius: 2px; background: #FF1BA0"></div>
+      <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Backlog acordado — ainda não desenhado</div>
+    </div>
+    <div style="padding: 18px 22px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px">
+      <sc-for list="{{ backlog }}" as="b" hint-placeholder-count="8">
+        <div style="display: flex; align-items: flex-start; gap: 10px">
+          <div style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 5px; background: #F2F0F8; color: #A19FB2; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">{{ b.n }}</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #2C2B3A; text-wrap: pretty">{{ b.texto }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1260}}">
+class Component extends DCLogic {
+  renderVals() {
+    const fluxo = ['Login', 'Home', 'Talentos', 'Solicitação', 'Roteamento', 'Aprovador', 'Desfecho'];
+    const telas = [
+      { num: '01', titulo: 'Login', href: 'Cachê Hub - Login.dc.html', perfil: 'todos', desc: 'Abertura de marca, acesso validado pelo e-mail aprovado e pedido de acesso no próprio login.', tags: ['e-mail + senha', 'solicitar acesso', 'estados de erro'] },
+      { num: '02', titulo: 'Home do solicitante', href: 'Cachê Hub - Home.dc.html', perfil: 'solicitante', desc: 'Consultas dos últimos 10 dias agrupadas por projeto, com filtros por equipe e o desfecho vendido/não vendido.', tags: ['plugar em projeto', 'perfil do usuário', 'aprovação de acessos'] },
+      { num: '03', titulo: 'Formulário de orçamento', href: 'Formulário de Orçamento de Cachê.dc.html', perfil: 'solicitante', desc: 'Wizard iniciado pelo banco de talentos, campos que mudam por tipo, cachê sugerido e visão do aprovador.', tags: ['5 etapas', 'link Salesforce', 'validade do orçamento'] },
+      { num: '04', titulo: 'Banco de talentos', href: 'Cachê Hub - Banco de Talentos.dc.html', perfil: 'admin de talentos', desc: 'Base única com ficha do talento, alcance por rede, restrições e histórico de cachês.', tags: ['cadastro completo', 'histórico de valores'] },
+      { num: '05', titulo: 'Restrições', href: 'Cachê Hub - Restrições.dc.html', perfil: 'admin de talentos', desc: 'Bloqueios por segmento e por patrocinador concorrente, com simulador de conflito.', tags: ['vigência', 'simulador'] },
+      { num: '06', titulo: 'Tabela de Referência de Cachê', href: 'Cachê Hub - Tabela de Referência.dc.html', perfil: 'ViU e Agenciamento', desc: 'Base de unidades por tamanho, entrega e tipo de projeto, com atualização em massa por planilha e versões.', tags: ['252 combinações', 'upload em massa', 'restrita'] },
+      { num: '07', titulo: 'Relatórios', href: 'Cachê Hub - Relatórios.dc.html', perfil: 'gerentes', desc: 'Dashboard de orçado x fechado, funil, times, anunciantes, marcas, programas e desempenho de aprovadores.', tags: ['filtros interativos', 'exportar Excel'] },
+      { num: '08', titulo: 'Usuários e permissões', href: 'Cachê Hub - Usuários.dc.html', perfil: 'proprietário', desc: 'Lista de usuários, perfis efetivos e matriz de 11 permissões × 9 perfis, incluindo os Gerentes por área.', tags: ['perfis', 'matriz editável'] },
+      { num: '09', titulo: 'Notificações', href: 'Cachê Hub - Notificações.dc.html', perfil: 'proprietário', desc: 'Remetente cachê-hub@g.globo, roteamento para as caixas PPC de cada área e matriz de eventos por destinatário.', tags: ['10 eventos', 'lembretes de SLA', 'preview do e-mail'] },
+      { num: '10', titulo: 'Versão 1 do formulário', href: 'Formulário de Orçamento de Cachê v1.dc.html', perfil: 'histórico', desc: 'Primeira rodada preservada para consulta: wizard e página única lado a lado.', tags: ['arquivo'] }
+    ];
+    const STATUS_COR = {
+      'Rascunho': ['#6B6A7C', '#F2F0F8'], 'Enviada': ['#2020EE', '#EDEDFD'], 'Em análise': ['#8A6A00', '#FFF7E0'],
+      'Orçada': ['#0F7B6C', '#E6F6F2'], 'Aprovada': ['#3D6B18', '#F2FBE8'], 'Fechada': ['#12111A', '#C8F000'],
+      'Expirada': ['#85839A', '#F4F3F7'], 'Recusada': ['#B3121B', '#FDF1F1'], 'Bloqueada por restrição': ['#B3121B', '#FDF1F1']
+    };
+    return {
+      fluxo: fluxo.map((f, i) => ({
+        label: f,
+        style: { fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 700, color: '#12111A', background: '#FFFFFF', border: '1px solid #E0DEE9', padding: '9px 15px', borderRadius: '999px' },
+        arrowStyle: { fontSize: '14px', color: '#A19FB2', display: i === fluxo.length - 1 ? 'none' : 'block' }
+      })),
+      telas: telas.map(t => ({
+        num: t.num, titulo: t.titulo, href: t.href, desc: t.desc, tags: t.tags, perfil: t.perfil,
+        numStyle: { width: '32px', height: '32px', borderRadius: '9px', background: '#2020EE', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Outfit, sans-serif', fontSize: '12.5px', fontWeight: 700 },
+        perfilStyle: { fontSize: '10.5px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#FF1BA0', background: '#FDEBF6', padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap' }
+      })),
+      statuses: Object.keys(STATUS_COR).map(s => ({
+        label: s,
+        style: { fontSize: '12px', fontWeight: 700, color: STATUS_COR[s][0], background: STATUS_COR[s][1], padding: '6px 12px', borderRadius: '999px' }
+      })),
+      regras: [
+        { titulo: 'Projeto vendido → Fechada', texto: 'O solicitante informa o desfecho na home. Vendido encerra a consulta como Fechada e o valor entra no relatório como cachê fechado.' },
+        { titulo: 'Não vendido ou validade vencida → Expirada', texto: 'Sem venda até a validade definida pela área, a consulta expira e o solicitante é notificado. Solicitante e Gerente informam o desfecho, e a área pode revalidar com nova data.' },
+        { titulo: 'Conflito de restrição → bloqueio', texto: 'Cruzamento com o banco de restrições marca a consulta como Bloqueada por restrição e alerta o Gerente da área.' }
+      ],
+      backlog: [
+        'Thread de negociação por talento, com histórico de contrapropostas',
+        'Disponibilidade de agenda do talento na resposta da área',
+        'Status "Enviado para contratação" e referência de contrato / PO',
+        'Log de auditoria por solicitação',
+        'Alerta de talento duplicado e mesclagem de fichas',
+        'Restrição por patrocinador do programa, além da restrição do talento',
+        'Flag de projeto confidencial, oculto para outras equipes',
+        'Cachê orçado como faixa mínima e máxima'
+      ].map((t, i) => ({ n: String(i + 1), texto: t })),
+      ano: '2026'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Tokens de design do Cachê Hub — extraídos do README do handoff e dos
+   protótipos .dc.html. Tudo que é cor, fonte ou raio de canto mora aqui.
+   No Tailwind v4 a configuração é feita neste arquivo, não num tailwind.config.
+   Cada token vira uma classe: --color-azul  ->  bg-azul, text-azul, border-azul.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Marca */
+  --color-azul: #2020ee;
+  --color-azul-escuro: #1616bb;
+  --color-azul-suave: #f2f2fe;
+  --color-azul-borda: #c9c9f8;
+  --color-magenta: #c7168c;
+  --color-magenta-vivo: #ff1ba0;
+  --color-magenta-suave: #fdebf6;
+  --color-lima: #c8f000;
+  --color-roxo: #8b2fd6;
+  --color-verde-agua: #00a38c;
+  --color-verde-agua-texto: #0f7b6c;
+  --color-verde-agua-suave: #e6f6f2;
+
+  /* Texto — do mais escuro ao mais claro */
+  --color-tinta: #12111a;
+  --color-tinta-2: #56546b;
+  --color-tinta-3: #6b6a7c;
+  --color-tinta-4: #85839a;
+  --color-tinta-5: #a19fb2;
+  --color-tinta-6: #a8a6b8;
+
+  /* Bordas */
+  --color-borda: #e7e6ee;
+  --color-borda-forte: #dcdae6;
+  --color-borda-suave: #f0eff5;
+  --color-borda-clara: #eeecf3;
+
+  /* Fundos neutros */
+  --color-fundo: #edecf2;
+  --color-fundo-2: #f7f6fa;
+  --color-fundo-3: #fbfafd;
+
+  /* Estados */
+  --color-erro: #b3121b;
+  --color-erro-forte: #e8112d;
+  --color-erro-fundo: #fdf1f1;
+  --color-erro-borda: #f3b4b4;
+  --color-aviso: #8a6a00;
+  --color-aviso-fundo: #fff7e0;
+  --color-aviso-borda: #f0dca0;
+  --color-sucesso: #3d6b18;
+  --color-sucesso-fundo: #f2fbe8;
+
+  /* Cores por categoria de talento (CAT_COLOR do protótipo).
+     Estas quatro são semânticas: mudar uma muda o significado na tela. */
+  --color-cat-globo: #2020ee;
+  --color-cat-agenciado: #8b2fd6;
+  --color-cat-influenciador: #c7168c;
+  --color-cat-creator: #00a38c;
+
+  /* Raios de canto: 8–13px em cartões e inputs, 999px em chips e botões */
+  --radius-cartao: 13px;
+  --radius-campo: 11px;
+}
+
+/* As fontes vêm do next/font (ver src/app/layout.tsx), que expõe as duas
+   variáveis abaixo no <html>. `inline` faz o Tailwind apontar direto para elas. */
+@theme inline {
+  --font-titulo: var(--fonte-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--fonte-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-fundo);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+}
+
+/* Anel de foco do protótipo: magenta vivo, encostado na borda do campo. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-magenta-vivo);
+  outline-offset: -1px;
+}
+
+::placeholder {
+  color: var(--color-tinta-6);
+}

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #EDECF2; font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #2B2ADB; text-decoration: none; }
+  a:hover { color: #C7168C; }
+  input, select, textarea, button { font-family: inherit; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid #C7168C; outline-offset: -1px; }
+  ::placeholder { color: #A8A6B8; }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 96px; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 8px; max-width: 980px">
+    <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #C7168C">Rodada 8 · Notificações</div>
+    <h1 style="font-family: Outfit, sans-serif; font-size: 34px; font-weight: 600; color: #12111A; margin: 0; letter-spacing: -0.02em">Configuração de alertas</h1>
+    <p style="font-size: 15px; line-height: 1.6; color: #56546B; margin: 0; text-wrap: pretty">Três camadas: o <strong>remetente</strong> (cachê-hub@g.globo), o <strong>roteamento por área</strong> — a caixa do time que recebe cada tipo de talento — e a <strong>matriz de eventos</strong>, que define quem é avisado em cada momento do fluxo. <a href="#8a">8a</a> é a configuração, <a href="#8b">8b</a> mostra o e-mail montado e o histórico de disparos.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+
+    <div id="8a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #C7168C; padding: 5px 11px; border-radius: 999px">8a</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Remetente, roteamento e eventos</div>
+        <div style="font-size: 13px; color: #6B6A7C">quem envia, para qual caixa e quando</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13); position: relative">
+        <div style="height: 62px; border-bottom: 1px solid #E7E6EE; display: flex; align-items: center; justify-content: space-between; padding: 0 26px">
+          <div style="display: flex; align-items: center; gap: 13px">
+            <img src="assets/logo-globo.png" alt="Globo" style="width: 30px; height: 30px; object-fit: contain" />
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; color: #12111A; letter-spacing: -0.01em">Cachê Hub</div>
+              <div style="font-size: 11px; color: #85839A; letter-spacing: 0.03em">Gestão de Talentos e Orçamentos de Cachê</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 22px">
+            <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+              <div style="{{ n.style }}">{{ n.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div style="display: flex; flex-direction: column; align-items: flex-end">
+              <div style="font-size: 13px; font-weight: 600; color: #12111A">Ricardo Alencar</div>
+              <div style="font-size: 11px; color: #85839A">Proprietário</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 999px; background: #12111A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700">RA</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 5px">
+            <div style="font-family: Outfit, sans-serif; font-size: 25px; font-weight: 600; color: #12111A; letter-spacing: -0.01em">Notificações</div>
+            <div style="font-size: 13px; color: #6B6A7C">{{ resumoRegras }}</div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button onClick="{{ openTeste }}" style="height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="border-color: #12111A">Enviar teste</button>
+            <button style="height: 42px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">Salvar configuração</button>
+          </div>
+        </div>
+
+        <div style="margin: 18px 26px 0; border: 1px solid #DCD7EC; border-radius: 13px; overflow: hidden">
+          <div style="background: #12111A; padding: 11px 16px; display: flex; align-items: center; gap: 11px">
+            <div style="font-family: Outfit, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: #FFFFFF">Remetente</div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6)">conta de serviço usada em todos os disparos</div>
+          </div>
+          <div style="padding: 16px; display: grid; grid-template-columns: 1.1fr 1fr 1fr 200px; gap: 16px; align-items: end">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">E-mail de envio</div>
+              <input value="{{ remetente }}" onChange="{{ onRemetente }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 11px; font-size: 13.5px; font-weight: 600; color: #12111A" />
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Nome exibido</div>
+              <input value="{{ nomeExib }}" onChange="{{ onNomeExib }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 11px; font-size: 13.5px; color: #12111A" />
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Responder para</div>
+              <input value="{{ replyTo }}" onChange="{{ onReplyTo }}" style="width: 100%; box-sizing: border-box; height: 38px; border: 1px solid #DCDAE6; border-radius: 9px; padding: 0 11px; font-size: 13.5px; color: #12111A" />
+            </div>
+            <div style="display: flex; align-items: center; gap: 9px; background: #F2FBE8; border: 1px solid #CDE9AE; border-radius: 9px; padding: 9px 12px">
+              <div style="width: 8px; height: 8px; border-radius: 999px; background: #3D6B18"></div>
+              <div style="font-size: 12px; font-weight: 700; color: #3D6B18">Domínio verificado</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin: 16px 26px 0; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 11px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #C7168C"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Roteamento por área responsável</div>
+            <div style="font-size: 11.5px; color: #85839A">o tipo de talento define a caixa que recebe a solicitação</div>
+          </div>
+          <div style="padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px">
+            <sc-for list="{{ rotas }}" as="r" hint-placeholder-count="3">
+              <div style="{{ r.cardStyle }}">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div style="{{ r.dotStyle }}"></div>
+                  <div style="display: flex; flex-direction: column; gap: 2px">
+                    <div style="font-family: Outfit, sans-serif; font-size: 15.5px; font-weight: 600; color: #12111A">{{ r.area }}</div>
+                    <div style="font-size: 11.5px; color: #85839A">{{ r.tipos }}</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #85839A; margin-bottom: 5px">Caixa do time (Para)</div>
+                  <input value="{{ r.para }}" onChange="{{ r.onPara }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #12111A; background: #FFFFFF" />
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #85839A; margin-bottom: 5px">Cópia (Cc)</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+                    <sc-for list="{{ r.cc }}" as="c" hint-placeholder-count="2">
+                      <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid #DCDAE6; border-radius: 999px; padding: 4px 9px">
+                        <span style="font-family: ui-monospace, monospace; font-size: 11px; color: #2C2B3A">{{ c.email }}</span>
+                        <button onClick="{{ c.onRemove }}" style="width: 15px; height: 15px; border: none; background: transparent; color: #A19FB2; font-size: 13px; line-height: 1; cursor: pointer; padding: 0">×</button>
+                      </div>
+                    </sc-for>
+                    <button onClick="{{ r.onAddCc }}" style="height: 26px; padding: 0 10px; border-radius: 999px; border: 1px dashed #C7168C; background: transparent; color: #C7168C; font-size: 11.5px; font-weight: 700; cursor: pointer">+ Cc</button>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px dashed #E4E2EC; padding-top: 11px">
+                  <div style="font-size: 11.5px; color: #85839A">SLA de retorno: {{ r.sla }}</div>
+                  <button onClick="{{ r.onToggle }}" style="{{ r.switchStyle }}">{{ r.switchLabel }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin: 16px 26px 0; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 11px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #2B2ADB"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Eventos e destinatários</div>
+            <div style="font-size: 11.5px; color: #85839A">clique nas células para incluir ou remover quem é avisado</div>
+            <div style="flex: 1"></div>
+            <div style="display: flex; align-items: center; gap: 14px">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #56546B"><span style="width: 14px; height: 14px; border-radius: 4px; background: #C8F000"></span>notifica</div>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #56546B"><span style="width: 14px; height: 14px; border-radius: 4px; background: #F2F0F8"></span>não notifica</div>
+            </div>
+          </div>
+
+          <div style="{{ headerStyle }}">
+            <div style="padding: 11px 14px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">Evento</div>
+            <sc-for list="{{ colunas }}" as="c" hint-placeholder-count="6">
+              <div style="padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
+                <div style="font-size: 10.5px; font-weight: 700; line-height: 1.3; color: #12111A">{{ c.label }}</div>
+                <div style="font-family: ui-monospace, monospace; font-size: 9px; color: #A19FB2">{{ c.nota }}</div>
+              </div>
+            </sc-for>
+            <div style="padding: 11px 8px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C; text-align: center">Canal</div>
+          </div>
+
+          <sc-for list="{{ eventos }}" as="e" hint-placeholder-count="8">
+            <div style="{{ e.rowStyle }}">
+              <div style="padding: 11px 14px; display: flex; flex-direction: column; gap: 2px">
+                <div style="font-size: 12.5px; font-weight: 600; color: #12111A">{{ e.label }}</div>
+                <div style="font-size: 11px; color: #A19FB2">{{ e.nota }}</div>
+              </div>
+              <sc-for list="{{ e.cells }}" as="c" hint-placeholder-count="6">
+                <div style="padding: 8px; display: flex; align-items: center; justify-content: center">
+                  <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.mark }}</button>
+                </div>
+              </sc-for>
+              <div style="padding: 8px; display: flex; align-items: center; justify-content: center">
+                <button onClick="{{ e.onCanal }}" style="{{ e.canalStyle }}">{{ e.canal }}</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin: 16px 26px 26px; border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+          <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 11px">
+            <div style="width: 4px; height: 15px; border-radius: 2px; background: #F5A623"></div>
+            <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Lembretes e escalonamento</div>
+          </div>
+          <div style="padding: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px">
+            <sc-for list="{{ lembretes }}" as="l" hint-placeholder-count="3">
+              <div style="{{ l.cardStyle }}">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px">
+                  <div style="display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-family: Outfit, sans-serif; font-size: 14.5px; font-weight: 600; color: #12111A">{{ l.titulo }}</div>
+                    <div style="font-size: 11.5px; line-height: 1.45; color: #85839A; text-wrap: pretty">{{ l.desc }}</div>
+                  </div>
+                  <button onClick="{{ l.onToggle }}" style="{{ l.switchStyle }}">{{ l.switchLabel }}</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 9px">
+                  <input value="{{ l.valor }}" onChange="{{ l.onValor }}" style="width: 62px; box-sizing: border-box; height: 34px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; font-weight: 600; text-align: center; color: #12111A" />
+                  <div style="font-size: 12.5px; color: #56546B">{{ l.unidade }}</div>
+                </div>
+                <div style="font-size: 11.5px; color: #56546B; background: #FBFAFD; border: 1px solid #EEECF3; border-radius: 8px; padding: 8px 10px">Vai para: <strong>{{ l.destino }}</strong></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ testeOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position: absolute; inset: 0; background: rgba(18,17,26,0.55); display: flex; align-items: flex-start; justify-content: center; padding: 90px 0">
+            <div style="width: 620px; background: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,0.3)">
+              <div style="background: #12111A; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between">
+                <div style="font-family: Outfit, sans-serif; font-size: 18px; font-weight: 600; color: #FFFFFF">Enviar notificação de teste</div>
+                <button onClick="{{ closeTeste }}" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); background: transparent; color: #FFFFFF; font-size: 16px; line-height: 1; cursor: pointer">×</button>
+              </div>
+              <div style="padding: 22px; display: flex; flex-direction: column; gap: 15px">
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Evento a simular</div>
+                  <select value="{{ testeEvento }}" onChange="{{ onTesteEvento }}" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 13px; color: #12111A; background: #FFFFFF">
+                    <sc-for list="{{ eventoNomes }}" as="o" hint-placeholder-count="6">
+                      <option value="{{ o }}">{{ o }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div>
+                  <div style="font-size: 12px; font-weight: 700; color: #12111A; margin-bottom: 5px">Enviar cópia de teste para</div>
+                  <input value="{{ testeEmail }}" onChange="{{ onTesteEmail }}" placeholder="seu.nome@globo.com" style="width: 100%; box-sizing: border-box; height: 36px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 10px; font-size: 13px; color: #12111A" />
+                </div>
+                <div style="background: #FBFAFD; border: 1px solid #EEECF3; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #85839A">Destinatários que receberiam</div>
+                  <div style="font-family: ui-monospace, monospace; font-size: 11.5px; line-height: 1.7; color: #2C2B3A">{{ testeDestinos }}</div>
+                </div>
+              </div>
+              <div style="padding: 16px 22px; border-top: 1px solid #E7E6EE; display: flex; justify-content: flex-end; gap: 10px">
+                <button onClick="{{ closeTeste }}" style="height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid #DCDAE6; background: #FFFFFF; color: #12111A; font-size: 13.5px; font-weight: 600; cursor: pointer">Cancelar</button>
+                <button onClick="{{ closeTeste }}" style="height: 40px; padding: 0 22px; border-radius: 999px; border: none; background: #C7168C; color: #FFFFFF; font-size: 13.5px; font-weight: 700; cursor: pointer" style-hover="background: #A61175">Disparar teste</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div id="8b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; color: #FFFFFF; background: #2B2ADB; padding: 5px 11px; border-radius: 999px">8b</div>
+        <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #12111A">Modelo do e-mail e histórico</div>
+        <div style="font-size: 13px; color: #6B6A7C">como chega na caixa do time</div>
+      </div>
+
+      <div style="width: 1340px; background: #FFFFFF; border-radius: 18px; overflow: hidden; box-shadow: 0 24px 60px rgba(18,17,26,0.13)">
+        <div style="padding: 22px 26px; display: grid; grid-template-columns: 560px 1fr; gap: 20px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Pré-visualização</div>
+              <select value="{{ previewEvento }}" onChange="{{ onPreviewEvento }}" style="height: 32px; border: 1px solid #DCDAE6; border-radius: 8px; padding: 0 8px; font-size: 12.5px; color: #12111A; background: #FFFFFF">
+                <sc-for list="{{ eventoNomes }}" as="o" hint-placeholder-count="6">
+                  <option value="{{ o }}">{{ o }}</option>
+                </sc-for>
+              </select>
+            </div>
+
+            <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+              <div style="background: #F7F6FA; padding: 12px 16px; display: flex; flex-direction: column; gap: 5px; border-bottom: 1px solid #E7E6EE">
+                <div style="display: flex; gap: 8px; font-size: 11.5px"><span style="color: #85839A; min-width: 42px">De</span><span style="font-family: ui-monospace, monospace; color: #2C2B3A">{{ nomeExib }} &lt;{{ remetente }}&gt;</span></div>
+                <div style="display: flex; gap: 8px; font-size: 11.5px"><span style="color: #85839A; min-width: 42px">Para</span><span style="font-family: ui-monospace, monospace; color: #2C2B3A">{{ previewPara }}</span></div>
+                <div style="display: flex; gap: 8px; font-size: 11.5px"><span style="color: #85839A; min-width: 42px">Cc</span><span style="font-family: ui-monospace, monospace; color: #2C2B3A">{{ previewCc }}</span></div>
+                <div style="display: flex; gap: 8px; font-size: 12.5px; margin-top: 3px"><span style="color: #85839A; min-width: 42px">Assunto</span><strong style="color: #12111A">{{ previewAssunto }}</strong></div>
+              </div>
+
+              <div style="padding: 0">
+                <div style="background: #C7168C; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between">
+                  <div style="display: flex; flex-direction: column; gap: 4px">
+                    <div style="font-family: Outfit, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #C8F000">Cachê Hub</div>
+                    <div style="font-family: Outfit, sans-serif; font-size: 19px; font-weight: 600; color: #FFFFFF">{{ previewTitulo }}</div>
+                  </div>
+                  <img src="assets/logo-globo.png" alt="Globo" style="width: 34px; height: 34px; object-fit: contain; filter: brightness(0) invert(1)" />
+                </div>
+                <div style="padding: 20px 22px; display: flex; flex-direction: column; gap: 16px">
+                  <div style="font-size: 13.5px; line-height: 1.6; color: #2C2B3A; text-wrap: pretty">{{ previewIntro }}</div>
+                  <div style="border: 1px solid #E7E6EE; border-radius: 11px; overflow: hidden">
+                    <sc-for list="{{ previewLinhas }}" as="l" hint-placeholder-count="6">
+                      <div style="display: grid; grid-template-columns: 150px 1fr; border-bottom: 1px solid #F0EFF5">
+                        <div style="padding: 9px 12px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #85839A; background: #FBFAFD">{{ l.label }}</div>
+                        <div style="padding: 9px 12px; font-size: 13px; color: #2C2B3A">{{ l.value }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ previewAlerta }}" hint-placeholder-val="{{ false }}">
+                    <div style="background: #FDF1F1; border: 1px solid #F3B4B4; border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; color: #7A2A2A">{{ previewAlertaTexto }}</div>
+                  </sc-if>
+                  <div style="display: flex; justify-content: center; padding: 4px 0 2px">
+                    <div style="background: #C7168C; color: #FFFFFF; font-size: 13.5px; font-weight: 700; padding: 12px 24px; border-radius: 999px">Abrir no Cachê Hub</div>
+                  </div>
+                  <div style="font-size: 11px; line-height: 1.6; color: #A19FB2; text-align: center; border-top: 1px solid #F0EFF5; padding-top: 14px">Mensagem automática do Cachê Hub · não responda a este e-mail.<br />Dúvidas sobre o processo: {{ replyTo }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+              <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+                <div style="width: 4px; height: 15px; border-radius: 2px; background: #2B2ADB"></div>
+                <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Variáveis disponíveis no modelo</div>
+              </div>
+              <div style="padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 7px">
+                <sc-for list="{{ variaveis }}" as="v" hint-placeholder-count="10">
+                  <div style="font-family: ui-monospace, monospace; font-size: 11px; color: #2B2ADB; background: #F4F2FC; border: 1px solid #DCD7EC; padding: 5px 9px; border-radius: 7px">{{ v }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border: 1px solid #E7E6EE; border-radius: 13px; overflow: hidden">
+              <div style="background: #F7F6FA; border-bottom: 1px solid #E7E6EE; padding: 12px 16px; display: flex; align-items: center; gap: 10px">
+                <div style="width: 4px; height: 15px; border-radius: 2px; background: #00A38C"></div>
+                <div style="font-family: Outfit, sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #12111A">Histórico de disparos</div>
+                <div style="flex: 1"></div>
+                <div style="font-size: 11.5px; color: #85839A">últimas 24 horas</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 90px 1.5fr 1.6fr 1fr 110px; background: #FBFAFD; border-bottom: 1px solid #E7E6EE; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #6B6A7C">
+                <div style="padding: 10px 12px">Hora</div>
+                <div style="padding: 10px 12px">Evento</div>
+                <div style="padding: 10px 12px">Destinatário</div>
+                <div style="padding: 10px 12px">Referência</div>
+                <div style="padding: 10px 12px">Status</div>
+              </div>
+              <sc-for list="{{ historico }}" as="h" hint-placeholder-count="7">
+                <div style="display: grid; grid-template-columns: 90px 1.5fr 1.6fr 1fr 110px; border-bottom: 1px solid #F0EFF5; align-items: center">
+                  <div style="padding: 9px 12px; font-family: ui-monospace, monospace; font-size: 11.5px; color: #85839A">{{ h.hora }}</div>
+                  <div style="padding: 9px 12px; font-size: 12.5px; color: #12111A">{{ h.evento }}</div>
+                  <div style="padding: 9px 12px; font-family: ui-monospace, monospace; font-size: 11px; color: #56546B">{{ h.para }}</div>
+                  <div style="padding: 9px 12px; font-family: ui-monospace, monospace; font-size: 11px; color: #85839A">{{ h.ref }}</div>
+                  <div style="padding: 9px 12px"><span style="{{ h.statusStyle }}">{{ h.status }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500}}">
+const AREAS = [
+  { id: 'elenco', area: 'Gestão de Elenco', tipos: 'Talento Globo', color: '#2B2ADB', sla: '5 dias úteis', para: 'PPC-GESTAOELENCO@g.globo', cc: ['leticia.moura@globo.com'] },
+  { id: 'viu', area: 'ViU', tipos: 'Influenciador e Creator', color: '#C7168C', sla: '3 dias úteis', para: 'PPC-VIU@g.globo', cc: ['camile.nogueira@globo.com', 'thiago.bastos@globo.com'] },
+  { id: 'agenc', area: 'Agenciamento', tipos: 'Agenciado', color: '#8B2FD6', sla: '4 dias úteis', para: 'PPC-AGENCIAMENTO@g.globo', cc: ['sonia.vilela@globo.com'] }
+];
+const COLUNAS = [
+  { id: 'area', label: 'Caixa da área', nota: 'PPC-*@g.globo' },
+  { id: 'aprovador', label: 'Aprovador responsável', nota: 'e-mail pessoal' },
+  { id: 'solicitante', label: 'Solicitante', nota: 'quem abriu' },
+  { id: 'equipe', label: 'Equipe do solicitante', nota: 'time todo' },
+  { id: 'gerente', label: 'Gerente da área', nota: 'Gerente ViU / Elenco / Agenc.' },
+  { id: 'prop', label: 'Proprietário', nota: 'admin do Hub' }
+];
+const EVENTOS = [
+  { id: 'nova', label: 'Nova solicitação enviada', nota: 'uma mensagem por área envolvida', d: { area: 1, aprovador: 1, solicitante: 1, equipe: 0, gerente: 0, prop: 0 }, canal: 'E-mail' },
+  { id: 'plug', label: 'Talento adicionado a projeto existente', nota: 'quando alguém se pluga ao projeto', d: { area: 1, aprovador: 1, solicitante: 1, equipe: 1, gerente: 0, prop: 0 }, canal: 'E-mail' },
+  { id: 'conflito', label: 'Conflito com banco de restrições', nota: 'segmento ou patrocinador concorrente', d: { area: 1, aprovador: 1, solicitante: 1, equipe: 0, gerente: 1, prop: 0 }, canal: 'E-mail + app' },
+  { id: 'orcado', label: 'Cachê orçado pela área', nota: 'resposta com valor e parecer', d: { area: 0, aprovador: 0, solicitante: 1, equipe: 1, gerente: 0, prop: 0 }, canal: 'E-mail' },
+  { id: 'devolvida', label: 'Solicitação devolvida ao solicitante', nota: 'falta informação no briefing', d: { area: 0, aprovador: 1, solicitante: 1, equipe: 0, gerente: 0, prop: 0 }, canal: 'E-mail' },
+  { id: 'sla', label: 'Prazo de retorno vencido', nota: 'dispara pelo SLA da área', d: { area: 1, aprovador: 1, solicitante: 1, equipe: 0, gerente: 1, prop: 0 }, canal: 'E-mail' },
+  { id: 'aprovada', label: 'Orçamento aprovado pelo solicitante', nota: 'fecha a consulta', d: { area: 1, aprovador: 1, solicitante: 1, equipe: 1, gerente: 1, prop: 0 }, canal: 'E-mail' },
+  { id: 'acesso', label: 'Nova solicitação de acesso', nota: 'usuário pedindo entrada no Hub', d: { area: 0, aprovador: 0, solicitante: 0, equipe: 0, gerente: 0, prop: 1 }, canal: 'E-mail + app' },
+  { id: 'acessoOk', label: 'Acesso aprovado', nota: 'avisa a pessoa e o gerente da área', d: { area: 0, aprovador: 0, solicitante: 1, equipe: 0, gerente: 1, prop: 0 }, canal: 'E-mail' },
+  { id: 'resumo', label: 'Resumo semanal de pendências', nota: 'segundas, 8h', d: { area: 1, aprovador: 1, solicitante: 0, equipe: 0, gerente: 1, prop: 1 }, canal: 'E-mail' }
+];
+const GRID = '2.1fr repeat(6, 1fr) 110px';
+
+class Component extends DCLogic {
+  state = {
+    remetente: 'cache-hub@g.globo',
+    nomeExib: 'Cachê Hub · Globo',
+    replyTo: 'PPC-CACHEHUB@g.globo',
+    rotas: JSON.parse(JSON.stringify(AREAS)),
+    ativas: { elenco: true, viu: true, agenc: true },
+    matriz: EVENTOS.reduce((a, e) => { a[e.id] = Object.assign({}, e.d); return a; }, {}),
+    canais: EVENTOS.reduce((a, e) => { a[e.id] = e.canal; return a; }, {}),
+    lembretes: {
+      antes: { on: true, valor: '1', destino: 'Aprovador + caixa da área' },
+      apos: { on: true, valor: '1', destino: 'Aprovador + Gerente da área' },
+      rascunho: { on: false, valor: '3', destino: 'Solicitante' }
+    },
+    testeOpen: false, testeEvento: 'Nova solicitação enviada', testeEmail: 'ricardo.alencar@globo.com',
+    previewEvento: 'Nova solicitação enviada'
+  };
+
+  evByLabel(l) { return EVENTOS.filter(e => e.label === l)[0] || EVENTOS[0]; }
+
+  destinosDe(label) {
+    const ev = this.evByLabel(label);
+    const m = this.state.matriz[ev.id];
+    const out = [];
+    if (m.area) this.state.rotas.forEach(r => { if (this.state.ativas[r.id]) out.push(r.para); });
+    if (m.aprovador) out.push('rafael.prado@globo.com');
+    if (m.solicitante) out.push('mariana.vasques@globo.com');
+    if (m.equipe) out.push('PPC-VARIEDADES@g.globo');
+    if (m.gerente) out.push('leticia.moura@globo.com');
+    if (m.prop) out.push('ricardo.alencar@globo.com');
+    return out;
+  }
+
+  renderVals() {
+    const st = this.state;
+    const ativasN = Object.keys(st.ativas).filter(k => st.ativas[k]).length;
+    const eventosOn = EVENTOS.filter(e => Object.keys(st.matriz[e.id]).some(k => st.matriz[e.id][k])).length;
+    const prevEv = this.evByLabel(st.previewEvento);
+    const prevM = st.matriz[prevEv.id];
+    const rotaPreview = st.rotas[0];
+
+    const previewTitulos = {
+      nova: 'Nova solicitação de orçamento de cachê',
+      plug: 'Novo talento adicionado a um projeto em andamento',
+      conflito: 'Atenção: conflito com o banco de restrições',
+      orcado: 'Cachê orçado disponível para sua solicitação',
+      devolvida: 'Solicitação devolvida para complemento',
+      sla: 'Prazo de retorno vencido',
+      aprovada: 'Orçamento aprovado pelo solicitante',
+      acesso: 'Nova solicitação de acesso ao Cachê Hub',
+      acessoOk: 'Seu acesso ao Cachê Hub foi liberado',
+      resumo: 'Resumo semanal de pendências'
+    };
+    const previewIntros = {
+      nova: 'Uma nova consulta de cachê foi encaminhada para a Gestão de Elenco. O talento abaixo aguarda análise de valor e parecer dentro do prazo de 5 dias úteis.',
+      plug: 'O projeto Westwing · Mais Você · 07/08/2026 recebeu uma nova consulta de cachê. Confira o escopo consolidado antes de responder.',
+      conflito: 'A consulta abaixo cruzou com uma restrição cadastrada para o talento. A área responsável precisa avaliar antes de orçar.',
+      orcado: 'A área responsável respondeu sua consulta com o cachê orçado e o parecer. Acesse o Hub para aprovar ou negociar.',
+      devolvida: 'A área responsável precisa de mais informação para orçar esta consulta. Veja o parecer e complemente o briefing.',
+      sla: 'O prazo de retorno desta consulta venceu. Ela segue aguardando o cachê orçado e o parecer da área.',
+      aprovada: 'O solicitante aprovou o orçamento. A consulta está encerrada e segue para contratação.',
+      acesso: 'Uma pessoa solicitou acesso ao Cachê Hub. Defina os perfis e aprove ou recuse na seção de Usuários.',
+      acessoOk: 'Seu acesso foi liberado com os perfis definidos pelo Proprietário. Você já pode abrir consultas de cachê.',
+      resumo: 'Resumo das consultas que seguem abertas, com o prazo de cada uma.'
+    };
+
+    return {
+      nav: [{ label: 'Início' }, { label: 'Banco de talentos' }, { label: 'Restrições' }, { label: 'Relatórios' }, { label: 'Usuários' }, { label: 'Notificações', active: true }]
+        .map(n => ({ label: n.label, style: { fontSize: '13.5px', fontWeight: n.active ? 700 : 500, color: n.active ? '#C7168C' : '#56546B', paddingBottom: '2px', borderBottom: n.active ? '2px solid #C7168C' : '2px solid transparent', cursor: 'pointer' } })),
+      resumoRegras: ativasN + ' de 3 rotas ativas · ' + eventosOn + ' eventos configurados · remetente ' + st.remetente,
+      remetente: st.remetente, nomeExib: st.nomeExib, replyTo: st.replyTo,
+      onRemetente: e => this.setState({ remetente: e.target.value }),
+      onNomeExib: e => this.setState({ nomeExib: e.target.value }),
+      onReplyTo: e => this.setState({ replyTo: e.target.value }),
+      rotas: st.rotas.map((r, i) => {
+        const on = st.ativas[r.id];
+        return {
+          area: r.area, tipos: r.tipos, para: r.para, sla: r.sla,
+          cardStyle: { display: 'flex', flexDirection: 'column', gap: '12px', padding: '15px 16px', borderRadius: '12px', background: on ? '#FBFAFD' : '#F4F3F7', border: '1px solid ' + (on ? '#DCD7EC' : '#E7E6EE'), opacity: on ? 1 : 0.65 },
+          dotStyle: { width: '12px', height: '12px', borderRadius: '999px', background: r.color, flexShrink: 0 },
+          switchLabel: on ? 'Ativa' : 'Pausada',
+          switchStyle: { height: '26px', padding: '0 12px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700, color: on ? '#12111A' : '#85839A', background: on ? '#C8F000' : '#EAE8F1' },
+          onToggle: () => this.setState(s => ({ ativas: Object.assign({}, s.ativas, { [r.id]: !s.ativas[r.id] }) })),
+          onPara: e => this.setState(s => ({ rotas: s.rotas.map((x, j) => j === i ? Object.assign({}, x, { para: e.target.value }) : x) })),
+          onAddCc: () => this.setState(s => ({ rotas: s.rotas.map((x, j) => j === i ? Object.assign({}, x, { cc: x.cc.concat(['novo.destinatario@globo.com']) }) : x) })),
+          cc: r.cc.map((c, ci) => ({
+            email: c,
+            onRemove: () => this.setState(s => ({ rotas: s.rotas.map((x, j) => j === i ? Object.assign({}, x, { cc: x.cc.filter((_, k) => k !== ci) }) : x) }))
+          }))
+        };
+      }),
+      headerStyle: { display: 'grid', gridTemplateColumns: GRID, background: '#FBFAFD', borderBottom: '1px solid #E7E6EE', alignItems: 'end' },
+      colunas: COLUNAS,
+      eventos: EVENTOS.map((e, ri) => ({
+        label: e.label, nota: e.nota,
+        rowStyle: { display: 'grid', gridTemplateColumns: GRID, alignItems: 'center', borderBottom: '1px solid #F0EFF5', background: ri % 2 ? '#FDFDFE' : '#FFFFFF' },
+        canal: st.canais[e.id],
+        canalStyle: { height: '28px', padding: '0 11px', borderRadius: '999px', border: '1px solid #DCD7EC', background: '#F4F2FC', color: '#2B2ADB', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' },
+        onCanal: () => this.setState(s => ({ canais: Object.assign({}, s.canais, { [e.id]: s.canais[e.id] === 'E-mail' ? 'E-mail + app' : s.canais[e.id] === 'E-mail + app' ? 'Somente app' : 'E-mail' }) })),
+        cells: COLUNAS.map(c => {
+          const on = !!st.matriz[e.id][c.id];
+          return {
+            mark: on ? '✓' : '',
+            style: { width: '30px', height: '30px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: on ? '#12111A' : '#CFCDDD', background: on ? '#C8F000' : '#F2F0F8' },
+            onClick: () => this.setState(s => {
+              const next = JSON.parse(JSON.stringify(s.matriz));
+              next[e.id][c.id] = next[e.id][c.id] ? 0 : 1;
+              return { matriz: next };
+            })
+          };
+        })
+      })),
+      lembretes: [
+        { k: 'antes', titulo: 'Lembrete antes do vencimento', desc: 'Avisa a área que o prazo do SLA está próximo.', unidade: 'dia(s) antes do prazo' },
+        { k: 'apos', titulo: 'Cobrança após o vencimento', desc: 'Reenvia a cada intervalo enquanto a consulta seguir sem resposta.', unidade: 'dia(s) de intervalo' },
+        { k: 'rascunho', titulo: 'Rascunho esquecido', desc: 'Lembra o solicitante de concluir uma solicitação não enviada.', unidade: 'dia(s) em rascunho' }
+      ].map(l => {
+        const cfg = st.lembretes[l.k];
+        return {
+          titulo: l.titulo, desc: l.desc, unidade: l.unidade, valor: cfg.valor, destino: cfg.destino,
+          cardStyle: { display: 'flex', flexDirection: 'column', gap: '12px', padding: '15px 16px', borderRadius: '12px', background: cfg.on ? '#FBFAFD' : '#F4F3F7', border: '1px solid ' + (cfg.on ? '#EEECF3' : '#E7E6EE'), opacity: cfg.on ? 1 : 0.65 },
+          switchLabel: cfg.on ? 'Ativo' : 'Inativo',
+          switchStyle: { height: '26px', padding: '0 12px', borderRadius: '999px', border: 'none', cursor: 'pointer', fontSize: '11.5px', fontWeight: 700, color: cfg.on ? '#12111A' : '#85839A', background: cfg.on ? '#C8F000' : '#EAE8F1' },
+          onToggle: () => this.setState(s => ({ lembretes: Object.assign({}, s.lembretes, { [l.k]: Object.assign({}, s.lembretes[l.k], { on: !s.lembretes[l.k].on }) }) })),
+          onValor: e => this.setState(s => ({ lembretes: Object.assign({}, s.lembretes, { [l.k]: Object.assign({}, s.lembretes[l.k], { valor: e.target.value }) }) }))
+        };
+      }),
+      eventoNomes: EVENTOS.map(e => e.label),
+      testeOpen: st.testeOpen, testeEvento: st.testeEvento, testeEmail: st.testeEmail,
+      openTeste: () => this.setState({ testeOpen: true }),
+      closeTeste: () => this.setState({ testeOpen: false }),
+      onTesteEvento: e => this.setState({ testeEvento: e.target.value }),
+      onTesteEmail: e => this.setState({ testeEmail: e.target.value }),
+      testeDestinos: this.destinosDe(st.testeEvento).join('\n') || 'Nenhum destinatário marcado para este evento',
+      previewEvento: st.previewEvento,
+      onPreviewEvento: e => this.setState({ previewEvento: e.target.value }),
+      previewPara: prevM.area ? rotaPreview.para : prevM.solicitante ? 'mariana.vasques@globo.com' : 'ricardo.alencar@globo.com',
+      previewCc: (prevM.aprovador ? 'rafael.prado@globo.com; ' : '') + (prevM.gerente ? 'leticia.moura@globo.com; ' : '') + (prevM.equipe ? 'PPC-VARIEDADES@g.globo' : '') || '—',
+      previewAssunto: '[Cachê Hub] ' + previewTitulos[prevEv.id] + ' · Westwing · Mais Você',
+      previewTitulo: previewTitulos[prevEv.id],
+      previewIntro: previewIntros[prevEv.id],
+      previewLinhas: [
+        { label: 'Protocolo', value: '#ORC-2026-0418' },
+        { label: 'Projeto', value: 'Westwing · Mais Você · 07/08/2026' },
+        { label: 'Segmento do cliente', value: 'Casa e decoração' },
+        { label: 'Talento', value: 'Helena Barreto · Talento Globo' },
+        { label: 'Área responsável', value: 'Gestão de Elenco · prazo de 5 dias úteis' },
+        { label: 'Solicitante', value: 'Mariana Vasques · Variedades' },
+        { label: 'Cachê estimado', value: 'R$ 250.000,00' }
+      ],
+      previewAlerta: prevEv.id === 'conflito' || prevEv.id === 'sla',
+      previewAlertaTexto: prevEv.id === 'conflito'
+        ? 'Restrição encontrada: Helena Barreto possui bloqueio permanente para o segmento Bets / apostas e patrocinador concorrente MadeiraMadeira até 06/2027.'
+        : 'Esta consulta está 2 dias além do prazo acordado de 5 dias úteis.',
+      variaveis: ['{{protocolo}}', '{{projeto}}', '{{cliente}}', '{{marca}}', '{{programa}}', '{{data_projeto}}', '{{segmento_cliente}}', '{{talento}}', '{{categoria_talento}}', '{{area_responsavel}}', '{{sla}}', '{{solicitante}}', '{{equipe}}', '{{cache_estimado}}', '{{cache_orcado}}', '{{parecer}}', '{{restricoes}}', '{{link_solicitacao}}'],
+      historico: [
+        { hora: '09:41', evento: 'Nova solicitação enviada', para: 'PPC-GESTAOELENCO@g.globo', ref: '#ORC-0418', status: 'Entregue' },
+        { hora: '09:41', evento: 'Nova solicitação enviada', para: 'PPC-VIU@g.globo', ref: '#ORC-0419', status: 'Entregue' },
+        { hora: '09:12', evento: 'Nova solicitação de acesso', para: 'ricardo.alencar@globo.com', ref: 'Fernanda Aguiar', status: 'Entregue' },
+        { hora: '08:00', evento: 'Prazo de retorno vencido', para: 'PPC-VIU@g.globo', ref: '#ORC-0388', status: 'Entregue' },
+        { hora: '08:00', evento: 'Prazo de retorno vencido', para: 'camile.nogueira@globo.com', ref: '#ORC-0388', status: 'Entregue' },
+        { hora: 'ontem 17:40', evento: 'Conflito com restrições', para: 'PPC-GESTAOELENCO@g.globo', ref: '#ORC-0431', status: 'Entregue' },
+        { hora: 'ontem 16:05', evento: 'Cachê orçado pela área', para: 'mariana.vasques@globo.com', ref: '#ORC-0419', status: 'Falhou' }
+      ].map(h => ({
+        hora: h.hora, evento: h.evento, para: h.para, ref: h.ref, status: h.status,
+        statusStyle: { fontSize: '11px', fontWeight: 700, padding: '4px 9px', borderRadius: '999px', whiteSpace: 'nowrap', color: h.status === 'Entregue' ? '#3D6B18' : '#B3121B', background: h.status === 'Entregue' ? '#F2FBE8' : '#FDF1F1' }
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
