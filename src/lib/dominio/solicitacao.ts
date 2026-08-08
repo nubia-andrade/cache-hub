@@ -95,6 +95,21 @@ export const CORES_STATUS: Record<
   Rejeitado: { texto: '#B3121B', fundo: '#FDF1F1' },
 };
 
+/**
+ * As cores de um status, com plano B.
+ *
+ * O tipo promete que só chegam status conhecidos, e mesmo assim vale a pena
+ * não confiar: um status novo no banco, ou dois pacotes fora de sincronia
+ * depois de um rename, faziam a busca direta devolver `undefined` — e uma cor
+ * faltando derrubava a tela de Início inteira. Uma etiqueta cinza é um jeito
+ * bem melhor de errar.
+ */
+export function coresDoStatus(status: string): { texto: string; fundo: string } {
+  return (
+    CORES_STATUS[status as StatusSolicitacao] ?? CORES_STATUS.Rascunho
+  );
+}
+
 /** Texto desconhecido vindo do banco vira Rascunho, o estado mais inofensivo. */
 export function validarStatus(valor: string | null): StatusSolicitacao {
   return STATUS_SOLICITACAO.includes(valor as StatusSolicitacao)

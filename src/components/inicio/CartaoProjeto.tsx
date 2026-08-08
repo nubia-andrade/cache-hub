@@ -1,5 +1,5 @@
 import { iniciais } from '@/lib/dominio/perfis';
-import { CORES_STATUS, corDoAvatar } from '@/lib/dominio/solicitacao';
+import { coresDoStatus, corDoAvatar } from '@/lib/dominio/solicitacao';
 import type { ProjetoResumo } from '@/lib/dominio/projeto';
 
 /** Data ISO (2026-08-07) no formato brasileiro, sem depender de fuso. */
@@ -16,7 +16,7 @@ export function CartaoProjeto({
   projeto: ProjetoResumo;
   indice: number;
 }) {
-  const cores = CORES_STATUS[projeto.status];
+  const cores = coresDoStatus(projeto.status);
 
   return (
     <article className="flex flex-col gap-[9px] rounded-[14px] border border-borda bg-white px-4 py-[15px] transition-colors hover:border-magenta">

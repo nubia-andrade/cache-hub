@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { statusDoProjeto, validarStatus } from './solicitacao';
+import {
+  CORES_STATUS,
+  coresDoStatus,
+  STATUS_SOLICITACAO,
+  statusDoProjeto,
+  validarStatus,
+} from './solicitacao';
 
 /**
  * O card do projeto mostra o status MENOS avançado entre os talentos, porque
@@ -73,5 +79,20 @@ describe('validação do status vindo do banco', () => {
     expect(validarStatus('Aprovada')).toBe('Rascunho');
     expect(validarStatus('Reprovada')).toBe('Rascunho');
     expect(validarStatus('Orçada')).toBe('Rascunho');
+  });
+});
+
+describe('cores do status', () => {
+  it('devolve a cor de cada status conhecido', () => {
+    for (const status of STATUS_SOLICITACAO) {
+      expect(coresDoStatus(status).texto).toMatch(/^#/);
+    }
+  });
+
+  it('status desconhecido não derruba a tela — cai no cinza de Rascunho', () => {
+    // Aconteceu de verdade: renomear um status com o servidor ligado deixou os
+    // dois pacotes fora de sincronia, e a busca direta devolveu undefined.
+    expect(coresDoStatus('Fila orçamento')).toEqual(CORES_STATUS.Rascunho);
+    expect(coresDoStatus('')).toEqual(CORES_STATUS.Rascunho);
   });
 });
