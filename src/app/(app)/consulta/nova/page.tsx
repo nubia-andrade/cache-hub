@@ -2,17 +2,32 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AssistenteDeConsulta } from '@/components/consulta/AssistenteDeConsulta';
 import { lerCatalogo } from '@/lib/dados/catalogo';
+import { lerListas } from '@/lib/dados/listas';
+import { listarTabelaDePrecos } from '@/lib/dados/precos';
 import { listarTalentos } from '@/lib/dados/talentos';
 import { hojeISO } from '@/lib/dominio/restricoes';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
+
+/** As listas que preenchem os selects dos campos dinâmicos do passo 3. */
+const LISTAS_DO_ESCOPO = [
+  'formatos',
+  'verticais',
+  'direcaoRedacao',
+  'ufs',
+  'redesSociais',
+  'localRepost',
+  'localImpulsionamento',
+];
 
 export default async function PaginaNovaConsulta() {
   const usuario = await obterUsuarioLogado();
   if (!usuario) redirect('/login');
 
-  const [catalogo, talentos] = await Promise.all([
+  const [catalogo, talentos, precos, opcoesDeLista] = await Promise.all([
     lerCatalogo(),
     listarTalentos(),
+    listarTabelaDePrecos(),
+    lerListas(LISTAS_DO_ESCOPO),
   ]);
 
   return (
@@ -36,6 +51,8 @@ export default async function PaginaNovaConsulta() {
       <AssistenteDeConsulta
         catalogo={catalogo}
         talentos={talentos}
+        precos={precos}
+        opcoesDeLista={opcoesDeLista}
         hoje={hojeISO()}
         equipeDoSolicitante={usuario.equipe}
       />

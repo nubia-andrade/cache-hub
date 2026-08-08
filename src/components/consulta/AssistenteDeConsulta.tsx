@@ -4,13 +4,27 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PassoCabecalho } from './PassoCabecalho';
 import { PassoTalentos } from './PassoTalentos';
+import { PassoEntregas } from './PassoEntregas';
 import {
   CABECALHO_VAZIO,
   cabecalhoCompleto,
   camposFaltando,
+  escopoVazioPara,
   periodoValido,
   type CabecalhoConsulta,
+  type EscopoDoTalento,
 } from '@/lib/dominio/consulta';
+import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
+import {
+  linhasDaEstimativa,
+  totalDoTalento,
+} from '@/lib/dominio/estimativa';
+import {
+  formatarReais,
+  type LinhaDePreco,
+  type TipoProjeto,
+} from '@/lib/dominio/precos';
+import { tamanhoDoTalento } from '@/lib/dominio/talento';
 import { criarRascunho } from '@/lib/consultas';
 import type { Catalogo } from '@/lib/dados/catalogo';
 import type { TalentoComRestricoes } from '@/lib/dados/talentos';
@@ -18,9 +32,9 @@ import type { TalentoComRestricoes } from '@/lib/dados/talentos';
 /**
  * O assistente de nova consulta.
  *
- * Por enquanto vai até o passo 2 e grava um Rascunho. Os passos 3 (entregas e
- * preço) e 4 (revisão e envio) chegam nas próximas etapas — o Rascunho é
- * justamente o estado previsto para uma consulta ainda incompleta, então
+ * Vai até o passo 3 e grava um Rascunho. O passo 4 (revisão e envio, que leva
+ * a consulta de Rascunho para Fila orçamento) chega em seguida — Rascunho é
+ * justamente o estado previsto para uma consulta ainda não enviada, então
  * parar aqui não deixa nada em situação inválida.
  */
 
@@ -31,14 +45,20 @@ const PASSOS = [
   { numero: 4, titulo: 'Revisão' },
 ];
 
+const ULTIMO_PASSO_PRONTO = 3;
+
 export function AssistenteDeConsulta({
   catalogo,
   talentos,
+  precos,
+  opcoesDeLista,
   hoje,
   equipeDoSolicitante,
 }: {
   catalogo: Catalogo;
   talentos: TalentoComRestricoes[];
+  precos: LinhaDePreco[];
+  opcoesDeLista: Record<string, string[]>;
   hoje: string;
   equipeDoSolicitante: string;
 }) {
@@ -47,12 +67,36 @@ export function AssistenteDeConsulta({
   const [passo, setPasso] = useState(1);
   const [cabecalho, setCabecalho] = useState<CabecalhoConsulta>(CABECALHO_VAZIO);
   const [escolhidos, setEscolhidos] = useState<Set<string>>(new Set());
+  const [escopos, setEscopos] = useState<Record<string, EscopoDoTalento>>({});
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const faltando = camposFaltando(cabecalho);
-  const podeAvancar = cabecalhoCompleto(cabecalho);
-  const podeGravar = podeAvancar && escolhidos.size > 0;
+  const cabecalhoOk = cabecalhoCompleto(cabecalho);
+  const selecionados = talentos.filter((talento) => escolhidos.has(talento.id));
+
+  const definicoes = camposDaMidia(cabecalho.tipoMidia);
+
+  /** Quem ainda tem campo obrigatório em branco no passo 3. */
+  const talentosPendentes = selecionados
+    .filter(
+      (talento) =>
+        camposFaltandoNoEscopo(definicoes, escopos[talento.id]?.campos ?? {})
+          .length > 0,
+    )
+    .map((talento) => talento.nomeArtistico);
+
+  const totalGeral = selecionados.reduce((soma, talento) => {
+    const escopo = escopos[talento.id];
+    if (!escopo) return soma;
+    const linhas = linhasDaEstimativa(precos, {
+      categoria: talento.categoria,
+      tamanho: tamanhoDoTalento(talento.seguidores),
+      tipoProjeto: escopo.tipoProjeto,
+      quantidades: escopo.quantidades,
+    });
+    return soma + totalDoTalento(linhas).total;
+  }, 0);
 
   function alternarTalento(id: string) {
     setEscolhidos((atual) => {
@@ -63,20 +107,67 @@ export function AssistenteDeConsulta({
     });
   }
 
+  /**
+   * Cada talento entra no passo 3 com o tipo de projeto do cabeçalho, e daí em
+   * diante segue por conta própria. Fazer isso na entrada do passo, e não na
+   * seleção, garante que quem voltar ao passo 1 e trocar o tipo veja a troca
+   * refletida em quem ainda não foi mexido.
+   */
+  function irParaEntregas() {
+    const padrao = (cabecalho.tipoProjeto || 'Sob demanda') as TipoProjeto;
+    setEscopos((atuais) => {
+      const novos = { ...atuais };
+      for (const talento of selecionados) {
+        if (!novos[talento.id]) novos[talento.id] = escopoVazioPara(padrao);
+      }
+      return novos;
+    });
+    setPasso(3);
+  }
+
+  function mudarEscopo(talentoId: string, escopo: EscopoDoTalento) {
+    setEscopos((atuais) => ({ ...atuais, [talentoId]: escopo }));
+  }
+
+  /**
+   * Copiar traz as condições, mas NÃO as quantidades de entrega.
+   *
+   * As condições (figurino, diárias, exclusividade) são do projeto e tendem a
+   * valer para todo mundo. Já quantas peças cada um faz é a própria razão de
+   * existirem blocos separados — copiar isso junto acertaria por acidente e
+   * erraria em silêncio.
+   */
+  function copiarEscopo(de: string, para: string) {
+    setEscopos((atuais) => {
+      const origem = atuais[de];
+      if (!origem) return atuais;
+      return {
+        ...atuais,
+        [para]: {
+          ...(atuais[para] ?? escopoVazioPara(origem.tipoProjeto)),
+          tipoProjeto: origem.tipoProjeto,
+          campos: { ...origem.campos },
+        },
+      };
+    });
+  }
+
   async function gravar() {
-    if (!podeGravar || gravando) return;
+    if (gravando) return;
 
     setGravando(true);
     setErro(null);
 
-    const selecionados = talentos
-      .filter((talento) => escolhidos.has(talento.id))
-      .map((talento) => ({ id: talento.id, categoria: talento.categoria }));
-
     const resultado = await criarRascunho(
       cabecalho,
-      selecionados,
+      selecionados.map((talento) => ({
+        id: talento.id,
+        categoria: talento.categoria,
+        tamanho: tamanhoDoTalento(talento.seguidores),
+        escopo: escopos[talento.id] ?? escopoVazioPara('Sob demanda'),
+      })),
       equipeDoSolicitante,
+      precos,
     );
 
     if (!resultado.ok) {
@@ -94,7 +185,7 @@ export function AssistenteDeConsulta({
       <ol className="flex flex-wrap items-center gap-2">
         {PASSOS.map((item) => {
           const atual = item.numero === passo;
-          const futuro = item.numero > 2;
+          const futuro = item.numero > ULTIMO_PASSO_PRONTO;
           return (
             <li
               key={item.numero}
@@ -115,23 +206,35 @@ export function AssistenteDeConsulta({
         })}
       </ol>
 
-      <div className="rounded-cartao border border-borda p-5">
-        {passo === 1 ? (
-          <PassoCabecalho
-            cabecalho={cabecalho}
-            catalogo={catalogo}
-            aoMudar={setCabecalho}
-          />
-        ) : (
-          <PassoTalentos
-            talentos={talentos}
-            cabecalho={cabecalho}
-            hoje={hoje}
-            escolhidos={escolhidos}
-            aoAlternar={alternarTalento}
-          />
-        )}
-      </div>
+      {passo === 3 ? (
+        <PassoEntregas
+          talentos={selecionados}
+          cabecalho={cabecalho}
+          escopos={escopos}
+          precos={precos}
+          opcoesDeLista={opcoesDeLista}
+          aoMudarEscopo={mudarEscopo}
+          aoCopiar={copiarEscopo}
+        />
+      ) : (
+        <div className="rounded-cartao border border-borda p-5">
+          {passo === 1 ? (
+            <PassoCabecalho
+              cabecalho={cabecalho}
+              catalogo={catalogo}
+              aoMudar={setCabecalho}
+            />
+          ) : (
+            <PassoTalentos
+              talentos={talentos}
+              cabecalho={cabecalho}
+              hoje={hoje}
+              escolhidos={escolhidos}
+              aoAlternar={alternarTalento}
+            />
+          )}
+        </div>
+      )}
 
       {erro && (
         <p
@@ -152,41 +255,70 @@ export function AssistenteDeConsulta({
             ) : (
               <>Cabeçalho completo.</>
             )
-          ) : escolhidos.size === 0 ? (
-            <>Escolha ao menos um talento.</>
+          ) : passo === 2 ? (
+            escolhidos.size === 0 ? (
+              <>Escolha ao menos um talento.</>
+            ) : (
+              <>
+                {escolhidos.size} talento{escolhidos.size > 1 ? 's' : ''}{' '}
+                selecionado{escolhidos.size > 1 ? 's' : ''}.
+              </>
+            )
           ) : (
             <>
-              {escolhidos.size} talento{escolhidos.size > 1 ? 's' : ''}{' '}
-              selecionado{escolhidos.size > 1 ? 's' : ''}.
+              <strong className="text-tinta">
+                Total estimado {totalGeral > 0 ? formatarReais(totalGeral) : '—'}
+              </strong>
+              {talentosPendentes.length > 0 && (
+                <>
+                  {' · '}escopo incompleto: {talentosPendentes.join(', ')}
+                </>
+              )}
             </>
           )}
         </div>
 
         <div className="flex gap-2.5">
-          {passo === 2 && (
+          {passo > 1 && (
             <button
               type="button"
-              onClick={() => setPasso(1)}
+              onClick={() => setPasso(passo - 1)}
               className="h-[42px] cursor-pointer rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta"
             >
               Voltar
             </button>
           )}
 
-          {passo === 1 ? (
+          {passo === 1 && (
             <button
               type="button"
               onClick={() => setPasso(2)}
-              disabled={!podeAvancar}
+              disabled={!cabecalhoOk}
               className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               Escolher talentos
             </button>
-          ) : (
+          )}
+
+          {passo === 2 && (
+            <button
+              type="button"
+              onClick={irParaEntregas}
+              disabled={escolhidos.size === 0}
+              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+            >
+              Montar entregas
+            </button>
+          )}
+
+          {passo === 3 && (
+            /* Escopo incompleto não bloqueia salvar: Rascunho existe
+               justamente para guardar trabalho pela metade. O que ele vai
+               bloquear é o envio, no passo 4. */
             <button
               type="button"
               onClick={gravar}
-              disabled={!podeGravar || gravando}
+              disabled={gravando}
               className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               {gravando ? 'Salvando…' : 'Salvar rascunho'}

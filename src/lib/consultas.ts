@@ -11,11 +11,24 @@
 
 import { criarClienteNoNavegador } from './supabase/cliente-navegador';
 import { areaDaCategoria, type Categoria } from './dominio/categorias';
-import { gerarProtocolo, type CabecalhoConsulta } from './dominio/consulta';
+import {
+  gerarProtocolo,
+  type CabecalhoConsulta,
+  type EscopoDoTalento,
+} from './dominio/consulta';
+import {
+  entregasParaGravar,
+  linhasDaEstimativa,
+  totalDoTalento,
+} from './dominio/estimativa';
+import type { LinhaDePreco } from './dominio/precos';
+import type { Tamanho } from './dominio/talento';
 
 export type TalentoEscolhido = {
   id: string;
   categoria: Categoria;
+  tamanho: Tamanho;
+  escopo: EscopoDoTalento;
 };
 
 export type ResultadoGravacao =
@@ -34,6 +47,7 @@ export async function criarRascunho(
   cabecalho: CabecalhoConsulta,
   talentos: TalentoEscolhido[],
   equipeDoSolicitante: string,
+  precos: LinhaDePreco[],
 ): Promise<ResultadoGravacao> {
   const supabase = criarClienteNoNavegador();
 
@@ -76,13 +90,32 @@ export async function criarRascunho(
   // A área sai da categoria, e o banco confere: existe uma restrição CHECK que
   // recusa a linha se as duas não combinarem.
   const { error: erroItens } = await supabase.from('solicitacao_item').insert(
-    talentos.map((talento) => ({
-      solicitacao_id: consulta.id,
-      talento_id: talento.id,
-      categoria: talento.categoria,
-      area: areaDaCategoria(talento.categoria),
-      status: 'Rascunho' as const,
-    })),
+    talentos.map((talento) => {
+      const linhas = linhasDaEstimativa(precos, {
+        categoria: talento.categoria,
+        tamanho: talento.tamanho,
+        tipoProjeto: talento.escopo.tipoProjeto,
+        quantidades: talento.escopo.quantidades,
+      });
+      const { total } = totalDoTalento(linhas);
+
+      return {
+        solicitacao_id: consulta.id,
+        talento_id: talento.id,
+        categoria: talento.categoria,
+        area: areaDaCategoria(talento.categoria),
+        status: 'Rascunho' as const,
+        tipo_projeto: talento.escopo.tipoProjeto,
+        entregas: entregasParaGravar(talento.escopo.quantidades),
+        campos_extra: talento.escopo.campos,
+        verba: numeroOuNulo(talento.escopo.campos.verba),
+        // Congelado no envio, de propósito: quando a tabela de referência for
+        // reajustada, esta solicitação tem de continuar mostrando o valor que
+        // estava na tela de quem a abriu. Recalcular na leitura faria o
+        // histórico mudar sozinho.
+        valor_sugerido: total > 0 ? Math.round(total) : null,
+      };
+    }),
   );
 
   if (erroItens) {
@@ -94,4 +127,11 @@ export async function criarRascunho(
   }
 
   return { ok: true, id: consulta.id, protocolo };
+}
+
+/** Campo de moeda guarda só dígitos; vazio precisa virar null, não zero. */
+function numeroOuNulo(texto: string | undefined): number | null {
+  if (!texto) return null;
+  const numero = Number(texto.replace(/\D/g, ''));
+  return Number.isFinite(numero) && numero > 0 ? numero : null;
 }

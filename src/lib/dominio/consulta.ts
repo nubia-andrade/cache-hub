@@ -1,3 +1,5 @@
+import type { ValoresDoEscopo } from './escopo';
+import type { Quantidades } from './estimativa';
 import type { TipoProjeto } from './precos';
 
 /**
@@ -37,6 +39,24 @@ export const CABECALHO_VAZIO: CabecalhoConsulta = {
   exibicaoInicio: '',
   exibicaoFim: '',
 };
+
+/**
+ * O escopo de um talento dentro da consulta — o passo 3.
+ *
+ * O tipo de projeto nasce igual ao do cabeçalho, mas fica por talento porque
+ * ele escolhe a coluna da tabela de preço: uma mesma solicitação pode ter um
+ * talento em Pacote e outro Sob demanda, e forçar os dois a serem iguais
+ * distorceria o valor de referência de um deles.
+ */
+export type EscopoDoTalento = {
+  tipoProjeto: TipoProjeto;
+  quantidades: Quantidades;
+  campos: ValoresDoEscopo;
+};
+
+export function escopoVazioPara(tipoProjeto: TipoProjeto): EscopoDoTalento {
+  return { tipoProjeto, quantidades: {}, campos: {} };
+}
 
 /** Os campos sem os quais o passo 2 não faz sentido, com o rótulo da tela. */
 const OBRIGATORIOS: { campo: keyof CabecalhoConsulta; rotulo: string }[] = [

@@ -34,6 +34,34 @@ export async function mapaDeSegmentoPorPrograma(): Promise<Map<string, string>> 
   );
 }
 
+/**
+ * As listas configuráveis pedidas, no formato `{ id: [valores] }`.
+ *
+ * Os campos dinâmicos do passo 3 tiram daqui as opções de formato, vertical,
+ * UF e afins. Poderiam ser constantes no código, e o protótipo faz assim — mas
+ * são justamente as listas que o Proprietário administra na tela de Listas.
+ * Fixá-las no código faria aquela tela mentir.
+ */
+export async function lerListas(
+  ids: readonly string[],
+): Promise<Record<string, string[]>> {
+  const supabase = await criarClienteNoServidor();
+
+  const { data } = await supabase
+    .from('lista_item')
+    .select('lista_id, valor, ordem')
+    .in('lista_id', ids as string[])
+    .order('ordem', { ascending: true })
+    .overrideTypes<{ lista_id: string; valor: string; ordem: number | null }[]>();
+
+  const porLista: Record<string, string[]> = {};
+  for (const id of ids) porLista[id] = [];
+  for (const item of data ?? []) {
+    porLista[item.lista_id]?.push(item.valor);
+  }
+  return porLista;
+}
+
 export async function listarOpcoesDeProjeto(): Promise<OpcoesDeProjeto> {
   const supabase = await criarClienteNoServidor();
 

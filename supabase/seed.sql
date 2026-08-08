@@ -153,6 +153,19 @@ alter table solicitacao_item add constraint conversao_coerente check (
                                 and valor_fechado is null)
 );
 
+-- ---- Escopo por talento -------------------------------------------------
+--
+-- O schema guarda campos_extra na solicitação, como se as condições fossem do
+-- projeto inteiro. Não são: figurino, diárias e exclusividade variam de
+-- talento para talento dentro da mesma campanha, e é por isso que o protótipo
+-- tem um botão "copiar de" — botão que não faria sentido se o dado fosse um só.
+alter table solicitacao_item add column if not exists campos_extra jsonb not null default '{}';
+
+-- O tipo de projeto escolhe a COLUNA da tabela de preço. Deixá-lo só no
+-- cabeçalho obrigaria dois talentos da mesma solicitação a serem precificados
+-- pela mesma coluna, distorcendo o valor de referência de um deles.
+alter table solicitacao_item add column if not exists tipo_projeto tipo_projeto;
+
 -- Os projetos de exemplo são recriados do zero na Parte 9, já com os status e
 -- as conversões novas. Não há nada a converter aqui.
 
