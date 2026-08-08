@@ -340,6 +340,129 @@ end $$;
 
 partes.push(
   bloco(
+    'Parte 1b — Quem pode escrever solicitação',
+    `-- O roteamento vira regra do BANCO, não só do aplicativo.
+--
+-- Até aqui, "Influenciador vai para ViU" era uma função em TypeScript. Se
+-- qualquer caminho de código esquecer de aplicá-la, nasce um item roteado para
+-- a área errada e ele some da fila de quem deveria respondê-lo — um problema
+-- silencioso, que só aparece quando alguém reclama do prazo. Com esta
+-- restrição, o Postgres recusa a linha errada.
+alter table solicitacao_item drop constraint if exists area_bate_com_categoria;
+alter table solicitacao_item add constraint area_bate_com_categoria check (
+  area = case categoria
+    when 'Talento Globo' then 'Gestão de Elenco'::area_responsavel
+    when 'Agenciado'     then 'Agenciamento'::area_responsavel
+    else 'ViU'::area_responsavel
+  end
+);
+
+-- Quem pode abrir consulta: precisa estar ativo e ter perfil de Solicitante
+-- (o Proprietário também solicita, como já vale na navegação).
+create or replace function public.pode_solicitar()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.perfil_usuario
+    where id = auth.uid()
+      and estado = 'ativo'
+      and ('Solicitante' = any(perfis) or 'Proprietário' = any(perfis))
+  );
+$$;
+
+create or replace function public.minha_equipe()
+returns text
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select equipe from public.perfil_usuario where id = auth.uid();
+$$;
+
+grant execute on function public.pode_solicitar() to authenticated;
+grant execute on function public.minha_equipe() to authenticated;
+
+-- Abrir projeto: só para a PRÓPRIA equipe.
+--
+-- A regra é de negócio, não de segurança: os relatórios medem volumetria por
+-- núcleo, e alguém abrindo consulta no nome de outra equipe distorce o número
+-- de quem não pediu nada. Vale igual para o Proprietário — se um dia ele
+-- precisar abrir por outra equipe, isso vira exceção explícita, com motivo.
+drop policy if exists "abrir consulta da propria equipe" on solicitacao;
+create policy "abrir consulta da propria equipe" on solicitacao
+  for insert to authenticated
+  with check (
+    public.pode_solicitar()
+    and solicitante_id = auth.uid()
+    and equipe = public.minha_equipe()
+  );
+
+-- Editar e descartar: só o que é seu. A trava de ajuste (o solicitante ter de
+-- destravar para o aprovador corrigir) entra junto com a tela de resposta.
+drop policy if exists "editar a propria consulta" on solicitacao;
+create policy "editar a propria consulta" on solicitacao
+  for update to authenticated
+  using (solicitante_id = auth.uid())
+  with check (solicitante_id = auth.uid() and equipe = public.minha_equipe());
+
+drop policy if exists "descartar a propria consulta" on solicitacao;
+create policy "descartar a propria consulta" on solicitacao
+  for delete to authenticated
+  using (solicitante_id = auth.uid());
+
+-- Talentos dentro da consulta: só na consulta que é sua, e sempre nascendo
+-- como Rascunho. Sem essa segunda parte, daria para inserir um item já com
+-- status 'Aprovada' e pular a fila inteira — o schema tem 'Em análise' como
+-- padrão, mas padrão não é trava: quem chama a API escolhe o que mandar.
+drop policy if exists "incluir talento na propria consulta" on solicitacao_item;
+create policy "incluir talento na propria consulta" on solicitacao_item
+  for insert to authenticated
+  with check (
+    status = 'Rascunho'
+    and exists (
+      select 1 from public.solicitacao s
+      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
+    )
+  );
+
+-- A primeira metade da trava de ajuste.
+--
+-- O solicitante só mexe enquanto o item é Rascunho (cláusula USING), e só
+-- consegue deixá-lo em Rascunho ou Em análise (cláusula WITH CHECK). Ou seja:
+-- ele monta, ele envia — e, no instante em que envia, perde o direito de
+-- mexer. Não há caminho daqui para Orçada ou Aprovada; isso é do aprovador.
+drop policy if exists "ajustar talento em rascunho" on solicitacao_item;
+create policy "ajustar talento em rascunho" on solicitacao_item
+  for update to authenticated
+  using (
+    status = 'Rascunho'
+    and exists (
+      select 1 from public.solicitacao s
+      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
+    )
+  )
+  with check (status in ('Rascunho', 'Em análise'));
+
+drop policy if exists "remover talento em rascunho" on solicitacao_item;
+create policy "remover talento em rascunho" on solicitacao_item
+  for delete to authenticated
+  using (
+    status = 'Rascunho'
+    and exists (
+      select 1 from public.solicitacao s
+      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
+    )
+  );`,
+  ),
+);
+
+partes.push(
+  bloco(
     'Parte 2 — Criar o cadastro do Hub junto com o usuário de autenticação',
     `-- O schema não tem isto, e sem isto quem se cadastra no Supabase Auth não
 -- ganha linha em perfil_usuario — ou seja, nunca consegue entrar, e alguém
