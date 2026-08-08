@@ -50,6 +50,7 @@
   --color-aviso-borda: #f0dca0;
   --color-sucesso: #3d6b18;
   --color-sucesso-fundo: #f2fbe8;
+  --color-sucesso-borda: #c2e39c;
 
   /* Cores por categoria de talento (CAT_COLOR do protótipo).
      Estas quatro são semânticas: mudar uma muda o significado na tela. */

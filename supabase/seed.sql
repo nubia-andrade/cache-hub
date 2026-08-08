@@ -285,21 +285,33 @@ create policy "criar o proprio cadastro" on perfil_usuario
 insert into anunciante (nome, setor) values
   ('Ambev', 'Bebidas alcoólicas'),
   ('Banco Vértice', 'Financeiro'),
+  ('Cervejaria Heineken', 'Bebidas alcoólicas'),
   ('Dermáurea', 'Beleza'),
   ('Nutrilar', 'Alimentos'),
   ('Westwing', 'Casa e decoração')
 on conflict (nome) do update set setor = excluded.setor;
 
--- A tabela marca não tem chave única, então limpamos antes para não duplicar a
--- cada execução. Como ninguém depende dela ainda, apagar é seguro.
-delete from marca;
+-- A marca é a chave do catálogo comercial, não o anunciante: um anunciante tem
+-- várias marcas (Ambev tem Verão Lager e Skol Beats). Com nome único dá para
+-- reexecutar este seed à vontade — a marca existente é atualizada, não
+-- duplicada. E, mais importante, a marca é o que o cabeçalho da solicitação
+-- guarda; duas linhas com o mesmo nome deixariam o setor ambíguo justo no
+-- campo que cruza com as restrições.
+alter table marca drop constraint if exists marca_nome_unico;
+alter table marca add constraint marca_nome_unico unique (nome);
+
 insert into marca (nome, anunciante_id, setor, segmento) values
   ('Westwing Brasil', (select id from anunciante where nome = 'Westwing'), 'Casa e decoração', 'Móveis planejados'),
   ('Verão Lager', (select id from anunciante where nome = 'Ambev'), 'Bebidas alcoólicas', 'Cerveja premium'),
   ('Skol Beats', (select id from anunciante where nome = 'Ambev'), 'Bebidas alcoólicas', 'Cerveja premium'),
+  ('Heineken', (select id from anunciante where nome = 'Cervejaria Heineken'), 'Bebidas alcoólicas', 'Cerveja premium'),
   ('Nutrilar', (select id from anunciante where nome = 'Nutrilar'), 'Alimentos', 'Skincare'),
   ('Banco Vértice', (select id from anunciante where nome = 'Banco Vértice'), 'Financeiro', 'Cartão de crédito'),
-  ('Dermáurea', (select id from anunciante where nome = 'Dermáurea'), 'Beleza', 'Skincare');
+  ('Dermáurea', (select id from anunciante where nome = 'Dermáurea'), 'Beleza', 'Skincare')
+on conflict (nome) do update set
+  anunciante_id = excluded.anunciante_id,
+  setor         = excluded.setor,
+  segmento      = excluded.segmento;
 
 insert into programa (nome, segmento_produto) values
   ('Mais Você', 'Variedades'),
@@ -567,7 +579,7 @@ on conflict (categoria, entrega, tamanho, tipo_projeto) do update set valor = ex
 
 
 -- ----------------------------------------------------------------------
--- Parte 7 — Listas configuráveis (21 listas, 122 itens)
+-- Parte 7 — Listas configuráveis (21 listas, 123 itens)
 -- ----------------------------------------------------------------------
 insert into lista (id, label) values
   ('marcas', 'Marcas e anunciantes'),
@@ -598,9 +610,10 @@ insert into lista_item (lista_id, valor, ordem) values
   ('marcas', 'Westwing Brasil', 0),
   ('marcas', 'Verão Lager', 1),
   ('marcas', 'Skol Beats', 2),
-  ('marcas', 'Nutrilar', 3),
-  ('marcas', 'Banco Vértice', 4),
-  ('marcas', 'Dermáurea', 5),
+  ('marcas', 'Heineken', 3),
+  ('marcas', 'Nutrilar', 4),
+  ('marcas', 'Banco Vértice', 5),
+  ('marcas', 'Dermáurea', 6),
   ('setoresCliente', 'Bebidas alcoólicas', 0),
   ('setoresCliente', 'Beleza', 1),
   ('setoresCliente', 'Financeiro', 2),

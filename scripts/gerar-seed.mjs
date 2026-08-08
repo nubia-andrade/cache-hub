@@ -80,6 +80,9 @@ const MARCAS = [
   { marca: 'Westwing Brasil', anunciante: 'Westwing', setor: 'Casa e decoração', segmento: 'Móveis planejados' },
   { marca: 'Verão Lager', anunciante: 'Ambev', setor: 'Bebidas alcoólicas', segmento: 'Cerveja premium' },
   { marca: 'Skol Beats', anunciante: 'Ambev', setor: 'Bebidas alcoólicas', segmento: 'Cerveja premium' },
+  // Concorrente direto da Ambev no mesmo setor: serve para testar o alerta
+  // amarelo (contrato com concorrente) contra o verde (contrato com a casa).
+  { marca: 'Heineken', anunciante: 'Cervejaria Heineken', setor: 'Bebidas alcoólicas', segmento: 'Cerveja premium' },
   { marca: 'Nutrilar', anunciante: 'Nutrilar', setor: 'Alimentos', segmento: 'Skincare' },
   { marca: 'Banco Vértice', anunciante: 'Banco Vértice', setor: 'Financeiro', segmento: 'Cartão de crédito' },
   { marca: 'Dermáurea', anunciante: 'Dermáurea', setor: 'Beleza', segmento: 'Skincare' },
@@ -602,11 +605,21 @@ partes.push(
 ${sqlAnunciantes}
 on conflict (nome) do update set setor = excluded.setor;
 
--- A tabela marca não tem chave única, então limpamos antes para não duplicar a
--- cada execução. Como ninguém depende dela ainda, apagar é seguro.
-delete from marca;
+-- A marca é a chave do catálogo comercial, não o anunciante: um anunciante tem
+-- várias marcas (Ambev tem Verão Lager e Skol Beats). Com nome único dá para
+-- reexecutar este seed à vontade — a marca existente é atualizada, não
+-- duplicada. E, mais importante, a marca é o que o cabeçalho da solicitação
+-- guarda; duas linhas com o mesmo nome deixariam o setor ambíguo justo no
+-- campo que cruza com as restrições.
+alter table marca drop constraint if exists marca_nome_unico;
+alter table marca add constraint marca_nome_unico unique (nome);
+
 insert into marca (nome, anunciante_id, setor, segmento) values
-${sqlMarcas};
+${sqlMarcas}
+on conflict (nome) do update set
+  anunciante_id = excluded.anunciante_id,
+  setor         = excluded.setor,
+  segmento      = excluded.segmento;
 
 insert into programa (nome, segmento_produto) values
 ${PROGRAMAS.map((p) => `  (${texto(p.nome)}, ${texto(p.segmento)})`).join(',\n')}
