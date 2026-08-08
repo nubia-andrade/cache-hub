@@ -48,3 +48,25 @@ export function navegacaoPara(perfis: Perfil[]): ItemNav[] {
 export function rotaInicialPara(perfis: Perfil[]): string {
   return navegacaoPara(perfis)[0]?.href ?? '/talentos';
 }
+
+/**
+ * Telas que existem sem estar no menu — chegam por botão, não por navegação.
+ *
+ * Elas precisam estar aqui porque a guarda de rotas pergunta "este caminho é
+ * permitido?", e o menu sozinho responderia não. Esquecer de registrar uma
+ * rota nova aqui não abre buraco de segurança: o efeito é o contrário, a tela
+ * fica inacessível para todo mundo.
+ */
+const ROTAS_FORA_DO_MENU: { caminho: string; permitido: (p: Perfil[]) => boolean }[] =
+  [{ caminho: '/consulta/nova', permitido: ehSolicitante }];
+
+/** O usuário pode abrir este caminho? */
+export function podeAcessar(perfis: Perfil[], caminho: string | null): boolean {
+  if (!caminho) return false;
+
+  if (navegacaoPara(perfis).some((item) => item.href === caminho)) return true;
+
+  return ROTAS_FORA_DO_MENU.some(
+    (rota) => rota.caminho === caminho && rota.permitido(perfis),
+  );
+}

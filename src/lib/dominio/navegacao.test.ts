@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { navegacaoPara, rotaInicialPara } from './navegacao';
+import { navegacaoPara, podeAcessar, rotaInicialPara } from './navegacao';
 import type { Perfil } from './perfis';
 
 const rotulos = (perfis: Perfil[]) =>
@@ -60,6 +60,36 @@ describe('navegação por perfil', () => {
       'Restrições',
       'Relatórios',
     ]);
+  });
+});
+
+describe('guarda de rotas', () => {
+  it('libera o que está no menu do perfil', () => {
+    expect(podeAcessar(['Solicitante'], '/inicio')).toBe(true);
+    expect(podeAcessar(['Aprovador ViU'], '/fila')).toBe(true);
+  });
+
+  it('barra o que não está no menu do perfil', () => {
+    expect(podeAcessar(['Solicitante'], '/fila')).toBe(false);
+    expect(podeAcessar(['Solicitante'], '/tabela')).toBe(false);
+    expect(podeAcessar(['Aprovador ViU'], '/usuarios')).toBe(false);
+  });
+
+  it('libera a nova consulta para quem solicita, mesmo fora do menu', () => {
+    expect(podeAcessar(['Solicitante'], '/consulta/nova')).toBe(true);
+    expect(podeAcessar(['Proprietário'], '/consulta/nova')).toBe(true);
+  });
+
+  it('barra a nova consulta para quem só aprova', () => {
+    expect(podeAcessar(['Aprovador ViU'], '/consulta/nova')).toBe(false);
+    expect(podeAcessar(['Gerente Gestão de Elenco'], '/consulta/nova')).toBe(
+      false,
+    );
+  });
+
+  it('barra caminho desconhecido e caminho nulo', () => {
+    expect(podeAcessar(['Proprietário'], '/inventado')).toBe(false);
+    expect(podeAcessar(['Proprietário'], null)).toBe(false);
   });
 });
 

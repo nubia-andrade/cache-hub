@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CabecalhoApp } from '@/components/layout/CabecalhoApp';
-import { navegacaoPara } from '@/lib/dominio/navegacao';
+import { podeAcessar } from '@/lib/dominio/navegacao';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 import { MODO_TESTE_SEM_APROVACAO } from '@/lib/modo-teste';
 import { CABECALHO_CAMINHO } from '@/proxy';
@@ -35,10 +35,7 @@ export default async function LayoutDoApp({
   const cabecalhos = await headers();
   const caminhoAtual = cabecalhos.get(CABECALHO_CAMINHO);
 
-  const secoesPermitidas = navegacaoPara(usuario.perfis);
-  const temAcesso = secoesPermitidas.some(
-    (secao) => secao.href === caminhoAtual,
-  );
+  const temAcesso = podeAcessar(usuario.perfis, caminhoAtual);
 
   return (
     <div className="flex min-h-screen justify-center bg-fundo px-4 py-8">

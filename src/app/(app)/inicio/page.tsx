@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ListaDeProjetos } from '@/components/inicio/ListaDeProjetos';
 import { listarProjetosRecentes } from '@/lib/dados/projetos';
@@ -22,18 +23,12 @@ export default async function PaginaInicio() {
           </p>
         </div>
 
-        {/*
-          O wizard de nova solicitação é a tela 5 do plano. Até lá o botão fica
-          desabilitado: um botão que não faz nada confunde mais do que ajuda.
-        */}
-        <button
-          type="button"
-          disabled
-          title="O formulário de nova solicitação chega numa próxima etapa."
-          className="h-[42px] cursor-not-allowed rounded-full bg-magenta px-[18px] text-[13.5px] font-bold text-white opacity-50"
+        <Link
+          href="/consulta/nova"
+          className="flex h-[42px] items-center rounded-full bg-magenta px-[18px] text-[13.5px] font-bold text-white hover:bg-magenta/90"
         >
           + Nova consulta de orçamento
-        </button>
+        </Link>
       </div>
 
       <ListaDeProjetos projetos={projetos} equipeDoUsuario={usuario.equipe} />
