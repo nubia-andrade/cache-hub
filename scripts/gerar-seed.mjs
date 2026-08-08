@@ -362,6 +362,8 @@ where equipe in ('Variedades', 'Dramaturgia', 'Realities');
 --   Aprovada   -> Orçado           (e a conversão vira 'fechado', mais abaixo)
 --   Reprovada  -> Rejeitado
 do $$
+declare
+  p record;
 begin
   if not exists (
     select 1 from pg_type t
@@ -372,6 +374,19 @@ begin
       'Rascunho', 'Fila orçamento', 'Em análise', 'Devolvido',
       'Orçado', 'Rejeitado'
     );
+
+    -- O Postgres recusa trocar o tipo de uma coluna citada em policy ou em
+    -- CHECK, e as policies de escrita falam de status o tempo todo. Elas saem
+    -- aqui e voltam na Parte 1b, logo abaixo — que as recria do zero de
+    -- qualquer forma, com os nomes de status novos.
+    for p in
+      select policyname from pg_policies
+       where schemaname = 'public' and tablename = 'solicitacao_item'
+    loop
+      execute format('drop policy %I on solicitacao_item', p.policyname);
+    end loop;
+
+    alter table solicitacao_item drop constraint if exists conversao_coerente;
 
     alter table solicitacao_item alter column status drop default;
 
