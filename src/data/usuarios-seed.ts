@@ -38,14 +38,12 @@ export const USUARIOS_SEED = dados as UsuarioSeed[];
  * sessão o RLS não deixa ler `lista_item`.
  */
 export const EQUIPES = [
-  'Dramaturgia',
-  'Realities',
-  'Variedades',
+  'Entretenimento',
+  'Entretenimento Digital',
   'Esportes',
   'Notícias Digital',
   'Notícias Linear',
   'Territórios',
   'Regionais',
-  'Entretenimento Digital',
   'Planejamento & Portfólio',
 ] as const;

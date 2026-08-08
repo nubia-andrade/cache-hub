@@ -24,6 +24,18 @@ alter table solicitacao add column if not exists equipe text;
 -- solicitação faria a mesma pergunta ter duas respostas possíveis.
 alter table programa add column if not exists segmento_produto text;
 
+-- Renomeia em vez de criar outro registro, para não deixar duas versões do
+-- mesmo programa convivendo na lista.
+update programa set nome = 'Séries Originais Globoplay'
+where nome = 'Série Original';
+
+-- Conserta os cadastros que guardavam um segmento no lugar da equipe.
+update perfil_usuario set equipe = 'Entretenimento'
+where equipe in ('Variedades', 'Dramaturgia', 'Realities');
+
+update solicitacao set equipe = 'Entretenimento'
+where equipe in ('Variedades', 'Dramaturgia', 'Realities');
+
 
 -- ----------------------------------------------------------------------
 -- Parte 1 — Quem pode ler o quê (RLS)
@@ -298,8 +310,8 @@ insert into programa (nome, segmento_produto) values
   ('Novela das 21h', 'Dramaturgia'),
   ('Novela das 19h', 'Dramaturgia'),
   ('Novela das 18h', 'Dramaturgia'),
-  ('Série Original', 'Dramaturgia'),
-  ('gshow', null)
+  ('Séries Originais Globoplay', 'Entretenimento Digital'),
+  ('gshow', 'Entretenimento Digital')
 on conflict (nome) do update set segmento_produto = excluded.segmento_produto;
 
 
@@ -555,7 +567,7 @@ on conflict (categoria, entrega, tamanho, tipo_projeto) do update set valor = ex
 
 
 -- ----------------------------------------------------------------------
--- Parte 7 — Listas configuráveis (21 listas, 124 itens)
+-- Parte 7 — Listas configuráveis (21 listas, 122 itens)
 -- ----------------------------------------------------------------------
 insert into lista (id, label) values
   ('marcas', 'Marcas e anunciantes'),
@@ -607,11 +619,12 @@ insert into lista_item (lista_id, valor, ordem) values
   ('programas', 'Novela das 21h', 5),
   ('programas', 'Novela das 19h', 6),
   ('programas', 'Novela das 18h', 7),
-  ('programas', 'Série Original', 8),
+  ('programas', 'Séries Originais Globoplay', 8),
   ('programas', 'gshow', 9),
   ('segmentosProduto', 'Variedades', 0),
   ('segmentosProduto', 'Dramaturgia', 1),
   ('segmentosProduto', 'Realities', 2),
+  ('segmentosProduto', 'Entretenimento Digital', 3),
   ('canaisTV', 'Rede Globo', 0),
   ('canaisTV', 'GNT', 1),
   ('canaisTV', 'Multishow', 2),
@@ -697,16 +710,13 @@ insert into lista_item (lista_id, valor, ordem) values
   ('tiposRestricao', 'Anunciante concorrente', 1),
   ('tiposRestricao', 'Bloqueio total', 2),
   ('equipes', 'Entretenimento', 0),
-  ('equipes', 'Esportes', 1),
-  ('equipes', 'Notícias Digital', 2),
-  ('equipes', 'Notícias Linear', 3),
-  ('equipes', 'Territórios', 4),
-  ('equipes', 'Regionais', 5),
-  ('equipes', 'Entretenimento Digital', 6),
-  ('equipes', 'Planejamento & Portfólio', 7),
-  ('equipes', 'Dramaturgia', 8),
-  ('equipes', 'Realities', 9),
-  ('equipes', 'Variedades', 10);
+  ('equipes', 'Entretenimento Digital', 1),
+  ('equipes', 'Esportes', 2),
+  ('equipes', 'Notícias Digital', 3),
+  ('equipes', 'Notícias Linear', 4),
+  ('equipes', 'Territórios', 5),
+  ('equipes', 'Regionais', 6),
+  ('equipes', 'Planejamento & Portfólio', 7);
 
 
 -- ----------------------------------------------------------------------
@@ -731,11 +741,11 @@ set nome   = d.nome,
 from (values
   ('nubia.andrade@g.globo', 'Nubia Andrade', 'Dev', 'Planejamento & Portfólio', array['Proprietário']::text[], 'ativo'),
   ('ricardo.alencar@globo.com', 'Ricardo Alencar', 'Head de negócios com talentos', 'Territórios', array['Proprietário']::text[], 'ativo'),
-  ('mariana.vasques@globo.com', 'Mariana Vasques', 'Coordenadora de projetos comerciais', 'Variedades', array['Solicitante']::text[], 'ativo'),
+  ('mariana.vasques@globo.com', 'Mariana Vasques', 'Coordenadora de projetos comerciais', 'Entretenimento', array['Solicitante']::text[], 'ativo'),
   ('thiago.bastos@globo.com', 'Thiago Bastos', 'Analista ViU', 'Entretenimento Digital', array['Aprovador ViU']::text[], 'ativo'),
-  ('rafael.prado@globo.com', 'Rafael Prado', 'Analista de elenco', 'Dramaturgia', array['Aprovador Gestão de Elenco']::text[], 'ativo'),
+  ('rafael.prado@globo.com', 'Rafael Prado', 'Analista de elenco', 'Entretenimento', array['Aprovador Gestão de Elenco']::text[], 'ativo'),
   ('camile.nogueira@globo.com', 'Camile Nogueira', 'Gerente ViU', 'Entretenimento Digital', array['Gerente ViU', 'Aprovador ViU']::text[], 'ativo'),
-  ('fernanda.aguiar@globo.com', 'Fernanda Aguiar', 'Gerente de Gestão de Elenco', 'Dramaturgia', array['Gerente Gestão de Elenco']::text[], 'ativo'),
+  ('fernanda.aguiar@globo.com', 'Fernanda Aguiar', 'Gerente de Gestão de Elenco', 'Entretenimento', array['Gerente Gestão de Elenco']::text[], 'ativo'),
   ('juliana.prado@globo.com', 'Juliana Prado', 'Produtora regional', 'Regionais', array['Solicitante']::text[], 'suspenso')
 ) as d(email, nome, cargo, equipe, perfis, estado)
 where lower(p.email) = d.email;
@@ -769,12 +779,12 @@ values
   ('#ORC-2026-0418',
    (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
    'Westwing', 'Westwing Brasil', 'Casa e decoração', 'Móveis planejados',
-   'Mais Você', 'Variedades', 'Ambos', 'Patrocínio'::tipo_projeto,
+   'Mais Você', 'Entretenimento', 'Ambos', 'Patrocínio'::tipo_projeto,
    '2026-08-07'::date, '2026-09-30'::date, now() - interval '1 hours'),
   ('#ORC-2026-0431',
    (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
    'Ambev', 'Verão Lager', 'Bebidas alcoólicas', 'Cerveja premium',
-   'Big Brother Brasil', 'Realities', 'Social', 'Sob demanda'::tipo_projeto,
+   'Big Brother Brasil', 'Entretenimento', 'Social', 'Sob demanda'::tipo_projeto,
    '2026-08-20'::date, '2026-09-30'::date, now() - interval '2 hours'),
   ('#ORC-2026-0441',
    (select id from perfil_usuario where lower(email) = 'thiago.bastos@globo.com'),
@@ -784,7 +794,7 @@ values
   ('#ORC-2026-0427',
    (select id from perfil_usuario where lower(email) = 'mariana.vasques@globo.com'),
    'Banco Vértice', 'Banco Vértice', 'Financeiro', 'Cartão de crédito',
-   'Encontro', 'Variedades', 'Digital', 'Patrocínio'::tipo_projeto,
+   'Encontro', 'Entretenimento', 'Digital', 'Patrocínio'::tipo_projeto,
    '2026-09-12'::date, '2026-10-30'::date, now() - interval '4 hours');
 
 insert into solicitacao_item

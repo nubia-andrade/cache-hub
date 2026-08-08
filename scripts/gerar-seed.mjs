@@ -93,7 +93,8 @@ const MARCAS = [
  * diferentes e as duas importam — quantas consultas a equipe X abriu, e
  * quantas foram para o segmento Y.
  *
- * `Série Original` e `gshow` estão como suposição minha. Confirmar.
+ * "Séries Originais Globoplay" chamava-se "Série Original" no protótipo; o
+ * seed renomeia o registro existente em vez de criar outro.
  */
 const PROGRAMAS = [
   { nome: 'Mais Você', segmento: 'Variedades' },
@@ -104,11 +105,43 @@ const PROGRAMAS = [
   { nome: 'Novela das 21h', segmento: 'Dramaturgia' },
   { nome: 'Novela das 19h', segmento: 'Dramaturgia' },
   { nome: 'Novela das 18h', segmento: 'Dramaturgia' },
-  { nome: 'Série Original', segmento: 'Dramaturgia' },
-  { nome: 'gshow', segmento: null },
+  { nome: 'Séries Originais Globoplay', segmento: 'Entretenimento Digital' },
+  { nome: 'gshow', segmento: 'Entretenimento Digital' },
 ];
 
-const SEGMENTOS_PRODUTO = ['Variedades', 'Dramaturgia', 'Realities'];
+const SEGMENTOS_PRODUTO = [
+  'Variedades',
+  'Dramaturgia',
+  'Realities',
+  'Entretenimento Digital',
+];
+
+/**
+ * Times de verdade.
+ *
+ * Variedades, Dramaturgia e Realities saíram daqui: são segmentos de produto,
+ * e todos os três pertencem ao time Entretenimento.
+ *
+ * "Entretenimento Digital" aparece nas duas listas de propósito — é ao mesmo
+ * tempo um time e um segmento de produto, e as duas coisas são verdadeiras.
+ */
+const EQUIPES = [
+  'Entretenimento',
+  'Entretenimento Digital',
+  'Esportes',
+  'Notícias Digital',
+  'Notícias Linear',
+  'Territórios',
+  'Regionais',
+  'Planejamento & Portfólio',
+];
+
+/** Equipes do protótipo que na verdade eram segmentos, e para onde vão. */
+const EQUIPES_RENOMEADAS = {
+  Variedades: 'Entretenimento',
+  Dramaturgia: 'Entretenimento',
+  Realities: 'Entretenimento',
+};
 
 const UFS = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
 
@@ -138,17 +171,7 @@ const LISTAS = [
   // "Planejamento & Portfólio" foi acrescentada por ser uma equipe real que
   // já tem gente cadastrada no Hub, e sem ela nenhum formulário conseguia
   // oferecer essa opção.
-  // ATENÇÃO — esta lista está em transição.
-  //
-  // Dramaturgia, Realities e Variedades vieram do protótipo como se fossem
-  // equipes, mas são SEGMENTOS DE PRODUTO (ver a lista segmentosProduto e a
-  // coluna programa.segmento_produto). O time real que cobre os três é
-  // Entretenimento, acrescentado abaixo.
-  //
-  // Os três antigos continuam aqui só porque há usuários cadastrados com eles.
-  // Removê-los agora deixaria essas pessoas com uma equipe inexistente. Sai
-  // quando a lista de times reais estiver confirmada.
-  { id: 'equipes', label: 'Equipes', itens: ['Entretenimento','Esportes','Notícias Digital','Notícias Linear','Territórios','Regionais','Entretenimento Digital','Planejamento & Portfólio','Dramaturgia','Realities','Variedades'] },
+  { id: 'equipes', label: 'Equipes', itens: EQUIPES },
 ];
 
 const USUARIOS = JSON.parse(
@@ -296,7 +319,19 @@ alter table solicitacao add column if not exists equipe text;
 -- São duas dimensões de relatório e as duas valem: quantas consultas a equipe
 -- X abriu, e quantas foram para o segmento Y. Guardar o segmento na
 -- solicitação faria a mesma pergunta ter duas respostas possíveis.
-alter table programa add column if not exists segmento_produto text;`,
+alter table programa add column if not exists segmento_produto text;
+
+-- Renomeia em vez de criar outro registro, para não deixar duas versões do
+-- mesmo programa convivendo na lista.
+update programa set nome = 'Séries Originais Globoplay'
+where nome = 'Série Original';
+
+-- Conserta os cadastros que guardavam um segmento no lugar da equipe.
+update perfil_usuario set equipe = 'Entretenimento'
+where equipe in ('Variedades', 'Dramaturgia', 'Realities');
+
+update solicitacao set equipe = 'Entretenimento'
+where equipe in ('Variedades', 'Dramaturgia', 'Realities');`,
   ),
 );
 
@@ -665,7 +700,7 @@ ${sqlItens};`,
 // ---- Usuários ----
 const sqlUsuarios = USUARIOS.map(
   (u) =>
-    `  (${texto(u.email)}, ${texto(u.nome)}, ${texto(u.cargo)}, ${texto(u.equipe)}, ${arrayDeTexto(u.perfis)}, ${texto(u.estado)})`,
+    `  (${texto(u.email)}, ${texto(u.nome)}, ${texto(u.cargo)}, ${texto(EQUIPES_RENOMEADAS[u.equipe] ?? u.equipe)}, ${arrayDeTexto(u.perfis)}, ${texto(u.estado)})`,
 ).join(',\n');
 
 partes.push(
@@ -704,7 +739,7 @@ const sqlProjetos = PROJETOS.map(
   (p) => `  (${texto(p.protocolo)},
    (select id from perfil_usuario where lower(email) = ${texto(p.solicitante)}),
    ${texto(p.anunciante)}, ${texto(p.marca)}, ${texto(p.setor)}, ${texto(p.segmento)},
-   ${texto(p.programa)}, ${texto(p.equipe)}, ${texto(p.midia)}, ${texto(p.tipoProjeto)}::tipo_projeto,
+   ${texto(p.programa)}, ${texto(EQUIPES_RENOMEADAS[p.equipe] ?? p.equipe)}, ${texto(p.midia)}, ${texto(p.tipoProjeto)}::tipo_projeto,
    ${texto(p.inicio)}::date, ${texto(p.fim)}::date, now() - interval '${p.horasAtras} hours')`,
 ).join(',\n');
 
