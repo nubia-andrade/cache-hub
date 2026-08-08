@@ -85,7 +85,30 @@ const MARCAS = [
   { marca: 'Dermáurea', anunciante: 'Dermáurea', setor: 'Beleza', segmento: 'Skincare' },
 ];
 
-const PROGRAMAS = ['Mais Você','Encontro','É de Casa','Altas Horas','Big Brother Brasil','Novela das 21h','Novela das 19h','Novela das 18h','Série Original','gshow'];
+/**
+ * Programas e o segmento de produto de cada um.
+ *
+ * O segmento é atributo do PROGRAMA, não de quem abre a consulta: Mais Você é
+ * Variedades venha o pedido de quem vier. São duas dimensões de relatório
+ * diferentes e as duas importam — quantas consultas a equipe X abriu, e
+ * quantas foram para o segmento Y.
+ *
+ * `Série Original` e `gshow` estão como suposição minha. Confirmar.
+ */
+const PROGRAMAS = [
+  { nome: 'Mais Você', segmento: 'Variedades' },
+  { nome: 'Encontro', segmento: 'Variedades' },
+  { nome: 'É de Casa', segmento: 'Variedades' },
+  { nome: 'Altas Horas', segmento: 'Variedades' },
+  { nome: 'Big Brother Brasil', segmento: 'Realities' },
+  { nome: 'Novela das 21h', segmento: 'Dramaturgia' },
+  { nome: 'Novela das 19h', segmento: 'Dramaturgia' },
+  { nome: 'Novela das 18h', segmento: 'Dramaturgia' },
+  { nome: 'Série Original', segmento: 'Dramaturgia' },
+  { nome: 'gshow', segmento: null },
+];
+
+const SEGMENTOS_PRODUTO = ['Variedades', 'Dramaturgia', 'Realities'];
 
 const UFS = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
 
@@ -94,7 +117,8 @@ const LISTAS = [
   { id: 'marcas', label: 'Marcas e anunciantes', itens: MARCAS.map((m) => m.marca) },
   { id: 'setoresCliente', label: 'Setor do cliente', itens: ['Bebidas alcoólicas','Beleza','Financeiro','Casa e decoração','Alimentos','Bets'] },
   { id: 'segmentosMarca', label: 'Segmento da marca', itens: ['Cerveja premium','Skincare','Cartão de crédito','Móveis planejados'] },
-  { id: 'programas', label: 'Programas e obras', itens: PROGRAMAS },
+  { id: 'programas', label: 'Programas e obras', itens: PROGRAMAS.map((p) => p.nome) },
+  { id: 'segmentosProduto', label: 'Segmento do produto', itens: SEGMENTOS_PRODUTO },
   { id: 'canaisTV', label: 'Canais TV', itens: ['Rede Globo','GNT','Multishow','Bandeirantes'] },
   { id: 'redesSociais', label: 'Redes sociais', itens: ['Instagram','TikTok','YouTube','X (Twitter)','Facebook'] },
   { id: 'verticais', label: 'Verticais', itens: ['Multishow','Globo','GNT','gshow','Receitas'] },
@@ -114,7 +138,17 @@ const LISTAS = [
   // "Planejamento & Portfólio" foi acrescentada por ser uma equipe real que
   // já tem gente cadastrada no Hub, e sem ela nenhum formulário conseguia
   // oferecer essa opção.
-  { id: 'equipes', label: 'Equipes', itens: ['Dramaturgia','Realities','Variedades','Esportes','Notícias Digital','Notícias Linear','Territórios','Regionais','Entretenimento Digital','Planejamento & Portfólio'] },
+  // ATENÇÃO — esta lista está em transição.
+  //
+  // Dramaturgia, Realities e Variedades vieram do protótipo como se fossem
+  // equipes, mas são SEGMENTOS DE PRODUTO (ver a lista segmentosProduto e a
+  // coluna programa.segmento_produto). O time real que cobre os três é
+  // Entretenimento, acrescentado abaixo.
+  //
+  // Os três antigos continuam aqui só porque há usuários cadastrados com eles.
+  // Removê-los agora deixaria essas pessoas com uma equipe inexistente. Sai
+  // quando a lista de times reais estiver confirmada.
+  { id: 'equipes', label: 'Equipes', itens: ['Entretenimento','Esportes','Notícias Digital','Notícias Linear','Territórios','Regionais','Entretenimento Digital','Planejamento & Portfólio','Dramaturgia','Realities','Variedades'] },
 ];
 
 const USUARIOS = JSON.parse(
@@ -251,10 +285,18 @@ partes.push(`-- ============================================================
 partes.push(
   bloco(
     'Parte 0 — Ajustes no schema',
-    `-- A equipe que toca o projeto é atributo do projeto, não da pessoa que abriu.
--- Derivar do solicitante daria histórico errado: quem muda de equipe levaria
--- junto todos os projetos antigos. Guardamos a equipe no momento da abertura.
-alter table solicitacao add column if not exists equipe text;`,
+    `-- A equipe que abriu a consulta fica registrada no momento da abertura, e não
+-- derivada do solicitante depois: quem muda de equipe levaria junto todos os
+-- projetos antigos, e o histórico de volumetria mudaria sozinho.
+alter table solicitacao add column if not exists equipe text;
+
+-- O segmento de produto é atributo do PROGRAMA. Mais Você é Variedades venha o
+-- pedido de quem vier — por isso ele não fica na solicitação, e sim aqui.
+--
+-- São duas dimensões de relatório e as duas valem: quantas consultas a equipe
+-- X abriu, e quantas foram para o segmento Y. Guardar o segmento na
+-- solicitação faria a mesma pergunta ter duas respostas possíveis.
+alter table programa add column if not exists segmento_produto text;`,
   ),
 );
 
@@ -374,33 +416,23 @@ as $$
   );
 $$;
 
-create or replace function public.minha_equipe()
-returns text
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select equipe from public.perfil_usuario where id = auth.uid();
-$$;
-
 grant execute on function public.pode_solicitar() to authenticated;
-grant execute on function public.minha_equipe() to authenticated;
 
--- Abrir projeto: só para a PRÓPRIA equipe.
+-- Abrir consulta: qualquer solicitante ativo, para QUALQUER programa.
 --
--- A regra é de negócio, não de segurança: os relatórios medem volumetria por
--- núcleo, e alguém abrindo consulta no nome de outra equipe distorce o número
--- de quem não pediu nada. Vale igual para o Proprietário — se um dia ele
--- precisar abrir por outra equipe, isso vira exceção explícita, com motivo.
+-- Uma versão anterior desta policy exigia que a consulta fosse da equipe de
+-- quem abriu. Estava errada: o corte de relatório que importa por programa é o
+-- SEGMENTO DO PRODUTO, e ele vem do próprio programa — não de quem digitou.
+-- Amarrar a equipe só impediria alguém do Entretenimento de abrir uma consulta
+-- para um programa de outro segmento, o que é trabalho normal.
+--
+-- A equipe continua sendo gravada, para o relatório "quantas a equipe X abriu".
+-- O que ela não faz é barrar.
 drop policy if exists "abrir consulta da propria equipe" on solicitacao;
-create policy "abrir consulta da propria equipe" on solicitacao
+drop policy if exists "abrir consulta" on solicitacao;
+create policy "abrir consulta" on solicitacao
   for insert to authenticated
-  with check (
-    public.pode_solicitar()
-    and solicitante_id = auth.uid()
-    and equipe = public.minha_equipe()
-  );
+  with check (public.pode_solicitar() and solicitante_id = auth.uid());
 
 -- Editar e descartar: só o que é seu. A trava de ajuste (o solicitante ter de
 -- destravar para o aprovador corrigir) entra junto com a tela de resposta.
@@ -408,7 +440,7 @@ drop policy if exists "editar a propria consulta" on solicitacao;
 create policy "editar a propria consulta" on solicitacao
   for update to authenticated
   using (solicitante_id = auth.uid())
-  with check (solicitante_id = auth.uid() and equipe = public.minha_equipe());
+  with check (solicitante_id = auth.uid());
 
 drop policy if exists "descartar a propria consulta" on solicitacao;
 create policy "descartar a propria consulta" on solicitacao
@@ -541,9 +573,9 @@ delete from marca;
 insert into marca (nome, anunciante_id, setor, segmento) values
 ${sqlMarcas};
 
-insert into programa (nome) values
-${PROGRAMAS.map((p) => `  (${texto(p)})`).join(',\n')}
-on conflict (nome) do nothing;`,
+insert into programa (nome, segmento_produto) values
+${PROGRAMAS.map((p) => `  (${texto(p.nome)}, ${texto(p.segmento)})`).join(',\n')}
+on conflict (nome) do update set segmento_produto = excluded.segmento_produto;`,
   ),
 );
 

@@ -14,6 +14,10 @@ export type ProjetoResumo = {
   marca: string;
   setorCliente: string;
   programa: string;
+  /** Vem do programa (Mais Você é Variedades), não de quem abriu a consulta. */
+  segmentoProduto: string;
+  /** A equipe de quem abriu, gravada na abertura. Dimensão de relatório
+   *  diferente do segmento, e as duas contam. */
   equipe: string;
   exibicaoInicio: string | null;
   status: StatusSolicitacao;

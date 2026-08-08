@@ -11,10 +11,18 @@
 -- ----------------------------------------------------------------------
 -- Parte 0 — Ajustes no schema
 -- ----------------------------------------------------------------------
--- A equipe que toca o projeto é atributo do projeto, não da pessoa que abriu.
--- Derivar do solicitante daria histórico errado: quem muda de equipe levaria
--- junto todos os projetos antigos. Guardamos a equipe no momento da abertura.
+-- A equipe que abriu a consulta fica registrada no momento da abertura, e não
+-- derivada do solicitante depois: quem muda de equipe levaria junto todos os
+-- projetos antigos, e o histórico de volumetria mudaria sozinho.
 alter table solicitacao add column if not exists equipe text;
+
+-- O segmento de produto é atributo do PROGRAMA. Mais Você é Variedades venha o
+-- pedido de quem vier — por isso ele não fica na solicitação, e sim aqui.
+--
+-- São duas dimensões de relatório e as duas valem: quantas consultas a equipe
+-- X abriu, e quantas foram para o segmento Y. Guardar o segmento na
+-- solicitação faria a mesma pergunta ter duas respostas possíveis.
+alter table programa add column if not exists segmento_produto text;
 
 
 -- ----------------------------------------------------------------------
@@ -132,33 +140,23 @@ as $$
   );
 $$;
 
-create or replace function public.minha_equipe()
-returns text
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select equipe from public.perfil_usuario where id = auth.uid();
-$$;
-
 grant execute on function public.pode_solicitar() to authenticated;
-grant execute on function public.minha_equipe() to authenticated;
 
--- Abrir projeto: só para a PRÓPRIA equipe.
+-- Abrir consulta: qualquer solicitante ativo, para QUALQUER programa.
 --
--- A regra é de negócio, não de segurança: os relatórios medem volumetria por
--- núcleo, e alguém abrindo consulta no nome de outra equipe distorce o número
--- de quem não pediu nada. Vale igual para o Proprietário — se um dia ele
--- precisar abrir por outra equipe, isso vira exceção explícita, com motivo.
+-- Uma versão anterior desta policy exigia que a consulta fosse da equipe de
+-- quem abriu. Estava errada: o corte de relatório que importa por programa é o
+-- SEGMENTO DO PRODUTO, e ele vem do próprio programa — não de quem digitou.
+-- Amarrar a equipe só impediria alguém do Entretenimento de abrir uma consulta
+-- para um programa de outro segmento, o que é trabalho normal.
+--
+-- A equipe continua sendo gravada, para o relatório "quantas a equipe X abriu".
+-- O que ela não faz é barrar.
 drop policy if exists "abrir consulta da propria equipe" on solicitacao;
-create policy "abrir consulta da propria equipe" on solicitacao
+drop policy if exists "abrir consulta" on solicitacao;
+create policy "abrir consulta" on solicitacao
   for insert to authenticated
-  with check (
-    public.pode_solicitar()
-    and solicitante_id = auth.uid()
-    and equipe = public.minha_equipe()
-  );
+  with check (public.pode_solicitar() and solicitante_id = auth.uid());
 
 -- Editar e descartar: só o que é seu. A trava de ajuste (o solicitante ter de
 -- destravar para o aprovador corrigir) entra junto com a tela de resposta.
@@ -166,7 +164,7 @@ drop policy if exists "editar a propria consulta" on solicitacao;
 create policy "editar a propria consulta" on solicitacao
   for update to authenticated
   using (solicitante_id = auth.uid())
-  with check (solicitante_id = auth.uid() and equipe = public.minha_equipe());
+  with check (solicitante_id = auth.uid());
 
 drop policy if exists "descartar a propria consulta" on solicitacao;
 create policy "descartar a propria consulta" on solicitacao
@@ -291,18 +289,18 @@ insert into marca (nome, anunciante_id, setor, segmento) values
   ('Banco Vértice', (select id from anunciante where nome = 'Banco Vértice'), 'Financeiro', 'Cartão de crédito'),
   ('Dermáurea', (select id from anunciante where nome = 'Dermáurea'), 'Beleza', 'Skincare');
 
-insert into programa (nome) values
-  ('Mais Você'),
-  ('Encontro'),
-  ('É de Casa'),
-  ('Altas Horas'),
-  ('Big Brother Brasil'),
-  ('Novela das 21h'),
-  ('Novela das 19h'),
-  ('Novela das 18h'),
-  ('Série Original'),
-  ('gshow')
-on conflict (nome) do nothing;
+insert into programa (nome, segmento_produto) values
+  ('Mais Você', 'Variedades'),
+  ('Encontro', 'Variedades'),
+  ('É de Casa', 'Variedades'),
+  ('Altas Horas', 'Variedades'),
+  ('Big Brother Brasil', 'Realities'),
+  ('Novela das 21h', 'Dramaturgia'),
+  ('Novela das 19h', 'Dramaturgia'),
+  ('Novela das 18h', 'Dramaturgia'),
+  ('Série Original', 'Dramaturgia'),
+  ('gshow', null)
+on conflict (nome) do update set segmento_produto = excluded.segmento_produto;
 
 
 -- ----------------------------------------------------------------------
@@ -557,13 +555,14 @@ on conflict (categoria, entrega, tamanho, tipo_projeto) do update set valor = ex
 
 
 -- ----------------------------------------------------------------------
--- Parte 7 — Listas configuráveis (20 listas, 120 itens)
+-- Parte 7 — Listas configuráveis (21 listas, 124 itens)
 -- ----------------------------------------------------------------------
 insert into lista (id, label) values
   ('marcas', 'Marcas e anunciantes'),
   ('setoresCliente', 'Setor do cliente'),
   ('segmentosMarca', 'Segmento da marca'),
   ('programas', 'Programas e obras'),
+  ('segmentosProduto', 'Segmento do produto'),
   ('canaisTV', 'Canais TV'),
   ('redesSociais', 'Redes sociais'),
   ('verticais', 'Verticais'),
@@ -610,6 +609,9 @@ insert into lista_item (lista_id, valor, ordem) values
   ('programas', 'Novela das 18h', 7),
   ('programas', 'Série Original', 8),
   ('programas', 'gshow', 9),
+  ('segmentosProduto', 'Variedades', 0),
+  ('segmentosProduto', 'Dramaturgia', 1),
+  ('segmentosProduto', 'Realities', 2),
   ('canaisTV', 'Rede Globo', 0),
   ('canaisTV', 'GNT', 1),
   ('canaisTV', 'Multishow', 2),
@@ -694,16 +696,17 @@ insert into lista_item (lista_id, valor, ordem) values
   ('tiposRestricao', 'Setor do cliente', 0),
   ('tiposRestricao', 'Anunciante concorrente', 1),
   ('tiposRestricao', 'Bloqueio total', 2),
-  ('equipes', 'Dramaturgia', 0),
-  ('equipes', 'Realities', 1),
-  ('equipes', 'Variedades', 2),
-  ('equipes', 'Esportes', 3),
-  ('equipes', 'Notícias Digital', 4),
-  ('equipes', 'Notícias Linear', 5),
-  ('equipes', 'Territórios', 6),
-  ('equipes', 'Regionais', 7),
-  ('equipes', 'Entretenimento Digital', 8),
-  ('equipes', 'Planejamento & Portfólio', 9);
+  ('equipes', 'Entretenimento', 0),
+  ('equipes', 'Esportes', 1),
+  ('equipes', 'Notícias Digital', 2),
+  ('equipes', 'Notícias Linear', 3),
+  ('equipes', 'Territórios', 4),
+  ('equipes', 'Regionais', 5),
+  ('equipes', 'Entretenimento Digital', 6),
+  ('equipes', 'Planejamento & Portfólio', 7),
+  ('equipes', 'Dramaturgia', 8),
+  ('equipes', 'Realities', 9),
+  ('equipes', 'Variedades', 10);
 
 
 -- ----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
 import { statusDoProjeto, validarStatus } from '@/lib/dominio/solicitacao';
 import { DIAS_NO_INICIO, type ProjetoResumo } from '@/lib/dominio/projeto';
+import { mapaDeSegmentoPorPrograma } from './listas';
 
 /**
  * Leitura das solicitações para a tela de Início.
@@ -39,12 +40,17 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
   const limite = new Date();
   limite.setDate(limite.getDate() - DIAS_NO_INICIO);
 
-  const { data, error } = await supabase
-    .from('solicitacao')
-    .select(CONSULTA)
-    .gte('criado_em', limite.toISOString())
-    .order('criado_em', { ascending: false })
-    .overrideTypes<LinhaSolicitacao[]>();
+  const [consulta, segmentoPorPrograma] = await Promise.all([
+    supabase
+      .from('solicitacao')
+      .select(CONSULTA)
+      .gte('criado_em', limite.toISOString())
+      .order('criado_em', { ascending: false })
+      .overrideTypes<LinhaSolicitacao[]>(),
+    mapaDeSegmentoPorPrograma(),
+  ]);
+
+  const { data, error } = consulta;
 
   if (error) {
     // Sem dado é melhor que uma tela quebrada: a página mostra o estado vazio.
@@ -58,6 +64,7 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
     marca: linha.marca ?? '—',
     setorCliente: linha.setor_cliente ?? '',
     programa: linha.programa ?? '',
+    segmentoProduto: segmentoPorPrograma.get(linha.programa ?? '') ?? '',
     equipe: linha.equipe ?? '',
     exibicaoInicio: linha.exibicao_inicio,
     status: statusDoProjeto(

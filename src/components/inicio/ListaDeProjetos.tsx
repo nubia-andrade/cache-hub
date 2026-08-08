@@ -21,11 +21,23 @@ export function ListaDeProjetos({
   equipeDoUsuario: string;
 }) {
   const [filtro, setFiltro] = useState<Filtro>('todas');
+  const [segmento, setSegmento] = useState('Todos os segmentos');
 
-  const visiveis =
-    filtro === 'todas'
-      ? projetos
-      : projetos.filter((projeto) => projeto.equipe === equipeDoUsuario);
+  /** Os segmentos que realmente aparecem na lista — não adianta oferecer
+   *  filtro para um segmento sem nenhuma consulta. */
+  const segmentosPresentes = [
+    ...new Set(projetos.map((projeto) => projeto.segmentoProduto).filter(Boolean)),
+  ].sort();
+
+  const visiveis = projetos
+    .filter(
+      (projeto) => filtro === 'todas' || projeto.equipe === equipeDoUsuario,
+    )
+    .filter(
+      (projeto) =>
+        segmento === 'Todos os segmentos' ||
+        projeto.segmentoProduto === segmento,
+    );
 
   const opcoes: { id: Filtro; rotulo: string }[] = [
     { id: 'todas', rotulo: 'Todas as equipes' },
@@ -34,7 +46,7 @@ export function ListaDeProjetos({
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {opcoes.map((opcao) => {
           const ativo = filtro === opcao.id;
           return (
@@ -53,6 +65,21 @@ export function ListaDeProjetos({
             </button>
           );
         })}
+
+        {segmentosPresentes.length > 1 && (
+          <select
+            value={segmento}
+            aria-label="Segmento do produto"
+            onChange={(evento) => setSegmento(evento.target.value)}
+            className="ml-1 h-[30px] rounded-lg border border-borda-forte bg-white px-2.5 text-[12.5px] text-tinta"
+          >
+            {['Todos os segmentos', ...segmentosPresentes].map((opcao) => (
+              <option key={opcao} value={opcao}>
+                {opcao}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <p className="mb-2.5 text-[11.5px] font-bold uppercase tracking-[0.08em] text-tinta-4">

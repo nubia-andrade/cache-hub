@@ -57,11 +57,19 @@ export function CartaoProjeto({
         ))}
       </div>
 
-      <div className="flex items-center justify-between border-t border-borda-suave pt-2">
+      {/* Segmento vem do programa; equipe é de quem abriu. São dois cortes de
+          relatório diferentes, então os dois aparecem — separados por bullet
+          para não parecerem a mesma coisa. */}
+      <div className="flex items-center justify-between gap-2 border-t border-borda-suave pt-2">
         <span className="text-[11px] text-tinta-5">
           {formatarData(projeto.exibicaoInicio)}
         </span>
-        <span className="text-[11px] text-tinta-4">{projeto.equipe}</span>
+        <span className="truncate text-[11px] text-tinta-4">
+          {projeto.segmentoProduto || '—'}
+          {projeto.equipe && (
+            <span className="text-tinta-5"> · {projeto.equipe}</span>
+          )}
+        </span>
       </div>
     </article>
   );
