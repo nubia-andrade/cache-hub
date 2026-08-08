@@ -189,6 +189,10 @@ const USUARIOS = JSON.parse(
  *
  * `horasAtras` existe só para o Início listar na mesma ordem do protótipo:
  * a tela ordena por data de abertura, da mais recente para a mais antiga.
+ *
+ * Em `talentos`, texto puro herda o status do projeto. Objeto sobrescreve — é
+ * o que permite o caso que realmente acontece: dois talentos orçados na mesma
+ * solicitação, um fechado e o outro não (conversão parcial).
  */
 const PROJETOS = [
   {
@@ -204,9 +208,11 @@ const PROJETOS = [
     tipoProjeto: 'Patrocínio',
     inicio: '2026-08-07',
     fim: '2026-09-30',
-    status: 'Orçada',
+    status: 'Orçado',
     horasAtras: 1,
-    talentos: ['Bruno Tavares'],
+    talentos: [
+      { nome: 'Bruno Tavares', conversao: 'fechado', valorFechado: 145000 },
+    ],
   },
   {
     protocolo: '#ORC-2026-0431',
@@ -221,9 +227,14 @@ const PROJETOS = [
     tipoProjeto: 'Sob demanda',
     inicio: '2026-08-20',
     fim: '2026-09-30',
-    status: 'Em análise',
+    // O caso que motivou o campo de conversão: orçaram os dois, fecharam um.
+    // O projeto sai como "Convertida parcial".
+    status: 'Orçado',
     horasAtras: 2,
-    talentos: ['Manu Ferraz', 'Léo Vasques'],
+    talentos: [
+      { nome: 'Manu Ferraz', conversao: 'fechado', valorFechado: 92000 },
+      { nome: 'Léo Vasques', conversao: 'não fechado', motivo: 'Verba' },
+    ],
   },
   {
     protocolo: '#ORC-2026-0441',
@@ -238,7 +249,8 @@ const PROJETOS = [
     tipoProjeto: 'Pacote',
     inicio: '2026-09-02',
     fim: '2026-10-15',
-    status: 'Aprovada',
+    // Dá conteúdo para a tela de fila: enviada, esperando alguém pegar.
+    status: 'Fila orçamento',
     horasAtras: 3,
     talentos: ['Tati Rocha'],
   },
@@ -255,9 +267,10 @@ const PROJETOS = [
     tipoProjeto: 'Patrocínio',
     inicio: '2026-09-12',
     fim: '2026-10-30',
-    status: 'Em análise',
+    // Devolvido ao solicitante: o aprovador viu que falta informação.
+    status: 'Devolvido',
     horasAtras: 4,
-    talentos: ['Manu Ferraz'],
+    talentos: [{ nome: 'Manu Ferraz', devolvidoPara: 'Solicitante' }],
   },
 ];
 
@@ -334,7 +347,112 @@ update perfil_usuario set equipe = 'Entretenimento'
 where equipe in ('Variedades', 'Dramaturgia', 'Realities');
 
 update solicitacao set equipe = 'Entretenimento'
-where equipe in ('Variedades', 'Dramaturgia', 'Realities');`,
+where equipe in ('Variedades', 'Dramaturgia', 'Realities');
+
+-- ---- Os status novos ----------------------------------------------------
+--
+-- O schema nasceu com Rascunho / Em análise / Orçada / Aprovada / Reprovada.
+-- Faltava separar "chegou na fila" de "alguém pegou para analisar", que é o
+-- corte que permite medir tempo de primeira resposta contra o SLA. E sobrava
+-- Aprovada, que na verdade era conversão comercial disfarçada de status.
+--
+-- Postgres não sabe remover valor de enum, então o tipo é recriado. O USING
+-- abaixo traduz o que já existe:
+--   Em análise -> Fila orçamento   (o antigo significava "esperando alguém")
+--   Aprovada   -> Orçado           (e a conversão vira 'fechado', mais abaixo)
+--   Reprovada  -> Rejeitado
+do $$
+begin
+  if not exists (
+    select 1 from pg_type t
+     where t.typname = 'solicitacao_status'
+       and 'Fila orçamento' = any (enum_range(null::solicitacao_status)::text[])
+  ) then
+    create type solicitacao_status_novo as enum (
+      'Rascunho', 'Fila orçamento', 'Em análise', 'Devolvido',
+      'Orçado', 'Rejeitado'
+    );
+
+    alter table solicitacao_item alter column status drop default;
+
+    alter table solicitacao_item
+      alter column status type solicitacao_status_novo
+      using (case status::text
+               when 'Em análise' then 'Fila orçamento'
+               when 'Orçada'     then 'Orçado'
+               when 'Aprovada'   then 'Orçado'
+               when 'Reprovada'  then 'Rejeitado'
+               else 'Rascunho'
+             end)::solicitacao_status_novo;
+
+    drop type solicitacao_status;
+    alter type solicitacao_status_novo rename to solicitacao_status;
+  end if;
+end $$;
+
+-- O padrão passa a ser Rascunho. O antigo era 'Em análise', o que significava
+-- que um item nascia já na fila se quem inserisse omitisse o campo — e a
+-- policy de inserção teria de brigar com o próprio padrão da tabela.
+alter table solicitacao_item alter column status set default 'Rascunho';
+
+-- ---- Devolução: para quem voltou ----------------------------------------
+--
+-- Os dois lados devolvem, e por motivos opostos: o aprovador pede informação
+-- que falta, o solicitante mudou o briefing. Sem este campo, "Devolvido"
+-- apareceria igual nas duas filas e cada um esperaria o outro agir.
+alter table solicitacao_item add column if not exists devolvido_para text;
+alter table solicitacao_item drop constraint if exists devolvido_para_valido;
+alter table solicitacao_item add constraint devolvido_para_valido check (
+  devolvido_para is null or devolvido_para in ('Solicitante', 'Aprovador')
+);
+
+-- ---- Conversão ----------------------------------------------------------
+--
+-- Segunda dimensão, e não status: status diz onde a demanda está, conversão
+-- diz se deu negócio. Fosse status, um talento orçado e não fechado sairia da
+-- volumetria de orçamentos no instante em que o cliente dissesse não — e a
+-- área perderia crédito por trabalho que fez.
+--
+-- Fica no item, não na solicitação, porque orçam três talentos e fecham um.
+--
+-- Três valores, não um booleano: sem 'pendente', "ainda não respondido" teria
+-- de se disfarçar de "não fechou", e a taxa despencaria a cada orçamento novo
+-- para subir sozinha depois. Aqui pendente fica fora do denominador.
+alter table solicitacao_item add column if not exists conversao text not null default 'pendente';
+alter table solicitacao_item drop constraint if exists conversao_valida;
+alter table solicitacao_item add constraint conversao_valida check (
+  conversao in ('pendente', 'fechado', 'não fechado')
+);
+
+-- Sem data, a conversão só responde "no total". Com ela, dá para dizer quanto
+-- fechou em julho.
+alter table solicitacao_item add column if not exists conversao_em date;
+
+-- O valor negociado sai diferente do orçado. Sem este campo a conversão só
+-- pode ser medida em quantidade, e "fechamos 8 de 10" esconde se os 8 foram
+-- os baratos.
+alter table solicitacao_item add column if not exists valor_fechado numeric(12,2);
+
+-- Por que se perde. Barato de cadastrar agora e impossível de reconstruir
+-- daqui a seis meses.
+alter table solicitacao_item add column if not exists motivo_nao_fechou text;
+
+-- Conversão só existe depois que existe valor para converter, e cada resposta
+-- exige o que lhe corresponde. A trava fica aqui e não só na tela: a API do
+-- Supabase é aberta a quem tem sessão, e a tela não é a única porta.
+alter table solicitacao_item drop constraint if exists conversao_coerente;
+alter table solicitacao_item add constraint conversao_coerente check (
+  (conversao = 'pendente' and conversao_em is null
+                          and valor_fechado is null
+                          and motivo_nao_fechou is null)
+  or (conversao = 'fechado'     and status = 'Orçado' and conversao_em is not null
+                                and motivo_nao_fechou is null)
+  or (conversao = 'não fechado' and status = 'Orçado' and conversao_em is not null
+                                and valor_fechado is null)
+);
+
+-- Os projetos de exemplo são recriados do zero na Parte 9, já com os status e
+-- as conversões novas. Não há nada a converter aqui.`,
   ),
 );
 
@@ -503,9 +621,10 @@ create policy "incluir talento na propria consulta" on solicitacao_item
 -- A primeira metade da trava de ajuste.
 --
 -- O solicitante só mexe enquanto o item é Rascunho (cláusula USING), e só
--- consegue deixá-lo em Rascunho ou Em análise (cláusula WITH CHECK). Ou seja:
--- ele monta, ele envia — e, no instante em que envia, perde o direito de
--- mexer. Não há caminho daqui para Orçada ou Aprovada; isso é do aprovador.
+-- consegue deixá-lo em Rascunho ou Fila orçamento (cláusula WITH CHECK). Ou
+-- seja: ele monta, ele envia — e, no instante em que envia, perde o direito de
+-- mexer. Não há caminho daqui para Em análise, Orçado ou Rejeitado; esses são
+-- do aprovador.
 drop policy if exists "ajustar talento em rascunho" on solicitacao_item;
 create policy "ajustar talento em rascunho" on solicitacao_item
   for update to authenticated
@@ -516,7 +635,61 @@ create policy "ajustar talento em rascunho" on solicitacao_item
       where s.id = solicitacao_id and s.solicitante_id = auth.uid()
     )
   )
-  with check (status in ('Rascunho', 'Em análise'));
+  with check (status in ('Rascunho', 'Fila orçamento'));
+
+-- A exceção à trava: informar se fechou.
+--
+-- Depois de Orçado o solicitante volta a poder escrever na linha, porque é ele
+-- quem sabe se o cliente fechou. O status tem de continuar Orçado nos dois
+-- lados — ele informa a conversão, não reabre a negociação.
+drop policy if exists "informar conversao do proprio talento" on solicitacao_item;
+create policy "informar conversao do proprio talento" on solicitacao_item
+  for update to authenticated
+  using (
+    status = 'Orçado'
+    and exists (
+      select 1 from public.solicitacao s
+      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
+    )
+  )
+  with check (status = 'Orçado');
+
+-- RLS decide QUAIS LINHAS, nunca quais colunas. Sem o gatilho abaixo, a policy
+-- de cima deixaria o solicitante reescrever o valor orçado pelo aprovador na
+-- mesma chamada em que informa a conversão — e o histórico de preço, que é o
+-- que alimenta a tabela de referência, viraria ficção.
+create or replace function public.so_conversao_depois_de_orcado()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  eh_o_solicitante boolean;
+begin
+  select s.solicitante_id = auth.uid() into eh_o_solicitante
+    from public.solicitacao s where s.id = old.solicitacao_id;
+
+  -- Aprovador mexendo na própria fila não passa por aqui.
+  if not coalesce(eh_o_solicitante, false) or old.status <> 'Orçado' then
+    return new;
+  end if;
+
+  if new.status is distinct from old.status
+     or new.talento_id is distinct from old.talento_id
+     or new.categoria  is distinct from old.categoria
+     or new.area       is distinct from old.area then
+    raise exception
+      'Depois de orçado, o solicitante só informa a conversão.';
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_informar_conversao on solicitacao_item;
+create trigger ao_informar_conversao
+  before update on solicitacao_item
+  for each row execute function public.so_conversao_depois_de_orcado();
 
 drop policy if exists "remover talento em rascunho" on solicitacao_item;
 create policy "remover talento em rascunho" on solicitacao_item
@@ -757,18 +930,45 @@ const sqlProjetos = PROJETOS.map(
 ).join(',\n');
 
 const sqlProjetoItens = PROJETOS.flatMap((p) =>
-  p.talentos.map((talento) => {
-    const categoria = CATEGORIA_POR_TALENTO[talento];
+  p.talentos.map((entrada) => {
+    // Texto puro herda tudo do projeto; objeto sobrescreve o que precisar.
+    const item = typeof entrada === 'string' ? { nome: entrada } : entrada;
+    const status = item.status ?? p.status;
+    const conversao = item.conversao ?? 'pendente';
+
+    const categoria = CATEGORIA_POR_TALENTO[item.nome];
     if (!categoria) {
       throw new Error(
-        `Talento "${talento}" do projeto ${p.protocolo} não existe na lista TALENTOS.`,
+        `Talento "${item.nome}" do projeto ${p.protocolo} não existe na lista TALENTOS.`,
       );
     }
+
+    // As mesmas regras do CHECK `conversao_coerente`. Quebrar aqui, ao gerar,
+    // dá uma mensagem legível; quebrar no banco daria só o nome da constraint.
+    if (conversao !== 'pendente' && status !== 'Orçado') {
+      throw new Error(
+        `${p.protocolo}/${item.nome}: conversão "${conversao}" exige status Orçado, não "${status}".`,
+      );
+    }
+    if (conversao === 'fechado' && item.motivo) {
+      throw new Error(`${p.protocolo}/${item.nome}: fechado não tem motivo.`);
+    }
+    if (conversao === 'não fechado' && item.valorFechado) {
+      throw new Error(
+        `${p.protocolo}/${item.nome}: não fechado não tem valor fechado.`,
+      );
+    }
+
     return `  ((select id from solicitacao where protocolo = ${texto(p.protocolo)}),
-   (select id from talento where nome_artistico = ${texto(talento)}),
+   (select id from talento where nome_artistico = ${texto(item.nome)}),
    ${texto(categoria)}::talento_categoria,
    ${texto(AREA_POR_CATEGORIA[categoria])}::area_responsavel,
-   ${texto(p.status)}::solicitacao_status)`;
+   ${texto(status)}::solicitacao_status,
+   ${texto(item.devolvidoPara ?? null)},
+   ${texto(conversao)},
+   ${conversao === 'pendente' ? 'null' : 'current_date'},
+   ${item.valorFechado ?? 'null'},
+   ${texto(item.motivo ?? null)})`;
   }),
 ).join(',\n');
 
@@ -800,7 +1000,8 @@ values
 ${sqlProjetos};
 
 insert into solicitacao_item
-  (solicitacao_id, talento_id, categoria, area, status)
+  (solicitacao_id, talento_id, categoria, area, status,
+   devolvido_para, conversao, conversao_em, valor_fechado, motivo_nao_fechou)
 values
 ${sqlProjetoItens};
 
