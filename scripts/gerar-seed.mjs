@@ -110,7 +110,11 @@ const LISTAS = [
   { id: 'localImpulsionamento', label: 'Local Impulsionamento', itens: ['Perfis Globo','Perfis do Anunciante','Redes Creator / Talento','Ambos'] },
   { id: 'ufs', label: 'UF de gravação', itens: UFS },
   { id: 'tiposRestricao', label: 'Tipos de restrição', itens: ['Setor do cliente','Anunciante concorrente','Bloqueio total'] },
-  { id: 'equipes', label: 'Equipes', itens: ['Dramaturgia','Realities','Variedades','Esportes','Notícias Digital','Notícias Linear','Territórios','Regionais','Entretenimento Digital'] },
+  // As nove primeiras vieram do protótipo, todas de área de conteúdo.
+  // "Planejamento & Portfólio" foi acrescentada por ser uma equipe real que
+  // já tem gente cadastrada no Hub, e sem ela nenhum formulário conseguia
+  // oferecer essa opção.
+  { id: 'equipes', label: 'Equipes', itens: ['Dramaturgia','Realities','Variedades','Esportes','Notícias Digital','Notícias Linear','Territórios','Regionais','Entretenimento Digital','Planejamento & Portfólio'] },
 ];
 
 const USUARIOS = JSON.parse(

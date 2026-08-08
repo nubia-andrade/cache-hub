@@ -435,7 +435,7 @@ on conflict (categoria, entrega, tamanho, tipo_projeto) do update set valor = ex
 
 
 -- ----------------------------------------------------------------------
--- Parte 7 — Listas configuráveis (20 listas, 119 itens)
+-- Parte 7 — Listas configuráveis (20 listas, 120 itens)
 -- ----------------------------------------------------------------------
 insert into lista (id, label) values
   ('marcas', 'Marcas e anunciantes'),
@@ -580,7 +580,8 @@ insert into lista_item (lista_id, valor, ordem) values
   ('equipes', 'Notícias Linear', 5),
   ('equipes', 'Territórios', 6),
   ('equipes', 'Regionais', 7),
-  ('equipes', 'Entretenimento Digital', 8);
+  ('equipes', 'Entretenimento Digital', 8),
+  ('equipes', 'Planejamento & Portfólio', 9);
 
 
 -- ----------------------------------------------------------------------

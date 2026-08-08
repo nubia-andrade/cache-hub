@@ -29,7 +29,14 @@ export type UsuarioSeed = {
 
 export const USUARIOS_SEED = dados as UsuarioSeed[];
 
-/** Equipes usadas no formulário de "solicitar acesso". */
+/**
+ * Equipes usadas no formulário de "solicitar acesso".
+ *
+ * Precisa espelhar a lista `equipes` do seed (`scripts/gerar-seed.mjs`). Um
+ * dia isso deve vir do banco, junto com as outras listas configuráveis — por
+ * enquanto está aqui porque a tela de login roda antes de haver sessão, e sem
+ * sessão o RLS não deixa ler `lista_item`.
+ */
 export const EQUIPES = [
   'Dramaturgia',
   'Realities',
@@ -40,4 +47,5 @@ export const EQUIPES = [
   'Territórios',
   'Regionais',
   'Entretenimento Digital',
+  'Planejamento & Portfólio',
 ] as const;
