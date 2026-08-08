@@ -58,7 +58,7 @@ export const RESULTADOS_PROJETO = [
   'Convertida',
   'Convertida parcial',
   'Não convertida',
-  'Sem orçamento',
+  'Não orçada',
 ] as const;
 
 export type ResultadoProjeto = (typeof RESULTADOS_PROJETO)[number];
@@ -78,7 +78,7 @@ export function resultadoDoProjeto(
   itens: readonly ItemParaConversao[],
 ): ResultadoProjeto {
   const orcados = itens.filter((item) => item.status === 'Orçado');
-  if (orcados.length === 0) return 'Sem orçamento';
+  if (orcados.length === 0) return 'Não orçada';
 
   if (orcados.some((item) => item.conversao === 'pendente')) return 'Pendente';
 

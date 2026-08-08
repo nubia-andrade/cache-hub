@@ -1,13 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { CampoDinamico } from './CampoDinamico';
 import { areaDaCategoria, COR_POR_CATEGORIA } from '@/lib/dominio/categorias';
 import { iniciais } from '@/lib/dominio/perfis';
 import { tamanhoDoTalento } from '@/lib/dominio/talento';
 import {
+  agruparEmSecoes,
   camposDaMidia,
   camposFaltandoNoEscopo,
-  camposVisiveis,
 } from '@/lib/dominio/escopo';
 import {
   faixaDeNegociacao,
@@ -97,6 +98,23 @@ function BlocoDoTalento({
 }) {
   const tamanho = tamanhoDoTalento(talento.seguidores);
   const temTabela = tabelaDaCategoria(talento.categoria) !== null;
+
+  const grupos = agruparEmSecoes(definicoes, escopo.campos);
+
+  // Só a primeira nasce aberta. Abrir todas traria de volta a parede de campos
+  // que as seções vieram resolver.
+  const [abertas, setAbertas] = useState<Set<string>>(
+    () => new Set(grupos[0] ? [grupos[0].secao] : []),
+  );
+
+  function alternarSecao(secao: string) {
+    setAbertas((atuais) => {
+      const novas = new Set(atuais);
+      if (novas.has(secao)) novas.delete(secao);
+      else novas.add(secao);
+      return novas;
+    });
+  }
 
   const linhas = linhasDaEstimativa(precos, {
     categoria: talento.categoria,
@@ -284,17 +302,54 @@ function BlocoDoTalento({
           <span className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-tinta-4">
             Condições do projeto
           </span>
-          <div className="grid gap-x-4 gap-y-3.5 sm:grid-cols-2">
-            {camposVisiveis(definicoes, escopo.campos).map((campo) => (
-              <CampoDinamico
-                key={campo.chave}
-                campo={campo}
-                valores={escopo.campos}
-                opcoesDeLista={opcoesDeLista}
-                aoMudar={mudarCampo}
-              />
-            ))}
-          </div>
+
+          {grupos.map((grupo) => {
+            const aberta = abertas.has(grupo.secao);
+            return (
+              <div
+                key={grupo.secao}
+                className="overflow-hidden rounded-[10px] border border-borda"
+              >
+                <button
+                  type="button"
+                  aria-expanded={aberta}
+                  onClick={() => alternarSecao(grupo.secao)}
+                  className="flex w-full cursor-pointer items-center gap-2 bg-fundo-2 px-3.5 py-2.5 text-left"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`text-[10px] text-tinta-4 transition-transform ${
+                      aberta ? 'rotate-90' : ''
+                    }`}
+                  >
+                    ▶
+                  </span>
+                  <span className="text-[12.5px] font-bold text-tinta">
+                    {grupo.secao}
+                  </span>
+                  <span className="ml-auto text-[11px] text-tinta-4">
+                    {grupo.pendentes > 0
+                      ? `${grupo.pendentes} a preencher`
+                      : 'completa'}
+                  </span>
+                </button>
+
+                {aberta && (
+                  <div className="grid gap-x-4 gap-y-3.5 p-3.5 sm:grid-cols-2">
+                    {grupo.campos.map((campo) => (
+                      <CampoDinamico
+                        key={campo.chave}
+                        campo={campo}
+                        valores={escopo.campos}
+                        opcoesDeLista={opcoesDeLista}
+                        aoMudar={mudarCampo}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {faltando.length > 0 && (

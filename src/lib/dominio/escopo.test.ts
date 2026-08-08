@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  agruparEmSecoes,
   CAMPOS_DIGITAL,
   CAMPOS_TV,
   campoPreenchido,
   camposDaMidia,
   camposFaltandoNoEscopo,
   camposVisiveis,
+  SECOES,
   type DefinicaoCampo,
 } from './escopo';
 
@@ -94,6 +96,7 @@ describe('quando um campo está preenchido', () => {
     chave: 'duracaoVideo',
     rotulo: 'Duração do vídeo',
     tipo: 'duracao',
+    secao: 'Formato e produção',
   };
 
   it('duração aceita só os segundos', () => {
@@ -107,9 +110,63 @@ describe('quando um campo está preenchido', () => {
       chave: 'verba',
       rotulo: 'Verba disponível',
       tipo: 'moeda',
+      secao: 'Verba e contexto',
     };
     expect(campoPreenchido(campo, { verba: '' })).toBe(false);
     expect(campoPreenchido(campo, { verba: '10.000' })).toBe(true);
+  });
+});
+
+describe('seções recolhíveis', () => {
+  it('todo campo tem seção declarada', () => {
+    for (const campo of [...CAMPOS_TV, ...CAMPOS_DIGITAL]) {
+      expect(SECOES).toContain(campo.secao);
+    }
+  });
+
+  it('agrupar não perde nem inventa campo', () => {
+    const definicoes = camposDaMidia('Ambos');
+    const agrupados = agruparEmSecoes(definicoes, {}).flatMap(
+      (grupo) => grupo.campos,
+    );
+    expect(agrupados).toHaveLength(camposVisiveis(definicoes, {}).length);
+  });
+
+  it('seção sem campo visível não aparece', () => {
+    // Digital não tem nada de "Formato e produção" — a seção some inteira.
+    const secoes = agruparEmSecoes(CAMPOS_DIGITAL, {}).map(
+      (grupo) => grupo.secao,
+    );
+    expect(secoes).not.toContain('Formato e produção');
+    expect(secoes).toContain('Distribuição');
+  });
+
+  it('mantém a ordem declarada em SECOES', () => {
+    const secoes = agruparEmSecoes(camposDaMidia('Ambos'), {}).map(
+      (grupo) => grupo.secao,
+    );
+    expect(secoes).toEqual([...SECOES].filter((s) => secoes.includes(s)));
+  });
+
+  it('o contador de pendentes acompanha o preenchimento', () => {
+    const antes = agruparEmSecoes(CAMPOS_DIGITAL, {}).find(
+      (grupo) => grupo.secao === 'Verba e contexto',
+    );
+    const depois = agruparEmSecoes(CAMPOS_DIGITAL, { verba: '5000' }).find(
+      (grupo) => grupo.secao === 'Verba e contexto',
+    );
+    expect(depois?.pendentes).toBe((antes?.pendentes ?? 0) - 1);
+  });
+
+  it('campo escondido por dep não conta como pendente na seção', () => {
+    const semDiarias = agruparEmSecoes(CAMPOS_DIGITAL, {
+      diariasBool: 'Não',
+    }).find((grupo) => grupo.secao === 'Gravação');
+    const comDiarias = agruparEmSecoes(CAMPOS_DIGITAL, {
+      diariasBool: 'Sim',
+    }).find((grupo) => grupo.secao === 'Gravação');
+    // Sim revela dois campos a mais (quantidade de diárias e de horas).
+    expect(comDiarias?.pendentes).toBe((semDiarias?.pendentes ?? 0) + 2);
   });
 });
 

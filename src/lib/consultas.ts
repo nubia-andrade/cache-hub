@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Gravação de uma consulta de orçamento.
+ * Gravação de uma consulta de cachê.
  *
  * Roda no navegador, e a proteção é o RLS: as policies exigem que o
  * `solicitante_id` seja você, que você tenha perfil de Solicitante ativo, e

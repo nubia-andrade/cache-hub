@@ -33,7 +33,7 @@ import type { TalentoComRestricoes } from '@/lib/dados/talentos';
  * O assistente de nova consulta.
  *
  * Vai até o passo 3 e grava um Rascunho. O passo 4 (revisão e envio, que leva
- * a consulta de Rascunho para Fila orçamento) chega em seguida — Rascunho é
+ * a consulta de Rascunho para Fila de cachê) chega em seguida — Rascunho é
  * justamente o estado previsto para uma consulta ainda não enviada, então
  * parar aqui não deixa nada em situação inválida.
  */

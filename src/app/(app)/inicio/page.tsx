@@ -27,7 +27,7 @@ export default async function PaginaInicio() {
           href="/consulta/nova"
           className="flex h-[42px] items-center rounded-full bg-magenta px-[18px] text-[13.5px] font-bold text-white hover:bg-magenta/90"
         >
-          + Nova consulta de orçamento
+          + Nova consulta de cachê
         </Link>
       </div>
 

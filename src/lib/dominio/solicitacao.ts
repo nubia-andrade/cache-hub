@@ -13,7 +13,7 @@
 /** Ordem de leitura — é assim que os status aparecem em filtros e legendas. */
 export const STATUS_SOLICITACAO = [
   'Rascunho',
-  'Fila orçamento',
+  'Fila de cachê',
   'Em análise',
   'Devolvido',
   'Orçado',
@@ -25,7 +25,7 @@ export type StatusSolicitacao = (typeof STATUS_SOLICITACAO)[number];
 /** O que cada status quer dizer. Usado em legendas e no texto de ajuda. */
 export const DESCRICAO_STATUS: Record<StatusSolicitacao, string> = {
   Rascunho: 'Ainda não enviada.',
-  'Fila orçamento': 'Enviada, aguardando um aprovador pegar.',
+  'Fila de cachê': 'Enviada, aguardando um aprovador pegar.',
   'Em análise': 'Um aprovador está analisando.',
   Devolvido: 'Voltou para a origem anterior, à espera de ajuste.',
   Orçado: 'O aprovador respondeu com valor.',
@@ -59,7 +59,7 @@ export const STATUS_ENCERRADOS: readonly StatusSolicitacao[] = [
 const ORDEM_DO_MENOS_AVANCADO: readonly StatusSolicitacao[] = [
   'Rascunho',
   'Devolvido',
-  'Fila orçamento',
+  'Fila de cachê',
   'Em análise',
   'Orçado',
   'Rejeitado',
@@ -88,7 +88,7 @@ export const CORES_STATUS: Record<
   { texto: string; fundo: string }
 > = {
   Rascunho: { texto: '#6B6A7C', fundo: '#F2F0F8' },
-  'Fila orçamento': { texto: '#2020EE', fundo: '#EEEEFE' },
+  'Fila de cachê': { texto: '#2020EE', fundo: '#EEEEFE' },
   'Em análise': { texto: '#8A6A00', fundo: '#FFF7E0' },
   Devolvido: { texto: '#8B2FD6', fundo: '#F5EDFC' },
   Orçado: { texto: '#0F7B6C', fundo: '#E6F6F2' },

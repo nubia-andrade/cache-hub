@@ -35,7 +35,7 @@ export function CabecalhoApp({ usuario }: { usuario: Usuario }) {
             Cachê Hub
           </span>
           <span className="hidden text-[11px] text-tinta-4 sm:block">
-            Gestão de Talentos e Orçamentos de Cachê
+            Gestão de Talentos e Cachês
           </span>
         </div>
       </div>

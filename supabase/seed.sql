@@ -45,9 +45,24 @@ where equipe in ('Variedades', 'Dramaturgia', 'Realities');
 --
 -- Postgres não sabe remover valor de enum, então o tipo é recriado. O USING
 -- abaixo traduz o que já existe:
---   Em análise -> Fila orçamento   (o antigo significava "esperando alguém")
+--   Em análise -> Fila de cachê   (o antigo significava "esperando alguém")
 --   Aprovada   -> Orçado           (e a conversão vira 'fechado', mais abaixo)
 --   Reprovada  -> Rejeitado
+-- Antes de tudo: quem já rodou a versão anterior tem o valor com o nome
+-- antigo. Renomear é barato e preserva as linhas — recriar o tipo aqui faria
+-- o CASE lá embaixo não reconhecer 'Fila orçamento' e jogar tudo para
+-- Rascunho, apagando em silêncio o que já estava na fila.
+do $$
+begin
+  if exists (
+    select 1 from pg_type
+     where typname = 'solicitacao_status'
+       and 'Fila orçamento' = any (enum_range(null::solicitacao_status)::text[])
+  ) then
+    alter type solicitacao_status rename value 'Fila orçamento' to 'Fila de cachê';
+  end if;
+end $$;
+
 do $$
 declare
   p record;
@@ -55,10 +70,10 @@ begin
   if not exists (
     select 1 from pg_type t
      where t.typname = 'solicitacao_status'
-       and 'Fila orçamento' = any (enum_range(null::solicitacao_status)::text[])
+       and 'Fila de cachê' = any (enum_range(null::solicitacao_status)::text[])
   ) then
     create type solicitacao_status_novo as enum (
-      'Rascunho', 'Fila orçamento', 'Em análise', 'Devolvido',
+      'Rascunho', 'Fila de cachê', 'Em análise', 'Devolvido',
       'Orçado', 'Rejeitado'
     );
 
@@ -80,7 +95,7 @@ begin
     alter table solicitacao_item
       alter column status type solicitacao_status_novo
       using (case status::text
-               when 'Em análise' then 'Fila orçamento'
+               when 'Em análise' then 'Fila de cachê'
                when 'Orçada'     then 'Orçado'
                when 'Aprovada'   then 'Orçado'
                when 'Reprovada'  then 'Rejeitado'
@@ -334,7 +349,7 @@ create policy "incluir talento na propria consulta" on solicitacao_item
 -- A primeira metade da trava de ajuste.
 --
 -- O solicitante só mexe enquanto o item é Rascunho (cláusula USING), e só
--- consegue deixá-lo em Rascunho ou Fila orçamento (cláusula WITH CHECK). Ou
+-- consegue deixá-lo em Rascunho ou Fila de cachê (cláusula WITH CHECK). Ou
 -- seja: ele monta, ele envia — e, no instante em que envia, perde o direito de
 -- mexer. Não há caminho daqui para Em análise, Orçado ou Rejeitado; esses são
 -- do aprovador.
@@ -348,7 +363,7 @@ create policy "ajustar talento em rascunho" on solicitacao_item
       where s.id = solicitacao_id and s.solicitante_id = auth.uid()
     )
   )
-  with check (status in ('Rascunho', 'Fila orçamento'));
+  with check (status in ('Rascunho', 'Fila de cachê'));
 
 -- A exceção à trava: informar se fechou.
 --
@@ -1036,7 +1051,7 @@ values
    (select id from talento where nome_artistico = 'Tati Rocha'),
    'Creator'::talento_categoria,
    'ViU'::area_responsavel,
-   'Fila orçamento'::solicitacao_status,
+   'Fila de cachê'::solicitacao_status,
    null,
    'pendente',
    null,

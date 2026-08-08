@@ -19,7 +19,7 @@ describe('quando dá para informar conversão', () => {
   it('só depois de Orçado — antes não há o que converter', () => {
     expect(podeInformarConversao('Orçado')).toBe(true);
     expect(podeInformarConversao('Rascunho')).toBe(false);
-    expect(podeInformarConversao('Fila orçamento')).toBe(false);
+    expect(podeInformarConversao('Fila de cachê')).toBe(false);
     expect(podeInformarConversao('Em análise')).toBe(false);
     expect(podeInformarConversao('Devolvido')).toBe(false);
     expect(podeInformarConversao('Rejeitado')).toBe(false);
@@ -60,10 +60,10 @@ describe('resultado do projeto', () => {
   });
 
   it('projeto que ninguém orçou não é conversão perdida', () => {
-    expect(resultadoDoProjeto([item('Fila orçamento'), item('Rascunho')])).toBe(
-      'Sem orçamento',
+    expect(resultadoDoProjeto([item('Fila de cachê'), item('Rascunho')])).toBe(
+      'Não orçada',
     );
-    expect(resultadoDoProjeto([])).toBe('Sem orçamento');
+    expect(resultadoDoProjeto([])).toBe('Não orçada');
   });
 
   it('talento rejeitado fica fora da conta', () => {
@@ -74,9 +74,9 @@ describe('resultado do projeto', () => {
     ).toBe('Convertida');
   });
 
-  it('só rejeitados: nunca houve orçamento', () => {
+  it('só rejeitados: nunca houve cachê orçado', () => {
     expect(resultadoDoProjeto([item('Rejeitado'), item('Rejeitado')])).toBe(
-      'Sem orçamento',
+      'Não orçada',
     );
   });
 });
@@ -128,7 +128,7 @@ describe('taxa de conversão', () => {
 
   it('item não orçado não conta nem no numerador nem no denominador', () => {
     expect(
-      taxaDeConversao([item('Fila orçamento'), item('Orçado', 'fechado')]),
+      taxaDeConversao([item('Fila de cachê'), item('Orçado', 'fechado')]),
     ).toBe(1);
   });
 });

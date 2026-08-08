@@ -40,7 +40,7 @@ export default async function PaginaNovaConsulta() {
           ← Voltar ao início
         </Link>
         <h1 className="font-titulo text-[25px] font-semibold text-tinta">
-          Nova consulta de orçamento
+          Nova consulta de cachê
         </h1>
         <p className="max-w-[640px] text-[13px] leading-[1.6] text-tinta-3">
           Descreva o projeto e escolha os talentos. Cada um segue para a área

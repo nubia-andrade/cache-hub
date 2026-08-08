@@ -3,7 +3,7 @@ import type { Quantidades } from './estimativa';
 import type { TipoProjeto } from './precos';
 
 /**
- * O cabeçalho de uma consulta de orçamento — o passo 1 do assistente.
+ * O cabeçalho de uma consulta de cachê — o passo 1 do assistente.
  *
  * É o que descreve o projeto comercial, antes de qualquer talento entrar. Ele
  * importa além do cadastro: o setor do cliente e o anunciante são o que se

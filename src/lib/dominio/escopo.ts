@@ -20,10 +20,29 @@ import type { TipoMidia } from './consulta';
 
 export type TipoCampo = 'moeda' | 'select' | 'num' | 'bool' | 'area' | 'duracao';
 
+/**
+ * As seções em que o formulário se dobra, na ordem em que aparecem.
+ *
+ * Em mídia `Ambos` a união dos dois conjuntos passa de vinte e cinco campos, e
+ * uma parede desse tamanho faz quem preenche desistir antes de chegar ao fim.
+ * Agrupar por assunto deixa fechado o que não interessa àquele talento.
+ */
+export const SECOES = [
+  'Verba e contexto',
+  'Formato e produção',
+  'Distribuição',
+  'Responsabilidades',
+  'Gravação',
+  'Observações',
+] as const;
+
+export type Secao = (typeof SECOES)[number];
+
 export type DefinicaoCampo = {
   chave: string;
   rotulo: string;
   tipo: TipoCampo;
+  secao: Secao;
   /** Opções fixas, quando não vêm de uma lista administrável. */
   opcoes?: readonly string[];
   /** Id da lista configurável que preenche as opções (tabela `lista`). */
@@ -43,62 +62,62 @@ const RESPONSAVEIS = ['Creator / Talento', 'ViU', 'Linear'] as const;
 const RESPONSABILIDADE_TV = ['Responsabilidade Globo', 'Talento'] as const;
 
 export const CAMPOS_TV: readonly DefinicaoCampo[] = [
-  { chave: 'verba', rotulo: 'Verba disponível', tipo: 'moeda' },
-  { chave: 'formato', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
-  { chave: 'vertical', rotulo: 'Vertical', tipo: 'select', lista: 'verticais' },
+  { chave: 'verba', secao: 'Verba e contexto', rotulo: 'Verba disponível', tipo: 'moeda' },
+  { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
+  { chave: 'vertical', secao: 'Formato e produção', rotulo: 'Vertical', tipo: 'select', lista: 'verticais' },
   {
-    chave: 'direcaoRedacao',
+    chave: 'direcaoRedacao', secao: 'Formato e produção',
     rotulo: 'Direção e redação',
     tipo: 'select',
     lista: 'direcaoRedacao',
   },
-  { chave: 'criativos', rotulo: 'Quantos criativos', tipo: 'num' },
+  { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantos criativos', tipo: 'num' },
   {
-    chave: 'contextoProjeto',
+    chave: 'contextoProjeto', secao: 'Verba e contexto',
     rotulo: 'Contexto do projeto',
     tipo: 'area',
     largo: true,
   },
-  { chave: 'duracaoVideo', rotulo: 'Duração do vídeo', tipo: 'duracao' },
+  { chave: 'duracaoVideo', secao: 'Formato e produção', rotulo: 'Duração do vídeo', tipo: 'duracao' },
   {
-    chave: 'duracaoProjeto',
+    chave: 'duracaoProjeto', secao: 'Formato e produção',
     rotulo: 'Duração do projeto',
     tipo: 'num',
     nota: 'quantidade de dias',
   },
   {
-    chave: 'conteudoVideos',
+    chave: 'conteudoVideos', secao: 'Formato e produção',
     rotulo: 'Conteúdo dos vídeos',
     tipo: 'area',
     largo: true,
   },
-  { chave: 'exibicoes', rotulo: 'Quantas exibições', tipo: 'num' },
-  { chave: 'ufGravacao', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
-  { chave: 'redesSociais', rotulo: 'Redes sociais?', tipo: 'bool' },
+  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantas exibições', tipo: 'num' },
+  { chave: 'ufGravacao', secao: 'Gravação', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
+  { chave: 'redesSociais', secao: 'Distribuição', rotulo: 'Redes sociais?', tipo: 'bool' },
   {
-    chave: 'redeSocialTV',
+    chave: 'redeSocialTV', secao: 'Distribuição',
     rotulo: 'Rede social',
     tipo: 'select',
     lista: 'redesSociais',
     dep: 'redesSociais',
   },
-  { chave: 'diariasNum', rotulo: 'Diárias de gravação', tipo: 'num' },
-  { chave: 'qtdHoras', rotulo: 'Quantidade de horas', tipo: 'num' },
-  { chave: 'exclusividade', rotulo: 'Exclusividade', tipo: 'bool' },
+  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'num' },
+  { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
+  { chave: 'exclusividade', secao: 'Verba e contexto', rotulo: 'Exclusividade', tipo: 'bool' },
   {
-    chave: 'makeHair',
+    chave: 'makeHair', secao: 'Responsabilidades',
     rotulo: 'Make e hair',
     tipo: 'select',
     opcoes: RESPONSABILIDADE_TV,
   },
   {
-    chave: 'figurino',
+    chave: 'figurino', secao: 'Responsabilidades',
     rotulo: 'Figurino',
     tipo: 'select',
     opcoes: RESPONSABILIDADE_TV,
   },
   {
-    chave: 'maisInfo',
+    chave: 'maisInfo', secao: 'Observações',
     rotulo: 'Mais informações',
     tipo: 'area',
     largo: true,
@@ -108,82 +127,82 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
 
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   {
-    chave: 'verba',
+    chave: 'verba', secao: 'Verba e contexto',
     rotulo: 'Verba disponível',
     tipo: 'moeda',
     nota: 'temos a verba do cliente?',
   },
-  { chave: 'exclusividade', rotulo: 'Exclusividade', tipo: 'bool' },
+  { chave: 'exclusividade', secao: 'Verba e contexto', rotulo: 'Exclusividade', tipo: 'bool' },
   {
-    chave: 'contextoProjeto',
+    chave: 'contextoProjeto', secao: 'Verba e contexto',
     rotulo: 'Contexto do projeto',
     tipo: 'area',
     largo: true,
   },
-  { chave: 'repost', rotulo: 'Repost', tipo: 'bool' },
+  { chave: 'repost', secao: 'Distribuição', rotulo: 'Repost', tipo: 'bool' },
   {
-    chave: 'localRepost',
+    chave: 'localRepost', secao: 'Distribuição',
     rotulo: 'Local do repost',
     tipo: 'select',
     lista: 'localRepost',
     dep: 'repost',
   },
-  { chave: 'impulsionamento', rotulo: 'Impulsionamento', tipo: 'bool' },
+  { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
   {
-    chave: 'localImpulsionamento',
+    chave: 'localImpulsionamento', secao: 'Distribuição',
     rotulo: 'Local do impulsionamento',
     tipo: 'select',
     lista: 'localImpulsionamento',
     dep: 'impulsionamento',
   },
   {
-    chave: 'roteiro',
+    chave: 'roteiro', secao: 'Responsabilidades',
     rotulo: 'Roteiro, produção, captação e edição',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
   },
   {
-    chave: 'makeHair',
+    chave: 'makeHair', secao: 'Responsabilidades',
     rotulo: 'Make e hair',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
   },
   {
-    chave: 'figurino',
+    chave: 'figurino', secao: 'Responsabilidades',
     rotulo: 'Figurino',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
   },
-  { chave: 'interacaoProduto', rotulo: 'Interação com produto', tipo: 'bool' },
-  { chave: 'diariasBool', rotulo: 'Diárias de gravação', tipo: 'bool' },
+  { chave: 'interacaoProduto', secao: 'Distribuição', rotulo: 'Interação com produto', tipo: 'bool' },
+  { chave: 'diariasBool', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'bool' },
   {
-    chave: 'qtdDiarias',
+    chave: 'qtdDiarias', secao: 'Gravação',
     rotulo: 'Quantidade de diárias',
     tipo: 'num',
     dep: 'diariasBool',
   },
   {
-    chave: 'qtdHoras',
+    chave: 'qtdHoras', secao: 'Gravação',
     rotulo: 'Quantidade de horas',
     tipo: 'num',
     dep: 'diariasBool',
   },
-  { chave: 'ufGravacao', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
+  { chave: 'ufGravacao', secao: 'Gravação', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
   {
-    chave: 'logistica',
+    chave: 'logistica', secao: 'Responsabilidades',
     rotulo: 'Logística',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
   },
   {
-    chave: 'maisInfo',
+    chave: 'maisInfo', secao: 'Observações',
     rotulo: 'Mais informações',
     tipo: 'area',
     largo: true,
     dica: 'informar o que será feito na diária',
   },
   {
-    chave: 'outrasObs',
+    chave: 'outrasObs', secao: 'Observações',
     rotulo: 'Outras observações',
     tipo: 'area',
     largo: true,
@@ -246,6 +265,37 @@ export function campoPreenchido(
     return Boolean(valores[`${campo.chave}Min`] || valores[`${campo.chave}Seg`]);
   }
   return Boolean(valores[campo.chave]);
+}
+
+export type GrupoDeCampos = {
+  secao: Secao;
+  campos: DefinicaoCampo[];
+  /** Quantos ainda estão em branco — vira o contador do cabeçalho da seção. */
+  pendentes: number;
+};
+
+/**
+ * Os campos visíveis, dobrados em seções.
+ *
+ * Seção sem nenhum campo visível não entra: em mídia Digital não existe
+ * "Formato e produção", e um cabeçalho que abre no vazio só faz quem preenche
+ * procurar o que não está lá.
+ */
+export function agruparEmSecoes(
+  definicoes: readonly DefinicaoCampo[],
+  valores: ValoresDoEscopo,
+): GrupoDeCampos[] {
+  const visiveis = camposVisiveis(definicoes, valores);
+
+  return SECOES.map((secao) => {
+    const campos = visiveis.filter((campo) => campo.secao === secao);
+    return {
+      secao,
+      campos,
+      pendentes: campos.filter((campo) => !campoPreenchido(campo, valores))
+        .length,
+    };
+  }).filter((grupo) => grupo.campos.length > 0);
 }
 
 /** Os rótulos que faltam. Um campo escondido por `dep` não é pendência. */
