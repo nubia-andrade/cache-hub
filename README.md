@@ -21,9 +21,33 @@ Abra <http://localhost:3000>. Para parar, aperte `Ctrl + C`.
 | Comando | O que faz |
 | --- | --- |
 | `npm run dev` | Sobe o site no seu computador, atualizando sozinho a cada mudança |
+| `npm test` | Confere as regras de negócio |
 | `npm run build` | Monta a versão de produção e avisa se algo está quebrado |
 | `npm run lint` | Procura problemas no código |
 | `npm run seed:gerar` | Regera `supabase/seed.sql` a partir dos dados dos protótipos |
+
+## Testes
+
+`npm test` roda as verificações das regras de negócio, e leva cerca de um
+segundo. Vale rodar antes de cada commit.
+
+Os testes cobrem só `src/lib/dominio` — as funções que decidem valor de cachê,
+bloqueio de talento e quem enxerga o quê. Elas não dependem de banco nem de
+tela, então dá para testá-las de verdade e rápido.
+
+O que está coberto hoje, das regras críticas do README do handoff:
+
+| Regra | Onde |
+| --- | --- |
+| Roteamento por categoria | `categorias.test.ts` |
+| Filtro da fila do aprovador por área | `perfis.test.ts` |
+| Restrições com expiração por data | `restricoes.test.ts` |
+| Tamanho de audiência (decide o preço) | `talento.test.ts` |
+| Navegação por perfil | `navegacao.test.ts` |
+| Status derivado do projeto | `solicitacao.test.ts` |
+
+Falta a quarta regra crítica — o fluxo de aprovação com trava de ajuste —
+porque ela ainda não existe no código.
 
 ## Banco de dados
 
