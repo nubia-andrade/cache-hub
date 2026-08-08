@@ -36,7 +36,13 @@ export type ResultadoGravacao =
   | { ok: false; mensagem: string };
 
 /**
- * Cria a consulta e os itens, tudo como Rascunho.
+ * Cria a consulta e os itens, tudo como Rascunho — e, se for para enviar,
+ * move os itens para Fila de cachê logo em seguida.
+ *
+ * São dois passos e não um porque a policy de INSERT exige que todo item nasça
+ * Rascunho. Não é burocracia: sem essa exigência, quem chamasse a API poderia
+ * inserir um item já Orçado e pular a fila inteira. Sair do Rascunho é um
+ * UPDATE, e o UPDATE tem a sua própria regra sobre para onde dá para ir.
  *
  * Se a gravação dos itens falhar depois de a consulta ter sido criada,
  * apagamos a consulta. O Supabase não dá transação por HTTP, então a
@@ -48,6 +54,7 @@ export async function criarRascunho(
   talentos: TalentoEscolhido[],
   equipeDoSolicitante: string,
   precos: LinhaDePreco[],
+  enviar = false,
 ): Promise<ResultadoGravacao> {
   const supabase = criarClienteNoNavegador();
 
@@ -124,6 +131,23 @@ export async function criarRascunho(
       ok: false,
       mensagem: `Não consegui incluir os talentos: ${erroItens.message}`,
     };
+  }
+
+  if (enviar) {
+    const { error: erroEnvio } = await supabase
+      .from('solicitacao_item')
+      .update({ status: 'Fila de cachê' })
+      .eq('solicitacao_id', consulta.id);
+
+    if (erroEnvio) {
+      // Aqui NÃO apagamos nada. Os itens existem e estão corretos; o que não
+      // aconteceu foi o envio. Apagar faria a pessoa perder tudo por causa do
+      // último passo — melhor deixar como Rascunho e dizer o que houve.
+      return {
+        ok: false,
+        mensagem: `Salvei como rascunho, mas não consegui enviar: ${erroEnvio.message}`,
+      };
+    }
   }
 
   return { ok: true, id: consulta.id, protocolo };

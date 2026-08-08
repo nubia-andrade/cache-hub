@@ -97,6 +97,47 @@ export function cabecalhoCompleto(cabecalho: CabecalhoConsulta): boolean {
 }
 
 /**
+ * O que impede o envio, em texto de gente.
+ *
+ * Salvar rascunho não exige nada — Rascunho existe para guardar trabalho pela
+ * metade. Enviar é outra coisa: a partir daí a demanda entra na fila de alguém
+ * com um prazo correndo, e uma consulta incompleta vira uma ida e volta que o
+ * Hub deveria justamente evitar.
+ *
+ * Restrição de talento NÃO entra nesta lista. Ela é decisão de quem aprova, e
+ * o Hub já avisou no passo 2 — barrar aqui tiraria da área uma escolha que é
+ * dela.
+ */
+export function impedimentosParaEnviar(entrada: {
+  cabecalho: CabecalhoConsulta;
+  quantidadeDeTalentos: number;
+  talentosComEscopoIncompleto: readonly string[];
+}): string[] {
+  const motivos: string[] = [];
+
+  const faltamNoCabecalho = camposFaltando(entrada.cabecalho);
+  if (faltamNoCabecalho.length > 0) {
+    motivos.push(`Cabeçalho incompleto: ${faltamNoCabecalho.join(', ')}.`);
+  } else if (
+    !periodoValido(entrada.cabecalho.exibicaoInicio, entrada.cabecalho.exibicaoFim)
+  ) {
+    motivos.push('O fim da exibição não pode ser antes do início.');
+  }
+
+  if (entrada.quantidadeDeTalentos === 0) {
+    motivos.push('Escolha ao menos um talento.');
+  }
+
+  if (entrada.talentosComEscopoIncompleto.length > 0) {
+    motivos.push(
+      `Escopo incompleto: ${entrada.talentosComEscopoIncompleto.join(', ')}.`,
+    );
+  }
+
+  return motivos;
+}
+
+/**
  * Protocolo legível, no formato do protótipo (#ORC-2026-0431).
  *
  * O sufixo vem do relógio, não de um contador: um contador exigiria ler o

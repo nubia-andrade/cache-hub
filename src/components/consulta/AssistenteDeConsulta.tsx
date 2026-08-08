@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { PassoCabecalho } from './PassoCabecalho';
 import { PassoTalentos } from './PassoTalentos';
 import { PassoEntregas } from './PassoEntregas';
+import { PassoRevisao } from './PassoRevisao';
 import {
   CABECALHO_VAZIO,
   cabecalhoCompleto,
   camposFaltando,
   escopoVazioPara,
+  impedimentosParaEnviar,
   periodoValido,
   type CabecalhoConsulta,
   type EscopoDoTalento,
@@ -30,12 +32,11 @@ import type { Catalogo } from '@/lib/dados/catalogo';
 import type { TalentoComRestricoes } from '@/lib/dados/talentos';
 
 /**
- * O assistente de nova consulta.
+ * O assistente de nova consulta de cachê, nos quatro passos.
  *
- * Vai até o passo 3 e grava um Rascunho. O passo 4 (revisão e envio, que leva
- * a consulta de Rascunho para Fila de cachê) chega em seguida — Rascunho é
- * justamente o estado previsto para uma consulta ainda não enviada, então
- * parar aqui não deixa nada em situação inválida.
+ * Salvar rascunho está disponível o tempo todo, e não exige nada: Rascunho
+ * existe para guardar trabalho pela metade. Enviar é que tem porteiro — a
+ * partir dali corre prazo na fila de uma área.
  */
 
 const PASSOS = [
@@ -44,8 +45,6 @@ const PASSOS = [
   { numero: 3, titulo: 'Entregas' },
   { numero: 4, titulo: 'Revisão' },
 ];
-
-const ULTIMO_PASSO_PRONTO = 3;
 
 export function AssistenteDeConsulta({
   catalogo,
@@ -97,6 +96,12 @@ export function AssistenteDeConsulta({
     });
     return soma + totalDoTalento(linhas).total;
   }, 0);
+
+  const impedimentos = impedimentosParaEnviar({
+    cabecalho,
+    quantidadeDeTalentos: selecionados.length,
+    talentosComEscopoIncompleto: talentosPendentes,
+  });
 
   function alternarTalento(id: string) {
     setEscolhidos((atual) => {
@@ -152,8 +157,9 @@ export function AssistenteDeConsulta({
     });
   }
 
-  async function gravar() {
+  async function gravar(enviar: boolean) {
     if (gravando) return;
+    if (enviar && impedimentos.length > 0) return;
 
     setGravando(true);
     setErro(null);
@@ -168,6 +174,7 @@ export function AssistenteDeConsulta({
       })),
       equipeDoSolicitante,
       precos,
+      enviar,
     );
 
     if (!resultado.ok) {
@@ -185,7 +192,7 @@ export function AssistenteDeConsulta({
       <ol className="flex flex-wrap items-center gap-2">
         {PASSOS.map((item) => {
           const atual = item.numero === passo;
-          const futuro = item.numero > ULTIMO_PASSO_PRONTO;
+          const futuro = item.numero > passo;
           return (
             <li
               key={item.numero}
@@ -200,7 +207,6 @@ export function AssistenteDeConsulta({
             >
               <span>{item.numero}</span>
               <span>{item.titulo}</span>
-              {futuro && <span className="text-[10px]">em breve</span>}
             </li>
           );
         })}
@@ -215,6 +221,15 @@ export function AssistenteDeConsulta({
           opcoesDeLista={opcoesDeLista}
           aoMudarEscopo={mudarEscopo}
           aoCopiar={copiarEscopo}
+        />
+      ) : passo === 4 ? (
+        <PassoRevisao
+          talentos={selecionados}
+          cabecalho={cabecalho}
+          escopos={escopos}
+          precos={precos}
+          hoje={hoje}
+          equipe={equipeDoSolicitante}
         />
       ) : (
         <div className="rounded-cartao border border-borda p-5">
@@ -264,7 +279,7 @@ export function AssistenteDeConsulta({
                 selecionado{escolhidos.size > 1 ? 's' : ''}.
               </>
             )
-          ) : (
+          ) : passo === 3 ? (
             <>
               <strong className="text-tinta">
                 Total estimado {totalGeral > 0 ? formatarReais(totalGeral) : '—'}
@@ -274,6 +289,16 @@ export function AssistenteDeConsulta({
                   {' · '}escopo incompleto: {talentosPendentes.join(', ')}
                 </>
               )}
+            </>
+          ) : impedimentos.length > 0 ? (
+            <span className="text-erro">{impedimentos.join(' ')}</span>
+          ) : (
+            <>
+              <strong className="text-tinta">
+                Total estimado {totalGeral > 0 ? formatarReais(totalGeral) : '—'}
+              </strong>
+              {' · '}
+              pronta para enviar
             </>
           )}
         </div>
@@ -311,17 +336,38 @@ export function AssistenteDeConsulta({
             </button>
           )}
 
-          {passo === 3 && (
-            /* Escopo incompleto não bloqueia salvar: Rascunho existe
-               justamente para guardar trabalho pela metade. O que ele vai
-               bloquear é o envio, no passo 4. */
+          {passo >= 3 && (
+            /* Salvar rascunho não olha impedimento nenhum: Rascunho existe
+               justamente para guardar trabalho pela metade. */
             <button
               type="button"
-              onClick={gravar}
-              disabled={gravando}
-              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+              onClick={() => gravar(false)}
+              disabled={gravando || selecionados.length === 0}
+              className="h-[42px] rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta enabled:cursor-pointer disabled:opacity-40"
             >
               {gravando ? 'Salvando…' : 'Salvar rascunho'}
+            </button>
+          )}
+
+          {passo === 3 && (
+            <button
+              type="button"
+              onClick={() => setPasso(4)}
+              disabled={selecionados.length === 0}
+              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+            >
+              Revisar
+            </button>
+          )}
+
+          {passo === 4 && (
+            <button
+              type="button"
+              onClick={() => gravar(true)}
+              disabled={gravando || impedimentos.length > 0}
+              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+            >
+              {gravando ? 'Enviando…' : 'Enviar para a fila'}
             </button>
           )}
         </div>

@@ -4,6 +4,7 @@ import {
   cabecalhoCompleto,
   camposFaltando,
   gerarProtocolo,
+  impedimentosParaEnviar,
   periodoValido,
   type CabecalhoConsulta,
 } from './consulta';
@@ -95,5 +96,83 @@ describe('protocolo', () => {
     expect(gerarProtocolo(new Date('2027-03-01T10:00:00'))).toContain(
       '#ORC-2027-',
     );
+  });
+});
+
+/**
+ * Salvar rascunho não exige nada. Enviar exige tudo — a partir daí corre
+ * prazo na fila de alguém.
+ */
+describe('o que impede enviar', () => {
+  const COMPLETO: CabecalhoConsulta = {
+    anunciante: 'Ambev',
+    marca: 'Verão Lager',
+    setorCliente: 'Bebidas alcoólicas',
+    segmentoMarca: 'Cerveja premium',
+    programa: 'Big Brother Brasil',
+    segmentoProduto: 'Realities',
+    tipoMidia: 'Social',
+    tipoProjeto: 'Pacote',
+    exibicaoInicio: '2026-09-01',
+    exibicaoFim: '2026-09-30',
+  };
+
+  it('nada impede quando está tudo pronto', () => {
+    expect(
+      impedimentosParaEnviar({
+        cabecalho: COMPLETO,
+        quantidadeDeTalentos: 2,
+        talentosComEscopoIncompleto: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it('cabeçalho incompleto nomeia os campos que faltam', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: { ...COMPLETO, programa: '' },
+      quantidadeDeTalentos: 1,
+      talentosComEscopoIncompleto: [],
+    });
+    expect(motivos).toHaveLength(1);
+    expect(motivos[0]).toContain('Programa');
+  });
+
+  it('período invertido é impedimento próprio', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: { ...COMPLETO, exibicaoFim: '2026-08-01' },
+      quantidadeDeTalentos: 1,
+      talentosComEscopoIncompleto: [],
+    });
+    expect(motivos).toEqual([
+      'O fim da exibição não pode ser antes do início.',
+    ]);
+  });
+
+  it('sem talento não vai', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: COMPLETO,
+      quantidadeDeTalentos: 0,
+      talentosComEscopoIncompleto: [],
+    });
+    expect(motivos).toEqual(['Escolha ao menos um talento.']);
+  });
+
+  it('escopo incompleto nomeia quem está pendente', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: COMPLETO,
+      quantidadeDeTalentos: 2,
+      talentosComEscopoIncompleto: ['Manu Ferraz'],
+    });
+    expect(motivos).toHaveLength(1);
+    expect(motivos[0]).toContain('Manu Ferraz');
+  });
+
+  it('junta todos os motivos de uma vez, em vez de um por vez', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: CABECALHO_VAZIO,
+      quantidadeDeTalentos: 0,
+      talentosComEscopoIncompleto: [],
+    });
+    expect(motivos).toHaveLength(2);
   });
 });
