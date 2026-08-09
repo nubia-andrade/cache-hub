@@ -12,8 +12,7 @@ import { criarClienteNoNavegador } from './supabase/cliente-navegador';
 import type { EstadoAcesso, Perfil } from './dominio/perfis';
 
 export type ResultadoAdministracao =
-  | { ok: true }
-  | { ok: false; mensagem: string };
+  { ok: true } | { ok: false; mensagem: string };
 
 export async function mudarEstado(
   usuarioId: string,
@@ -35,10 +34,24 @@ async function gravar(
 ): Promise<ResultadoAdministracao> {
   const supabase = criarClienteNoNavegador();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('perfil_usuario')
     .update(mudanca)
-    .eq('id', usuarioId);
+    .eq('id', usuarioId)
+    .select('id');
 
-  return error ? { ok: false, mensagem: error.message } : { ok: true };
+  if (error) return { ok: false, mensagem: error.message };
+
+  // Um update que o RLS barra volta SEM erro e com zero linhas. Sem conferir
+  // isto, a tela diria "salvou", daria refresh, e mostraria o valor antigo —
+  // o pior tipo de falha, porque parece defeito do app.
+  if (!data || data.length === 0) {
+    return {
+      ok: false,
+      mensagem:
+        'O banco não deixou salvar. Confira se as policies de administração de acesso já foram aplicadas (supabase/seed.sql, Parte 2).',
+    };
+  }
+
+  return { ok: true };
 }

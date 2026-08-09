@@ -73,14 +73,18 @@ export function CabecalhoApp({ usuario }: { usuario: Usuario }) {
         >
           {saindo ? 'Saindo…' : 'Sair'}
         </button>
-        <span
-          title={`${usuario.nome} · ${usuario.cargo}`}
+        {/* O avatar leva à conta: é onde a pessoa procura, e é o único caminho
+            para trocar a senha provisória que recebeu de outra pessoa. */}
+        <Link
+          href="/conta"
+          title={`${usuario.nome} · ${usuario.cargo} — minha conta`}
+          aria-label="Minha conta"
           className={`flex h-[34px] w-[34px] items-center justify-center rounded-full font-titulo text-[12.5px] font-bold text-white ${
             ehProprietario(usuario.perfis) ? 'bg-tinta' : 'bg-magenta'
-          }`}
+          } ${caminhoAtual === '/conta' ? 'ring-2 ring-magenta ring-offset-2' : ''}`}
         >
           {iniciais(usuario.nome)}
-        </span>
+        </Link>
       </div>
     </header>
   );

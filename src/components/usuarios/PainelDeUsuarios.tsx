@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { iniciais, PERFIS, type EstadoAcesso, type Perfil, type Usuario } from '@/lib/dominio/perfis';
+import {
+  iniciais,
+  PERFIS,
+  type EstadoAcesso,
+  type Perfil,
+  type Usuario,
+} from '@/lib/dominio/perfis';
 import {
   bloqueioDaAlteracao,
   DESCRICAO_ESTADO,
@@ -12,6 +18,8 @@ import {
   ROTULO_ACAO,
 } from '@/lib/dominio/administracao';
 import { mudarEstado, mudarPerfis } from '@/lib/administracao';
+import { bloqueioDoConvite } from '@/lib/dominio/convite';
+import { NovoUsuario } from './NovoUsuario';
 
 const CORES_ESTADO: Record<EstadoAcesso, string> = {
   ativo: 'border-sucesso-borda bg-sucesso-fundo text-sucesso',
@@ -79,6 +87,16 @@ export function PainelDeUsuarios({
         </p>
       </div>
 
+      {usuarios.length === 1 && (
+        <p className="rounded-cartao border border-borda bg-fundo-3 px-4 py-3 text-[12.5px] leading-[1.55] text-tinta-2">
+          Só o seu cadastro aparece. Ou ninguém mais entrou no Hub ainda — use
+          <strong> Adicionar usuário</strong> —, ou as policies de administração
+          não foram aplicadas: rode o <code>supabase/seed.sql</code> inteiro.
+        </p>
+      )}
+
+      {bloqueioDoConvite(quemAdministra) === null && <NovoUsuario />}
+
       <input
         value={busca}
         onChange={(evento) => setBusca(evento.target.value)}
@@ -123,7 +141,9 @@ function CartaoDoUsuario({
 
   const souEu = usuario.id === quemAdministra.id;
 
-  async function aplicar(acao: () => Promise<{ ok: boolean; mensagem?: string }>) {
+  async function aplicar(
+    acao: () => Promise<{ ok: boolean; mensagem?: string }>,
+  ) {
     if (gravando) return;
     setGravando(true);
     setErro(null);

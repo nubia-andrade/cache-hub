@@ -63,15 +63,28 @@ O `seed.sql` é **gerado**, não escrito à mão. Para mudar os dados, edite
 
 ### Criar um usuário
 
-O seed não cria senhas. Para liberar alguém:
+Pelo app, que é o caminho normal: **Usuários > Adicionar usuário**. Só o
+Proprietário enxerga o botão. O Hub cria a conta e mostra uma senha provisória
+**uma única vez** — copie e passe para a pessoa, que troca no primeiro acesso.
+O Hub não guarda cópia dessa senha e não manda e-mail nenhum.
 
-1. Supabase > **Authentication > Users > Add user** — e-mail e senha, com
-   "Auto Confirm User" marcado.
-2. Rode o `supabase/seed.sql` (ou só a Parte 8 dele) para ligar esse e-mail ao
-   cadastro do Hub, com cargo, equipe e perfis.
+Isso depende de duas chaves no Supabase, em **Authentication > Providers >
+Email**:
 
-Quem se cadastrar sozinho depois entra como `pendente`, sem nenhum perfil, e
-espera o Proprietário liberar.
+- **Allow new users to sign up** ligado — é a mesma porta que a tela de login
+  usa. Desligado, o botão devolve um aviso explicando isso.
+- **Confirm email** desligado. Ligado, a conta nasce sem poder entrar até
+  alguém clicar num link de confirmação, e o e-mail padrão do Supabase é
+  limitado e não chega em domínio corporativo. Quem controla a entrada aqui é o
+  `estado` do cadastro, decidido pelo Proprietário — a confirmação por e-mail
+  não acrescenta nada.
+
+O caminho pelo painel continua valendo (**Authentication > Users > Add user**,
+com "Auto Confirm User" marcado). Depois rode a Parte 8 do
+`supabase/seed.sql` para ligar o e-mail a cargo, equipe e perfis.
+
+Quem se cadastrar sozinho pela tela de login entra como `pendente`, sem nenhum
+perfil, e espera o Proprietário liberar.
 
 ## Período de teste (temporário)
 
