@@ -2,7 +2,8 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CabecalhoApp } from '@/components/layout/CabecalhoApp';
-import { podeAcessar } from '@/lib/dominio/navegacao';
+import { navegacaoPara, podeAcessar } from '@/lib/dominio/navegacao';
+import { carregarMatriz } from '@/lib/dados/permissoes';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 import { MODO_TESTE_SEM_APROVACAO } from '@/lib/modo-teste';
 import { CABECALHO_CAMINHO } from '@/proxy';
@@ -35,13 +36,20 @@ export default async function LayoutDoApp({
   const cabecalhos = await headers();
   const caminhoAtual = cabecalhos.get(CABECALHO_CAMINHO);
 
-  const temAcesso = podeAcessar(usuario.perfis, caminhoAtual);
+  // A matriz é lida uma vez por requisição (`cache` do React) e serve tanto ao
+  // menu quanto à guarda: se as duas lessem separado, o menu poderia oferecer
+  // uma seção que a guarda nega.
+  const matriz = await carregarMatriz();
+  const temAcesso = podeAcessar(usuario.perfis, caminhoAtual, matriz);
 
   return (
     <div className="flex min-h-screen justify-center bg-fundo px-4 py-8">
       <div className="flex w-full max-w-[1400px] flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_24px_60px_rgba(18,17,26,0.13)]">
         {MODO_TESTE_SEM_APROVACAO && <TarjaModoTeste />}
-        <CabecalhoApp usuario={usuario} />
+        <CabecalhoApp
+          usuario={usuario}
+          itens={navegacaoPara(usuario.perfis, matriz)}
+        />
         {temAcesso ? children : <SemAcesso />}
       </div>
     </div>
@@ -58,8 +66,8 @@ function TarjaModoTeste() {
       <strong className="font-titulo font-bold">Modo de teste</strong>
       <span className="text-tinta-2">
         A aprovação de acesso está desligada — qualquer conta com senha válida
-        entra. Desligue em <code className="font-mono">.env.local</code> antes de
-        publicar.
+        entra. Desligue em <code className="font-mono">.env.local</code> antes
+        de publicar.
       </span>
     </div>
   );

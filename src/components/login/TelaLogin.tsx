@@ -11,7 +11,6 @@ import {
 import { BoasVindas } from './BoasVindas';
 import { criarContaDeTeste, entrarComEmailESenha } from '@/lib/autenticacao';
 import { erroDeLogin, type ErroLogin } from '@/lib/dominio/login';
-import { rotaInicialPara } from '@/lib/dominio/navegacao';
 import type { Usuario } from '@/lib/dominio/perfis';
 
 type Tela = 'login' | 'solicitar' | 'enviado' | 'entrando';
@@ -30,12 +29,16 @@ export function TelaLogin() {
   const [emailSolicitado, setEmailSolicitado] = useState('');
   const [usuarioEntrando, setUsuarioEntrando] = useState<Usuario | null>(null);
 
-  // Depois das boas-vindas, abre a primeira seção que o perfil pode ver.
+  // Depois das boas-vindas, a raiz decide para onde ir.
+  //
+  // Quem escolhe a seção é o servidor, em `app/page.tsx`, porque a escolha
+  // depende da matriz de perfis — que mora no banco. Decidir aqui levaria
+  // alguém para uma seção que o Proprietário acabou de desligar.
   useEffect(() => {
     if (tela !== 'entrando' || !usuarioEntrando) return;
 
     const temporizador = setTimeout(() => {
-      router.replace(rotaInicialPara(usuarioEntrando.perfis));
+      router.replace('/');
       // Faz o servidor remontar as telas já sabendo da sessão nova.
       router.refresh();
     }, ESPERA_BOAS_VINDAS_MS);

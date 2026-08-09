@@ -38,6 +38,7 @@ describe('navegação por perfil', () => {
       'Tabela de Referência',
       'Relatórios',
       'Usuários',
+      'Perfis e acessos',
       'Listas',
     ]);
   });
@@ -54,12 +55,12 @@ describe('navegação por perfil', () => {
     }
   });
 
-  it('mostra as seções abertas mesmo para quem não tem perfil nenhum', () => {
-    expect(rotulos([])).toEqual([
-      'Banco de talentos',
-      'Restrições',
-      'Relatórios',
-    ]);
+  it('quem não tem perfil nenhum não vê seção nenhuma', () => {
+    // MUDOU quando as permissões viraram matriz por perfil. Antes, Banco de
+    // talentos, Restrições e Relatórios eram abertos a qualquer autenticado —
+    // enquanto a tela de Usuários avisava que "sem perfil, a pessoa entra e
+    // não vê nada". Agora o aviso é verdade.
+    expect(rotulos([])).toEqual([]);
   });
 });
 
@@ -100,7 +101,7 @@ describe('rota inicial', () => {
   });
 
   it('não deixa ninguém sem destino', () => {
-    expect(rotaInicialPara([])).toBe('/talentos');
+    expect(rotaInicialPara([])).toBe('/conta');
   });
 });
 

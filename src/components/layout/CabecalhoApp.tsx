@@ -4,19 +4,27 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogoGlobo } from '@/components/marca/LogoGlobo';
-import { navegacaoPara } from '@/lib/dominio/navegacao';
+import type { ItemNav } from '@/lib/dominio/navegacao';
 import { ehProprietario, iniciais, type Usuario } from '@/lib/dominio/perfis';
 import { sairDoHub } from '@/lib/autenticacao';
 
 /**
- * Barra superior do Hub. Os itens de navegação vêm de `navegacaoPara`, então
- * quem decide o que aparece é o perfil do usuário — nunca esta tela.
+ * Barra superior do Hub.
+ *
+ * Os itens chegam prontos, montados no servidor a partir da matriz de perfis.
+ * Esta tela não decide o que aparece — e não deveria: a mesma matriz responde
+ * à guarda de rotas, e calcular duas vezes é como as duas passam a discordar.
  */
-export function CabecalhoApp({ usuario }: { usuario: Usuario }) {
+export function CabecalhoApp({
+  usuario,
+  itens,
+}: {
+  usuario: Usuario;
+  itens: ItemNav[];
+}) {
   const caminhoAtual = usePathname();
   const router = useRouter();
   const [saindo, setSaindo] = useState(false);
-  const itens = navegacaoPara(usuario.perfis);
 
   async function sair() {
     setSaindo(true);

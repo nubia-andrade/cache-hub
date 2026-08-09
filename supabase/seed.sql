@@ -836,6 +836,72 @@ create trigger ao_administrar_acesso
 
 
 -- ----------------------------------------------------------------------
+-- Parte 2b — O que cada perfil enxerga
+-- ----------------------------------------------------------------------
+-- As permissões de menu deixaram de ser código e viraram dado, para o
+-- Proprietário poder editá-las na tela "Perfis e acessos".
+--
+-- Este bloco também existe solto em supabase/perfis-e-acessos.sql — rodar o
+-- seed inteiro só por causa dele é desconfortável. Mantenha os dois iguais.
+--
+-- A tabela nasce VAZIA de propósito: perfil sem linha usa o padrão que está em
+-- src/lib/dominio/secoes.ts, o mesmo que valia antes. Criar a tabela não muda
+-- o acesso de ninguém.
+create table if not exists permissao_perfil (
+  perfil        text primary key,
+  secoes        text[] not null default '{}',
+  atualizado_em timestamptz not null default now()
+);
+
+alter table permissao_perfil enable row level security;
+
+-- Leitura para qualquer membro ativo: o menu de TODA tela depende desta
+-- tabela. Fechá-la deixaria o resto do Hub sem menu.
+drop policy if exists "leitura de membro ativo" on permissao_perfil;
+create policy "leitura de membro ativo" on permissao_perfil
+  for select to authenticated
+  using (public.eh_membro_ativo());
+
+-- Escrita só do Proprietário. `for all` cobre insert, update e delete —
+-- restaurar o padrão é apagar a linha.
+drop policy if exists "proprietario define acessos" on permissao_perfil;
+create policy "proprietario define acessos" on permissao_perfil
+  for all to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+-- O Hub não se tranca por fora.
+--
+-- Matriz editável cria um risco que a versão em código não tinha: desmarcar a
+-- seção errada e ninguém mais entrar nela — nem para desfazer. O Proprietário
+-- não perde "Usuários" nem "Perfis e acessos".
+--
+-- O gatilho CORRIGE em vez de recusar. Recusar travaria a tela sem a pessoa
+-- entender o porquê; corrigir faz a caixinha voltar marcada, que é a resposta
+-- que a tela já dá antes de gravar.
+create or replace function public.garantir_acesso_do_proprietario()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.perfil = 'Proprietário' then
+    new.secoes := (
+      select array_agg(distinct s)
+        from unnest(new.secoes || array['usuarios', 'perfis']) as s
+    );
+  end if;
+
+  new.atualizado_em := now();
+  return new;
+end $$;
+
+drop trigger if exists ao_definir_acessos on permissao_perfil;
+create trigger ao_definir_acessos
+  before insert or update on permissao_perfil
+  for each row execute function public.garantir_acesso_do_proprietario();
+
+
+-- ----------------------------------------------------------------------
 -- Parte 3 — Catálogo comercial (anunciantes, marcas, programas)
 -- ----------------------------------------------------------------------
 insert into anunciante (nome, setor) values
