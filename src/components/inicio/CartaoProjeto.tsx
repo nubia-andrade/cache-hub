@@ -58,17 +58,17 @@ export function CartaoProjeto({
       {/* Avatares sobrepostos, como no protótipo: cada um puxa 8px para a
           esquerda e usa borda branca para o corte ficar visível. */}
       <div className="flex items-center">
-        {projeto.talentos.map((talento, posicao) => (
+        {projeto.itens.map((item, posicao) => (
           <span
-            key={`${talento}-${posicao}`}
-            title={talento}
+            key={item.id}
+            title={item.talento}
             className="flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white font-titulo text-[10px] font-bold text-white"
             style={{
               background: corDoAvatar(indice, posicao),
               marginLeft: posicao > 0 ? '-8px' : 0,
             }}
           >
-            {iniciais(talento)}
+            {iniciais(item.talento)}
           </span>
         ))}
       </div>

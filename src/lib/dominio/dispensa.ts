@@ -140,3 +140,22 @@ export function todosDispensados(vereditos: readonly Veredito[]): boolean {
     vereditos.every((veredito) => !veredito.precisaOrcar)
   );
 }
+
+/**
+ * O contexto da ação, lido dos campos do escopo daquele talento.
+ *
+ * Natureza e impulsionamento moram no escopo, e não no cabeçalho, porque
+ * variam dentro do mesmo projeto: numa campanha só é comum haver recorte de
+ * material já gravado para uns e gravação nova para outros.
+ */
+export function contextoDosCampos(
+  campos: Record<string, string>,
+): ContextoDaAcao {
+  const natureza = campos.natureza;
+  return {
+    natureza: NATUREZAS_DA_ACAO.includes(natureza as NaturezaDaAcao)
+      ? (natureza as NaturezaDaAcao)
+      : '',
+    impulsionamento: campos.impulsionamento === 'Sim',
+  };
+}

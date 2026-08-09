@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CartaoProjeto } from './CartaoProjeto';
+import { ListaDeConversao } from './ListaDeConversao';
 import { DIAS_NO_INICIO, type ProjetoResumo } from '@/lib/dominio/projeto';
 import { STATUS_SOLICITACAO } from '@/lib/dominio/solicitacao';
 
@@ -9,7 +10,7 @@ const TODOS_SEGMENTOS = 'Todos os segmentos';
 const TODOS_ANUNCIANTES = 'Todos os anunciantes';
 const TODOS_STATUS = 'Todos os status';
 
-type Filtro = 'todas' | 'minha';
+type Filtro = 'todas' | 'minha' | 'minhas-consultas';
 
 /**
  * Os cards e o filtro por equipe.
@@ -21,9 +22,11 @@ type Filtro = 'todas' | 'minha';
 export function ListaDeProjetos({
   projetos,
   equipeDoUsuario,
+  usuarioId,
 }: {
   projetos: ProjetoResumo[];
   equipeDoUsuario: string;
+  usuarioId: string;
 }) {
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [segmento, setSegmento] = useState(TODOS_SEGMENTOS);
@@ -45,9 +48,13 @@ export function ListaDeProjetos({
   );
 
   const visiveis = projetos
-    .filter(
-      (projeto) => filtro === 'todas' || projeto.equipe === equipeDoUsuario,
-    )
+    .filter((projeto) => {
+      if (filtro === 'minha') return projeto.equipe === equipeDoUsuario;
+      if (filtro === 'minhas-consultas') {
+        return projeto.solicitanteId === usuarioId;
+      }
+      return true;
+    })
     .filter(
       (projeto) =>
         segmento === TODOS_SEGMENTOS || projeto.segmentoProduto === segmento,
@@ -76,6 +83,7 @@ export function ListaDeProjetos({
   const opcoes: { id: Filtro; rotulo: string }[] = [
     { id: 'todas', rotulo: 'Todas as equipes' },
     { id: 'minha', rotulo: 'Minha equipe' },
+    { id: 'minhas-consultas', rotulo: 'Minhas consultas' },
   ];
 
   return (
@@ -139,7 +147,11 @@ export function ListaDeProjetos({
         Últimos {DIAS_NO_INICIO} dias · {visiveis.length} de {projetos.length}
       </p>
 
-      {visiveis.length === 0 ? (
+      {/* "Minhas consultas" troca cartão por lista: a pergunta ali é quais
+          talentos fecharam, e isso pede marcação alinhada, não cartões. */}
+      {filtro === 'minhas-consultas' ? (
+        <ListaDeConversao projetos={visiveis} />
+      ) : visiveis.length === 0 ? (
         <p className="rounded-cartao border border-dashed border-borda-forte bg-fundo-3 px-4 py-6 text-[13px] text-tinta-3">
           {/* Distinguir "não existe" de "seu filtro escondeu" evita a conclusão
               errada de que o Hub perdeu a consulta. */}

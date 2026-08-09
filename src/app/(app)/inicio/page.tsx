@@ -31,7 +31,11 @@ export default async function PaginaInicio() {
         </Link>
       </div>
 
-      <ListaDeProjetos projetos={projetos} equipeDoUsuario={usuario.equipe} />
+      <ListaDeProjetos
+        projetos={projetos}
+        equipeDoUsuario={usuario.equipe}
+        usuarioId={usuario.id}
+      />
     </section>
   );
 }

@@ -10,6 +10,7 @@ import {
   camposDaMidia,
   camposFaltandoNoEscopo,
 } from '@/lib/dominio/escopo';
+import { contextoDosCampos, vereditoDeCache } from '@/lib/dominio/dispensa';
 import {
   faixaDeNegociacao,
   linhasDaEstimativa,
@@ -126,6 +127,13 @@ function BlocoDoTalento({
   const faixa = faixaDeNegociacao(total);
   const faltando = camposFaltandoNoEscopo(definicoes, escopo.campos);
 
+  // O veredito depende da natureza da ação, que é campo do escopo — por isso
+  // ele mora aqui, e não na escolha de talentos.
+  const veredito = vereditoDeCache(
+    contextoDosCampos(escopo.campos),
+    talento.permissoes,
+  );
+
   function mudarQuantidade(entrega: EntregaSocial, texto: string) {
     const numero = Number(texto.replace(/\D/g, '')) || 0;
     aoMudarEscopo({
@@ -184,6 +192,20 @@ function BlocoDoTalento({
       </header>
 
       <div className="flex flex-col gap-4 p-4">
+        {!veredito.precisaOrcar && (
+          <p className="rounded-[10px] border border-sucesso-borda bg-sucesso-fundo px-3.5 py-2.5 text-[12.5px] leading-[1.55] text-sucesso">
+            <strong>Não precisa orçar este talento.</strong> {veredito.motivo}{' '}
+            Ele pode sair da consulta.
+          </p>
+        )}
+
+        {veredito.precisaOrcar && veredito.bloqueio && (
+          <p className="rounded-[10px] border border-aviso-borda bg-aviso-fundo px-3.5 py-2.5 text-[12.5px] leading-[1.55] text-tinta-2">
+            <strong className="text-aviso">Atenção ao collab:</strong>{' '}
+            {veredito.bloqueio}
+          </p>
+        )}
+
         <label className="flex w-fit flex-col gap-1.5">
           <span className="text-[12px] font-bold text-tinta">
             Tipo de projeto deste talento

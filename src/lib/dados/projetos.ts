@@ -1,5 +1,6 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
 import { statusDoProjeto, validarStatus } from '@/lib/dominio/solicitacao';
+import { validarConversao } from '@/lib/dominio/conversao';
 import { DIAS_NO_INICIO, type ProjetoResumo } from '@/lib/dominio/projeto';
 import { mapaDeSegmentoPorPrograma } from './listas';
 
@@ -25,16 +26,22 @@ type LinhaSolicitacao = {
   equipe: string | null;
   exibicao_inicio: string | null;
   criado_em: string | null;
+  solicitante_id: string | null;
   itens: {
+    id: string;
     status: string | null;
+    cache: number | null;
+    conversao: string | null;
     talento: { nome_artistico: string | null; nome: string } | null;
   }[];
 };
 
 const CONSULTA = `
   id, protocolo, marca, anunciante, setor_cliente, programa, equipe,
-  exibicao_inicio, criado_em,
-  itens:solicitacao_item ( status, talento ( nome_artistico, nome ) )
+  exibicao_inicio, criado_em, solicitante_id,
+  itens:solicitacao_item (
+    id, status, cache, conversao, talento ( nome_artistico, nome )
+  )
 `;
 
 export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
@@ -75,8 +82,13 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
     status: statusDoProjeto(
       linha.itens.map((item) => validarStatus(item.status)),
     ),
-    talentos: linha.itens.map(
-      (item) => item.talento?.nome_artistico ?? item.talento?.nome ?? '?',
-    ),
+    solicitanteId: linha.solicitante_id,
+    itens: linha.itens.map((item) => ({
+      id: item.id,
+      talento: item.talento?.nome_artistico ?? item.talento?.nome ?? '?',
+      status: validarStatus(item.status),
+      cache: item.cache,
+      conversao: validarConversao(item.conversao),
+    })),
   }));
 }

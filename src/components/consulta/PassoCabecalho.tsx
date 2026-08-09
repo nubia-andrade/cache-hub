@@ -2,10 +2,6 @@
 
 import { TIPOS_PROJETO } from '@/lib/dominio/precos';
 import {
-  DESCRICAO_NATUREZA,
-  NATUREZAS_DA_ACAO,
-} from '@/lib/dominio/dispensa';
-import {
   TIPOS_MIDIA,
   periodoValido,
   type CabecalhoConsulta,
@@ -135,74 +131,6 @@ export function PassoCabecalho({
             </option>
           ))}
         </select>
-      </Campo>
-
-      {/* A pergunta que pode encerrar a consulta antes de começar: recorte em
-          perfil Globo, sem collab e sem impulsionar, não gera cachê para quem
-          tem recorte liberado em contrato. */}
-      <Campo rotulo="Natureza da ação" obrigatorio className="sm:col-span-2">
-        <div className="flex flex-col gap-1.5">
-          {NATUREZAS_DA_ACAO.map((opcao) => {
-            const marcada = cabecalho.natureza === opcao;
-            return (
-              <button
-                key={opcao}
-                type="button"
-                aria-pressed={marcada}
-                onClick={() =>
-                  aoMudar({ ...cabecalho, natureza: marcada ? '' : opcao })
-                }
-                className={`flex flex-col gap-0.5 rounded-[9px] border px-3 py-2 text-left ${
-                  marcada
-                    ? 'border-magenta bg-magenta-suave'
-                    : 'border-borda-forte bg-white hover:border-magenta'
-                }`}
-              >
-                <span
-                  className={`text-[12.5px] font-bold ${
-                    marcada ? 'text-magenta' : 'text-tinta'
-                  }`}
-                >
-                  {opcao}
-                </span>
-                <span className="text-[11.5px] leading-[1.45] text-tinta-4">
-                  {DESCRICAO_NATUREZA[opcao]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Campo>
-
-      <Campo rotulo="Haverá impulsionamento?" className="sm:col-span-2">
-        <div className="flex gap-2">
-          {[
-            { rotulo: 'Sim', valor: true },
-            { rotulo: 'Não', valor: false },
-          ].map((opcao) => {
-            const marcada = cabecalho.impulsionamento === opcao.valor;
-            return (
-              <button
-                key={opcao.rotulo}
-                type="button"
-                aria-pressed={marcada}
-                onClick={() =>
-                  aoMudar({ ...cabecalho, impulsionamento: opcao.valor })
-                }
-                className={`h-[34px] cursor-pointer rounded-full border px-4 text-[12.5px] font-bold ${
-                  marcada
-                    ? 'border-magenta bg-magenta-suave text-magenta'
-                    : 'border-borda-forte bg-white text-tinta-3'
-                }`}
-              >
-                {opcao.rotulo}
-              </button>
-            );
-          })}
-          <span className="self-center text-[11.5px] text-tinta-4">
-            mídia paga não entra no recorte liberado
-          </span>
-        </div>
       </Campo>
 
       <Campo rotulo="Início da exibição" obrigatorio>

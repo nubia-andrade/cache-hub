@@ -1,4 +1,5 @@
 import type { TipoMidia } from './consulta';
+import { NATUREZAS_DA_ACAO } from './dispensa';
 
 /**
  * O escopo de um talento: o que ele vai entregar e em que condições.
@@ -87,7 +88,17 @@ const RESPONSAVEIS = ['Creator / Talento', 'ViU', 'Linear'] as const;
 const RESPONSABILIDADE_TV = ['Responsabilidade Globo', 'Talento'] as const;
 
 export const CAMPOS_TV: readonly DefinicaoCampo[] = [
+  {
+    chave: 'natureza', secao: 'Verba e contexto',
+    rotulo: 'Natureza da ação',
+    // Por talento, e não no cabeçalho: no mesmo projeto costuma haver recorte
+    // de conteúdo já gravado para uns e gravação nova para outros.
+    tipo: 'select',
+    opcoes: NATUREZAS_DA_ACAO,
+    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+  },
   { chave: 'verba', secao: 'Verba e contexto', rotulo: 'Verba disponível', tipo: 'moeda' },
+  { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
   { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
   { chave: 'vertical', secao: 'Formato e produção', rotulo: 'Vertical', tipo: 'select', lista: 'verticais' },
   {
@@ -154,6 +165,15 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
 ];
 
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
+  {
+    chave: 'natureza', secao: 'Verba e contexto',
+    rotulo: 'Natureza da ação',
+    // Por talento, e não no cabeçalho: no mesmo projeto costuma haver recorte
+    // de conteúdo já gravado para uns e gravação nova para outros.
+    tipo: 'select',
+    opcoes: NATUREZAS_DA_ACAO,
+    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+  },
   {
     chave: 'verba', secao: 'Verba e contexto',
     rotulo: 'Verba disponível',

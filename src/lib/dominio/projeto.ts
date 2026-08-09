@@ -1,3 +1,4 @@
+import type { Conversao } from './conversao';
 import type { StatusSolicitacao } from './solicitacao';
 
 /**
@@ -24,8 +25,19 @@ export type ProjetoResumo = {
   /** Quando a consulta foi aberta, em ISO. É por ela que a lista se ordena. */
   criadoEm: string | null;
   status: StatusSolicitacao;
-  /** Nomes artísticos dos talentos, na ordem em que entraram na solicitação. */
-  talentos: string[];
+  /** Quem abriu. É o que separa "minhas consultas" das dos outros. */
+  solicitanteId: string | null;
+  /** Um por talento, com o que a conversão precisa. */
+  itens: ItemDoProjeto[];
+};
+
+export type ItemDoProjeto = {
+  id: string;
+  talento: string;
+  status: StatusSolicitacao;
+  /** Cachê respondido pelo aprovador, em reais. */
+  cache: number | null;
+  conversao: Conversao;
 };
 
 /** Quantos dias para trás a tela de Início olha. Vem do rótulo do protótipo. */

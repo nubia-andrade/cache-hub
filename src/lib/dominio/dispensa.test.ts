@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  contextoDosCampos,
   todosDispensados,
   validarPermissao,
   vereditoDeCache,
@@ -145,5 +146,53 @@ describe('permissão vinda do banco', () => {
     expect(validarPermissao(null)).toBe('A consultar');
     expect(validarPermissao('Sim')).toBe('Sim');
     expect(validarPermissao('Não')).toBe('Não');
+  });
+});
+
+/**
+ * Natureza e impulsionamento saíram do cabeçalho e viraram campos do escopo,
+ * porque variam dentro do mesmo projeto: recorte de material já gravado para
+ * uns, gravação nova para outros.
+ */
+describe('contexto lido dos campos do talento', () => {
+  it('lê natureza e impulsionamento', () => {
+    expect(
+      contextoDosCampos({
+        natureza: 'Recorte em perfil Globo',
+        impulsionamento: 'Sim',
+      }),
+    ).toEqual({
+      natureza: 'Recorte em perfil Globo',
+      impulsionamento: true,
+    });
+  });
+
+  it('escopo vazio não dispensa nada', () => {
+    const contexto = contextoDosCampos({});
+    expect(contexto.natureza).toBe('');
+    expect(contexto.impulsionamento).toBe(false);
+    expect(vereditoDeCache(contexto, LIBERADO).precisaOrcar).toBe(true);
+  });
+
+  it('natureza desconhecida vira vazia, e vazia sempre exige orçar', () => {
+    expect(contextoDosCampos({ natureza: 'qualquer coisa' }).natureza).toBe('');
+  });
+
+  it('só "Sim" liga o impulsionamento — "Não" e vazio não ligam', () => {
+    expect(contextoDosCampos({ impulsionamento: 'Não' }).impulsionamento).toBe(
+      false,
+    );
+    expect(contextoDosCampos({}).impulsionamento).toBe(false);
+  });
+
+  it('dois talentos do mesmo projeto podem ter vereditos opostos', () => {
+    const recorte = { natureza: 'Recorte em perfil Globo' };
+    const original = { natureza: 'Conteúdo original do talento' };
+    expect(
+      vereditoDeCache(contextoDosCampos(recorte), LIBERADO).precisaOrcar,
+    ).toBe(false);
+    expect(
+      vereditoDeCache(contextoDosCampos(original), LIBERADO).precisaOrcar,
+    ).toBe(true);
   });
 });
