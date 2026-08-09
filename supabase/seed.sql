@@ -168,6 +168,26 @@ alter table solicitacao_item add constraint conversao_coerente check (
                                 and valor_fechado is null)
 );
 
+-- ---- O que o contrato do talento permite --------------------------------
+--
+-- Duas perguntas que decidem se a ação precisa de cachê: o talento aceita que
+-- recortes sejam replicados nos perfis da Globo, e aceita publicar em collab
+-- com a marca. Vêm de uma thread real, em que talentos com recorte liberado
+-- simplesmente não foram orçados.
+--
+-- O padrão é 'A consultar', e não 'Não': quem entrou na base sem que ninguém
+-- tenha lido o contrato está exatamente nesse estado. Dizer 'Não' mandaria
+-- orçar coisa dispensável; dizer 'Sim' dispensaria cachê sem base contratual,
+-- que é bem pior.
+alter table talento add column if not exists aceita_recorte text not null default 'A consultar';
+alter table talento add column if not exists aceita_collab  text not null default 'A consultar';
+
+alter table talento drop constraint if exists permissoes_validas;
+alter table talento add constraint permissoes_validas check (
+  aceita_recorte in ('Sim', 'Não', 'A consultar')
+  and aceita_collab in ('Sim', 'Não', 'A consultar')
+);
+
 -- ---- Escopo por talento -------------------------------------------------
 --
 -- O schema guarda campos_extra na solicitação, como se as condições fossem do
@@ -540,16 +560,16 @@ on conflict (nome) do update set segmento_produto = excluded.segmento_produto;
 -- Sem chave única em talento: limpamos e recarregamos. As restrições apontam
 -- para cá com ON DELETE CASCADE, por isso elas são recarregadas logo abaixo.
 delete from talento;
-insert into talento (nome, nome_artistico, categoria, instagram_id, seg_instagram, seg_tiktok, seg_x, ativo) values
-  ('Helena Barreto Nunes', 'Helena Barreto', 'Talento Globo'::talento_categoria, 'helenabarreto', 4200000, 1100000, 260000, true),
-  ('Rodrigo Sampaio Alves', 'Rodrigo Sampaio', 'Talento Globo'::talento_categoria, 'rodsampaio', 2800000, 640000, 410000, true),
-  ('Manuela Ferraz', 'Manu Ferraz', 'Influenciador'::talento_categoria, 'manuferraz', 1900000, 2400000, 90000, true),
-  ('Leonardo Vasques', 'Léo Vasques', 'Creator'::talento_categoria, 'leovasques', 760000, 1500000, 40000, true),
-  ('Camila Duarte Prado', 'Camila Duarte', 'Agenciado'::talento_categoria, 'camiladuarte', 3100000, 890000, 150000, true),
-  ('Bruno Tavares Lima', 'Bruno Tavares', 'Influenciador'::talento_categoria, 'brunotavares', 1200000, 430000, 220000, true),
-  ('Tatiana Rocha', 'Tati Rocha', 'Creator'::talento_categoria, 'tatirocha', 540000, 2100000, 30000, true),
-  ('Diego Lemos Farias', 'Diego Lemos', 'Talento Globo'::talento_categoria, 'diegolemos', 1700000, 350000, 310000, true),
-  ('Priscila Anjos Moraes', 'Pri Anjos', 'Influenciador'::talento_categoria, 'prianjos', 880000, 620000, 20000, false);
+insert into talento (nome, nome_artistico, categoria, instagram_id, seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab) values
+  ('Helena Barreto Nunes', 'Helena Barreto', 'Talento Globo'::talento_categoria, 'helenabarreto', 4200000, 1100000, 260000, true, 'Sim', 'Não'),
+  ('Rodrigo Sampaio Alves', 'Rodrigo Sampaio', 'Talento Globo'::talento_categoria, 'rodsampaio', 2800000, 640000, 410000, true, 'Sim', 'Sim'),
+  ('Manuela Ferraz', 'Manu Ferraz', 'Influenciador'::talento_categoria, 'manuferraz', 1900000, 2400000, 90000, true, 'Não', 'Sim'),
+  ('Leonardo Vasques', 'Léo Vasques', 'Creator'::talento_categoria, 'leovasques', 760000, 1500000, 40000, true, 'Sim', 'Sim'),
+  ('Camila Duarte Prado', 'Camila Duarte', 'Agenciado'::talento_categoria, 'camiladuarte', 3100000, 890000, 150000, true, 'A consultar', 'Sim'),
+  ('Bruno Tavares Lima', 'Bruno Tavares', 'Influenciador'::talento_categoria, 'brunotavares', 1200000, 430000, 220000, true, 'Sim', 'Sim'),
+  ('Tatiana Rocha', 'Tati Rocha', 'Creator'::talento_categoria, 'tatirocha', 540000, 2100000, 30000, true, 'Sim', 'A consultar'),
+  ('Diego Lemos Farias', 'Diego Lemos', 'Talento Globo'::talento_categoria, 'diegolemos', 1700000, 350000, 310000, true, 'Sim', 'Não'),
+  ('Priscila Anjos Moraes', 'Pri Anjos', 'Influenciador'::talento_categoria, 'prianjos', 880000, 620000, 20000, false, 'A consultar', 'A consultar');
 
 
 -- ----------------------------------------------------------------------

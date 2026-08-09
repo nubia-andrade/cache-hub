@@ -1,3 +1,4 @@
+import type { NaturezaDaAcao } from './dispensa';
 import type { ValoresDoEscopo } from './escopo';
 import type { Quantidades } from './estimativa';
 import type { TipoProjeto } from './precos';
@@ -23,6 +24,11 @@ export type CabecalhoConsulta = {
   segmentoProduto: string;
   tipoMidia: TipoMidia | '';
   tipoProjeto: TipoProjeto | '';
+  /** Conteúdo novo ou reaproveitamento, e quem assina — decide se precisa de
+   *  cachê antes mesmo de escolher talento. Ver `dispensa.ts`. */
+  natureza: NaturezaDaAcao | '';
+  /** Mídia paga por trás da publicação. Sozinha, derruba a dispensa. */
+  impulsionamento: boolean;
   exibicaoInicio: string;
   exibicaoFim: string;
 };
@@ -36,6 +42,8 @@ export const CABECALHO_VAZIO: CabecalhoConsulta = {
   segmentoProduto: '',
   tipoMidia: '',
   tipoProjeto: '',
+  natureza: '',
+  impulsionamento: false,
   exibicaoInicio: '',
   exibicaoFim: '',
 };
@@ -66,6 +74,7 @@ const OBRIGATORIOS: { campo: keyof CabecalhoConsulta; rotulo: string }[] = [
   { campo: 'programa', rotulo: 'Programa' },
   { campo: 'tipoMidia', rotulo: 'Tipo de mídia' },
   { campo: 'tipoProjeto', rotulo: 'Tipo de projeto' },
+  { campo: 'natureza', rotulo: 'Natureza da ação' },
   { campo: 'exibicaoInicio', rotulo: 'Início do período' },
   { campo: 'exibicaoFim', rotulo: 'Fim do período' },
 ];

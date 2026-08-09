@@ -1,4 +1,5 @@
 import type { Categoria } from './categorias';
+import type { PermissoesDoTalento } from './dispensa';
 
 /**
  * Tamanho de audiência de um talento.
@@ -69,4 +70,7 @@ export type Talento = {
   instagramId: string | null;
   seguidores: SeguidoresPorRede;
   ativo: boolean;
+  /** O que o contrato permite: recorte replicado e collab. Decide se a ação
+   *  precisa de cachê — ver `dispensa.ts`. */
+  permissoes: PermissoesDoTalento;
 };

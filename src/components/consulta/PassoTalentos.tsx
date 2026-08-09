@@ -12,6 +12,7 @@ import {
   maiorSeguidor,
   tamanhoDoTalento,
 } from '@/lib/dominio/talento';
+import { vereditoDeCache } from '@/lib/dominio/dispensa';
 import {
   avaliarRestricoes,
   nivelDoConjunto,
@@ -65,6 +66,11 @@ export function PassoTalentos({
     marca: cabecalho.marca,
   };
 
+  const acao = {
+    natureza: cabecalho.natureza,
+    impulsionamento: cabecalho.impulsionamento,
+  };
+
   const termo = busca.trim().toLowerCase();
   const visiveis = talentos.filter((talento) => {
     if (!talento.ativo && !escolhidos.has(talento.id)) return false;
@@ -94,6 +100,7 @@ export function PassoTalentos({
         {visiveis.map((talento) => {
           const alertas = avaliarRestricoes(talento.restricoes, projeto, hoje);
           const nivel = nivelDoConjunto(alertas);
+          const veredito = vereditoDeCache(acao, talento.permissoes);
           const marcado = escolhidos.has(talento.id);
 
           return (
@@ -149,6 +156,21 @@ export function PassoTalentos({
                     </span>
                   </span>
                 </div>
+
+                {/* O veredito de cachê vem antes das restrições: se a ação
+                    nem precisa ser orçada, o resto da conversa muda. */}
+                {!veredito.precisaOrcar && (
+                  <p className="rounded-[9px] border border-sucesso-borda bg-sucesso-fundo px-3 py-2 text-[12px] leading-[1.5] text-sucesso">
+                    <strong>Não precisa orçar.</strong> {veredito.motivo}
+                  </p>
+                )}
+
+                {veredito.precisaOrcar && veredito.bloqueio && (
+                  <p className="rounded-[9px] border border-aviso-borda bg-aviso-fundo px-3 py-2 text-[12px] leading-[1.5] text-tinta-2">
+                    <strong className="text-aviso">Atenção ao collab:</strong>{' '}
+                    {veredito.bloqueio}
+                  </p>
+                )}
 
                 {nivel && (
                   <div

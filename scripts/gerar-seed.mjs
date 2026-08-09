@@ -54,15 +54,15 @@ const PRECOS_SOCIAL = {
 /** Lista `talentos` do protótipo do Banco de Talentos. O schema não guarda
  *  seguidores do YouTube, então essa coluna fica de fora. */
 const TALENTOS = [
-  { nome: 'Helena Barreto Nunes', artistico: 'Helena Barreto', categoria: 'Talento Globo', instagram: 'helenabarreto', ig: 4200000, tt: 1100000, x: 260000, ativo: true },
-  { nome: 'Rodrigo Sampaio Alves', artistico: 'Rodrigo Sampaio', categoria: 'Talento Globo', instagram: 'rodsampaio', ig: 2800000, tt: 640000, x: 410000, ativo: true },
-  { nome: 'Manuela Ferraz', artistico: 'Manu Ferraz', categoria: 'Influenciador', instagram: 'manuferraz', ig: 1900000, tt: 2400000, x: 90000, ativo: true },
-  { nome: 'Leonardo Vasques', artistico: 'Léo Vasques', categoria: 'Creator', instagram: 'leovasques', ig: 760000, tt: 1500000, x: 40000, ativo: true },
-  { nome: 'Camila Duarte Prado', artistico: 'Camila Duarte', categoria: 'Agenciado', instagram: 'camiladuarte', ig: 3100000, tt: 890000, x: 150000, ativo: true },
-  { nome: 'Bruno Tavares Lima', artistico: 'Bruno Tavares', categoria: 'Influenciador', instagram: 'brunotavares', ig: 1200000, tt: 430000, x: 220000, ativo: true },
-  { nome: 'Tatiana Rocha', artistico: 'Tati Rocha', categoria: 'Creator', instagram: 'tatirocha', ig: 540000, tt: 2100000, x: 30000, ativo: true },
-  { nome: 'Diego Lemos Farias', artistico: 'Diego Lemos', categoria: 'Talento Globo', instagram: 'diegolemos', ig: 1700000, tt: 350000, x: 310000, ativo: true },
-  { nome: 'Priscila Anjos Moraes', artistico: 'Pri Anjos', categoria: 'Influenciador', instagram: 'prianjos', ig: 880000, tt: 620000, x: 20000, ativo: false },
+  { nome: 'Helena Barreto Nunes', artistico: 'Helena Barreto', recorte: 'Sim', collab: 'Não', categoria: 'Talento Globo', instagram: 'helenabarreto', ig: 4200000, tt: 1100000, x: 260000, ativo: true },
+  { nome: 'Rodrigo Sampaio Alves', artistico: 'Rodrigo Sampaio', recorte: 'Sim', collab: 'Sim', categoria: 'Talento Globo', instagram: 'rodsampaio', ig: 2800000, tt: 640000, x: 410000, ativo: true },
+  { nome: 'Manuela Ferraz', artistico: 'Manu Ferraz', recorte: 'Não', collab: 'Sim', categoria: 'Influenciador', instagram: 'manuferraz', ig: 1900000, tt: 2400000, x: 90000, ativo: true },
+  { nome: 'Leonardo Vasques', artistico: 'Léo Vasques', recorte: 'Sim', collab: 'Sim', categoria: 'Creator', instagram: 'leovasques', ig: 760000, tt: 1500000, x: 40000, ativo: true },
+  { nome: 'Camila Duarte Prado', artistico: 'Camila Duarte', recorte: 'A consultar', collab: 'Sim', categoria: 'Agenciado', instagram: 'camiladuarte', ig: 3100000, tt: 890000, x: 150000, ativo: true },
+  { nome: 'Bruno Tavares Lima', artistico: 'Bruno Tavares', recorte: 'Sim', collab: 'Sim', categoria: 'Influenciador', instagram: 'brunotavares', ig: 1200000, tt: 430000, x: 220000, ativo: true },
+  { nome: 'Tatiana Rocha', artistico: 'Tati Rocha', recorte: 'Sim', collab: 'A consultar', categoria: 'Creator', instagram: 'tatirocha', ig: 540000, tt: 2100000, x: 30000, ativo: true },
+  { nome: 'Diego Lemos Farias', artistico: 'Diego Lemos', recorte: 'Sim', collab: 'Não', categoria: 'Talento Globo', instagram: 'diegolemos', ig: 1700000, tt: 350000, x: 310000, ativo: true },
+  { nome: 'Priscila Anjos Moraes', artistico: 'Pri Anjos', recorte: 'A consultar', collab: 'A consultar', categoria: 'Influenciador', instagram: 'prianjos', ig: 880000, tt: 620000, x: 20000, ativo: false },
 ];
 
 /** RESTRICOES do protótipo. O talento é referenciado pelo nome artístico.
@@ -481,6 +481,26 @@ alter table solicitacao_item add constraint conversao_coerente check (
                                 and valor_fechado is null)
 );
 
+-- ---- O que o contrato do talento permite --------------------------------
+--
+-- Duas perguntas que decidem se a ação precisa de cachê: o talento aceita que
+-- recortes sejam replicados nos perfis da Globo, e aceita publicar em collab
+-- com a marca. Vêm de uma thread real, em que talentos com recorte liberado
+-- simplesmente não foram orçados.
+--
+-- O padrão é 'A consultar', e não 'Não': quem entrou na base sem que ninguém
+-- tenha lido o contrato está exatamente nesse estado. Dizer 'Não' mandaria
+-- orçar coisa dispensável; dizer 'Sim' dispensaria cachê sem base contratual,
+-- que é bem pior.
+alter table talento add column if not exists aceita_recorte text not null default 'A consultar';
+alter table talento add column if not exists aceita_collab  text not null default 'A consultar';
+
+alter table talento drop constraint if exists permissoes_validas;
+alter table talento add constraint permissoes_validas check (
+  aceita_recorte in ('Sim', 'Não', 'A consultar')
+  and aceita_collab in ('Sim', 'Não', 'A consultar')
+);
+
 -- ---- Escopo por talento -------------------------------------------------
 --
 -- O schema guarda campos_extra na solicitação, como se as condições fossem do
@@ -850,7 +870,7 @@ on conflict (nome) do update set segmento_produto = excluded.segmento_produto;`,
 // ---- Talentos ----
 const sqlTalentos = TALENTOS.map(
   (t) =>
-    `  (${texto(t.nome)}, ${texto(t.artistico)}, ${texto(t.categoria)}::talento_categoria, ${texto(t.instagram)}, ${t.ig}, ${t.tt}, ${t.x}, ${t.ativo})`,
+    `  (${texto(t.nome)}, ${texto(t.artistico)}, ${texto(t.categoria)}::talento_categoria, ${texto(t.instagram)}, ${t.ig}, ${t.tt}, ${t.x}, ${t.ativo}, ${texto(t.recorte)}, ${texto(t.collab)})`,
 ).join(',\n');
 
 partes.push(
@@ -859,7 +879,7 @@ partes.push(
     `-- Sem chave única em talento: limpamos e recarregamos. As restrições apontam
 -- para cá com ON DELETE CASCADE, por isso elas são recarregadas logo abaixo.
 delete from talento;
-insert into talento (nome, nome_artistico, categoria, instagram_id, seg_instagram, seg_tiktok, seg_x, ativo) values
+insert into talento (nome, nome_artistico, categoria, instagram_id, seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab) values
 ${sqlTalentos};`,
   ),
 );

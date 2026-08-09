@@ -1,5 +1,6 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
 import { CATEGORIAS, type Categoria } from '@/lib/dominio/categorias';
+import { validarPermissao } from '@/lib/dominio/dispensa';
 import type { Talento } from '@/lib/dominio/talento';
 import {
   TIPOS_RESTRICAO,
@@ -20,6 +21,8 @@ type LinhaTalento = {
   seg_tiktok: number | null;
   seg_x: number | null;
   ativo: boolean;
+  aceita_recorte: string | null;
+  aceita_collab: string | null;
   restricoes: {
     id: string;
     tipo: string;
@@ -32,7 +35,7 @@ type LinhaTalento = {
 
 const CONSULTA = `
   id, nome, nome_artistico, categoria, instagram_id,
-  seg_instagram, seg_tiktok, seg_x, ativo,
+  seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab,
   restricoes:restricao ( id, tipo, valor, inicio, fim, obs )
 `;
 
@@ -75,6 +78,10 @@ export async function listarTalentos(): Promise<TalentoComRestricoes[]> {
       x: linha.seg_x ?? 0,
     },
     ativo: linha.ativo,
+    permissoes: {
+      recorte: validarPermissao(linha.aceita_recorte),
+      collab: validarPermissao(linha.aceita_collab),
+    },
     restricoes: linha.restricoes.map((restricao) => ({
       id: restricao.id,
       tipo: validarTipoRestricao(restricao.tipo),

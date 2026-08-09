@@ -18,6 +18,8 @@ const COMPLETO: CabecalhoConsulta = {
   segmentoProduto: 'Realities',
   tipoMidia: 'Social',
   tipoProjeto: 'Sob demanda',
+  natureza: 'Conteúdo original do talento',
+  impulsionamento: false,
   exibicaoInicio: '2026-08-20',
   exibicaoFim: '2026-09-30',
 };
@@ -31,6 +33,7 @@ describe('campos obrigatórios do cabeçalho', () => {
       'Programa',
       'Tipo de mídia',
       'Tipo de projeto',
+      'Natureza da ação',
       'Início do período',
       'Fim do período',
     ]);
@@ -113,6 +116,8 @@ describe('o que impede enviar', () => {
     segmentoProduto: 'Realities',
     tipoMidia: 'Social',
     tipoProjeto: 'Pacote',
+    natureza: 'Conteúdo original do talento',
+    impulsionamento: false,
     exibicaoInicio: '2026-09-01',
     exibicaoFim: '2026-09-30',
   };

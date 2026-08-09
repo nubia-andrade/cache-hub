@@ -6,6 +6,7 @@ import {
   COR_POR_CATEGORIA,
   slaDaCategoria,
 } from '@/lib/dominio/categorias';
+import type { Permissao as PermissaoContratual } from '@/lib/dominio/dispensa';
 import { iniciais } from '@/lib/dominio/perfis';
 import {
   formatarNumero,
@@ -127,6 +128,17 @@ export function FichaTalento({
             </span>
           </Linha>
 
+          {/* O que o contrato permite decide se a ação precisa de cachê. Fica
+              na ficha, e não escondido na aba de restrições, porque é a
+              primeira coisa que muda o rumo de uma consulta. */}
+          <Linha rotulo="Recorte replicado nas redes Globo">
+            <Permissao valor={talento.permissoes.recorte} />
+          </Linha>
+
+          <Linha rotulo="Collab com a marca">
+            <Permissao valor={talento.permissoes.collab} />
+          </Linha>
+
           <Linha rotulo="Perfil no Instagram">
             <span className="font-mono text-[12.5px] text-tinta-2">
               {talento.instagramId ? `@${talento.instagramId}` : '—'}
@@ -216,5 +228,29 @@ function Linha({
       </span>
       <p>{children}</p>
     </div>
+  );
+}
+
+/**
+ * Uma permissão contratual, em três estados.
+ *
+ * "A consultar" é cinza de propósito: ele não é um "não" mais educado, é a
+ * ausência de informação — e quem lê precisa entender que falta alguém abrir o
+ * contrato, não que o talento recusou.
+ */
+function Permissao({ valor }: { valor: PermissaoContratual }) {
+  const estilo =
+    valor === 'Sim'
+      ? 'border-sucesso-borda bg-sucesso-fundo text-sucesso'
+      : valor === 'Não'
+        ? 'border-erro-borda bg-erro-fundo text-erro'
+        : 'border-borda-forte bg-fundo-2 text-tinta-4';
+
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-0.5 text-[11.5px] font-bold ${estilo}`}
+    >
+      {valor}
+    </span>
   );
 }
