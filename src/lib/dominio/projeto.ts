@@ -12,6 +12,7 @@ export type ProjetoResumo = {
   id: string;
   protocolo: string | null;
   marca: string;
+  anunciante: string;
   setorCliente: string;
   programa: string;
   /** Vem do programa (Mais Você é Variedades), não de quem abriu a consulta. */
@@ -20,6 +21,8 @@ export type ProjetoResumo = {
    *  diferente do segmento, e as duas contam. */
   equipe: string;
   exibicaoInicio: string | null;
+  /** Quando a consulta foi aberta, em ISO. É por ela que a lista se ordena. */
+  criadoEm: string | null;
   status: StatusSolicitacao;
   /** Nomes artísticos dos talentos, na ordem em que entraram na solicitação. */
   talentos: string[];

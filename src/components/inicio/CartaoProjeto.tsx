@@ -9,6 +9,19 @@ function formatarData(iso: string | null): string {
   return dia && mes && ano ? `${dia}/${mes}/${ano}` : iso;
 }
 
+/** Data e hora de um timestamp do banco, no fuso de quem está olhando. */
+function formatarDataHora(iso: string | null): string {
+  if (!iso) return '—';
+  const quando = new Date(iso);
+  if (Number.isNaN(quando.getTime())) return '—';
+  return quando.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export function CartaoProjeto({
   projeto,
   indice,
@@ -36,6 +49,9 @@ export function CartaoProjeto({
       </div>
 
       <p className="text-[12px] text-tinta-4">
+        {projeto.anunciante && (
+          <span className="text-tinta-3">{projeto.anunciante} · </span>
+        )}
         {projeto.setorCliente} · {projeto.programa}
       </p>
 
@@ -61,8 +77,13 @@ export function CartaoProjeto({
           relatório diferentes, então os dois aparecem — separados por bullet
           para não parecerem a mesma coisa. */}
       <div className="flex items-center justify-between gap-2 border-t border-borda-suave pt-2">
+        {/* Duas datas com papéis diferentes: quando a consulta foi aberta
+            (é ela que envelhece contra o SLA) e quando a campanha estreia. */}
         <span className="text-[11px] text-tinta-5">
-          {formatarData(projeto.exibicaoInicio)}
+          aberta em {formatarDataHora(projeto.criadoEm)}
+          {projeto.exibicaoInicio && (
+            <> · exibe {formatarData(projeto.exibicaoInicio)}</>
+          )}
         </span>
         <span className="truncate text-[11px] text-tinta-4">
           {projeto.segmentoProduto || '—'}

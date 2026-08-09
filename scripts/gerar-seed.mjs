@@ -489,6 +489,10 @@ alter table solicitacao_item add constraint conversao_coerente check (
 -- tem um botão "copiar de" — botão que não faria sentido se o dado fosse um só.
 alter table solicitacao_item add column if not exists campos_extra jsonb not null default '{}';
 
+-- Verba com centavos. O schema tinha integer, e arredondar a verba do cliente
+-- para o real mais próximo é perder informação que veio digitada.
+alter table solicitacao_item alter column verba type numeric(12,2);
+
 -- O tipo de projeto escolhe a COLUNA da tabela de preço. Deixá-lo só no
 -- cabeçalho obrigaria dois talentos da mesma solicitação a serem precificados
 -- pela mesma coluna, distorcendo o valor de referência de um deles.

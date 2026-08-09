@@ -21,6 +21,7 @@ import {
   linhasDaEstimativa,
   totalDoTalento,
 } from './dominio/estimativa';
+import { reaisDeMascara } from './dominio/moeda';
 import type { LinhaDePreco } from './dominio/precos';
 import type { Tamanho } from './dominio/talento';
 
@@ -115,7 +116,7 @@ export async function criarRascunho(
         tipo_projeto: talento.escopo.tipoProjeto,
         entregas: entregasParaGravar(talento.escopo.quantidades),
         campos_extra: talento.escopo.campos,
-        verba: numeroOuNulo(talento.escopo.campos.verba),
+        verba: reaisDeMascara(talento.escopo.campos.verba),
         // Congelado no envio, de propósito: quando a tabela de referência for
         // reajustada, esta solicitação tem de continuar mostrando o valor que
         // estava na tela de quem a abriu. Recalcular na leitura faria o
@@ -151,11 +152,4 @@ export async function criarRascunho(
   }
 
   return { ok: true, id: consulta.id, protocolo };
-}
-
-/** Campo de moeda guarda só dígitos; vazio precisa virar null, não zero. */
-function numeroOuNulo(texto: string | undefined): number | null {
-  if (!texto) return null;
-  const numero = Number(texto.replace(/\D/g, ''));
-  return Number.isFinite(numero) && numero > 0 ? numero : null;
 }

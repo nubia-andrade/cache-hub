@@ -19,10 +19,12 @@ type LinhaSolicitacao = {
   id: string;
   protocolo: string | null;
   marca: string | null;
+  anunciante: string | null;
   setor_cliente: string | null;
   programa: string | null;
   equipe: string | null;
   exibicao_inicio: string | null;
+  criado_em: string | null;
   itens: {
     status: string | null;
     talento: { nome_artistico: string | null; nome: string } | null;
@@ -30,7 +32,8 @@ type LinhaSolicitacao = {
 };
 
 const CONSULTA = `
-  id, protocolo, marca, setor_cliente, programa, equipe, exibicao_inicio,
+  id, protocolo, marca, anunciante, setor_cliente, programa, equipe,
+  exibicao_inicio, criado_em,
   itens:solicitacao_item ( status, talento ( nome_artistico, nome ) )
 `;
 
@@ -62,11 +65,13 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
     id: linha.id,
     protocolo: linha.protocolo,
     marca: linha.marca ?? '—',
+    anunciante: linha.anunciante ?? '',
     setorCliente: linha.setor_cliente ?? '',
     programa: linha.programa ?? '',
     segmentoProduto: segmentoPorPrograma.get(linha.programa ?? '') ?? '',
     equipe: linha.equipe ?? '',
     exibicaoInicio: linha.exibicao_inicio,
+    criadoEm: linha.criado_em,
     status: statusDoProjeto(
       linha.itens.map((item) => validarStatus(item.status)),
     ),

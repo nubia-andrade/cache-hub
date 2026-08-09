@@ -1,6 +1,12 @@
 'use client';
 
-import type { DefinicaoCampo, ValoresDoEscopo } from '@/lib/dominio/escopo';
+import { mascararMoeda } from '@/lib/dominio/moeda';
+import {
+  juntarMulti,
+  valoresMulti,
+  type DefinicaoCampo,
+  type ValoresDoEscopo,
+} from '@/lib/dominio/escopo';
 
 /**
  * Um campo do escopo, desenhado conforme o tipo declarado na definição.
@@ -57,6 +63,43 @@ export function CampoDinamico({
             );
           })}
         </div>
+      ) : campo.tipo === 'multi' ? (
+        <div role="group" aria-label={campo.rotulo} className="flex flex-wrap gap-1.5">
+          {opcoes.map((opcao) => {
+            const escolhidas = valoresMulti(valor);
+            const marcada = escolhidas.includes(opcao);
+            return (
+              <button
+                key={opcao}
+                type="button"
+                aria-pressed={marcada}
+                onClick={() =>
+                  aoMudar(
+                    campo.chave,
+                    juntarMulti(
+                      marcada
+                        ? escolhidas.filter((item) => item !== opcao)
+                        : // Mantém a ordem da lista, e não a de clique: assim
+                          // duas pessoas que marcam o mesmo conjunto gravam o
+                          // mesmo texto.
+                          opcoes.filter(
+                            (item) =>
+                              escolhidas.includes(item) || item === opcao,
+                          ),
+                    ),
+                  )
+                }
+                className={`h-[30px] cursor-pointer rounded-full border px-3 text-[12px] font-semibold ${
+                  marcada
+                    ? 'border-magenta bg-magenta-suave text-magenta'
+                    : 'border-borda-forte bg-white text-tinta-3'
+                }`}
+              >
+                {opcao}
+              </button>
+            );
+          })}
+        </div>
       ) : campo.tipo === 'select' ? (
         <select
           value={valor}
@@ -95,12 +138,28 @@ export function CampoDinamico({
             aoMudar={(novo) => aoMudar(`${campo.chave}Seg`, novo)}
           />
         </div>
+      ) : campo.tipo === 'moeda' ? (
+        <div className="flex h-[36px] items-center rounded-[9px] border border-borda-forte bg-white pl-2.5">
+          <span aria-hidden="true" className="text-[12.5px] text-tinta-4">
+            R$
+          </span>
+          <input
+            value={valor}
+            aria-label={campo.rotulo}
+            inputMode="numeric"
+            placeholder="0,00"
+            onChange={(evento) =>
+              aoMudar(campo.chave, mascararMoeda(evento.target.value))
+            }
+            className="h-full w-full min-w-0 rounded-r-[9px] bg-transparent px-1.5 text-right text-[12.5px] text-tinta outline-none"
+          />
+        </div>
       ) : (
         <input
           value={valor}
           aria-label={campo.rotulo}
           inputMode="numeric"
-          placeholder={campo.tipo === 'moeda' ? 'R$ 0' : '0'}
+          placeholder="0"
           onChange={(evento) =>
             aoMudar(campo.chave, apenasDigitos(evento.target.value))
           }

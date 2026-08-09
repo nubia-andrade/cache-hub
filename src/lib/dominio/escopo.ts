@@ -18,7 +18,32 @@ import type { TipoMidia } from './consulta';
  * `camposDaMidia`.
  */
 
-export type TipoCampo = 'moeda' | 'select' | 'num' | 'bool' | 'area' | 'duracao';
+export type TipoCampo =
+  | 'moeda'
+  | 'select'
+  | 'multi'
+  | 'num'
+  | 'bool'
+  | 'area'
+  | 'duracao';
+
+/**
+ * Separador dos campos de múltipla escolha.
+ *
+ * Os valores viram uma string só porque o escopo inteiro é `Record<string,
+ * string>` — e ele é assim porque vai direto para uma coluna jsonb. Vírgula
+ * seguida de espaço não aparece em nenhum nome de rede, formato ou UF das
+ * listas, então serve como separador sem escape.
+ */
+export const SEPARADOR_MULTI = ', ';
+
+export function valoresMulti(valor: string | undefined): string[] {
+  return valor ? valor.split(SEPARADOR_MULTI).filter(Boolean) : [];
+}
+
+export function juntarMulti(valores: readonly string[]): string {
+  return valores.join(SEPARADOR_MULTI);
+}
 
 /**
  * As seções em que o formulário se dobra, na ordem em que aparecem.
@@ -96,10 +121,13 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
   { chave: 'redesSociais', secao: 'Distribuição', rotulo: 'Redes sociais?', tipo: 'bool' },
   {
     chave: 'redeSocialTV', secao: 'Distribuição',
-    rotulo: 'Rede social',
-    tipo: 'select',
+    rotulo: 'Redes sociais da ação',
+    // Múltipla: a mesma ação costuma ir para mais de uma rede — um Reel no
+    // Instagram com réplica no Facebook e no TikTok é o padrão, não a exceção.
+    tipo: 'multi',
     lista: 'redesSociais',
     dep: 'redesSociais',
+    nota: 'pode marcar mais de uma',
   },
   { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'num' },
   { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
@@ -172,6 +200,13 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
     rotulo: 'Figurino',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
+  },
+  {
+    chave: 'redesVeiculacao', secao: 'Distribuição',
+    rotulo: 'Redes de veiculação',
+    tipo: 'multi',
+    lista: 'redesSociais',
+    nota: 'inclua as réplicas',
   },
   { chave: 'interacaoProduto', secao: 'Distribuição', rotulo: 'Interação com produto', tipo: 'bool' },
   { chave: 'diariasBool', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'bool' },
