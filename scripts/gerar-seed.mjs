@@ -157,7 +157,7 @@ const LISTAS = [
   { id: 'segmentosProduto', label: 'Segmento do produto', itens: SEGMENTOS_PRODUTO },
   { id: 'canaisTV', label: 'Canais TV', itens: ['Rede Globo','GNT','Multishow','Bandeirantes'] },
   { id: 'redesSociais', label: 'Redes sociais', itens: ['Instagram','TikTok','YouTube','X (Twitter)','Facebook'] },
-  { id: 'verticais', label: 'Verticais', itens: ['Multishow','Globo','GNT','gshow','Receitas'] },
+  { id: 'verticais', label: 'Verticais', itens: ['Redes do talento','Globo','gshow','Receitas','GNT','Multishow'] },
   { id: 'formatos', label: 'Formatos', itens: ['Ação de Conteúdo','Chamada','Conteúdo no Break','Comercial','Insert','Vinheta','Social'] },
   { id: 'entregasSociais', label: 'Entregas sociais', itens: ['Post Carrossel','Story','Reel','Vídeo TikTok','Tweet (texto/foto)'] },
   { id: 'tiposProjeto', label: 'Tipo de projeto', itens: TIPOS_PROJETO },

@@ -11,16 +11,16 @@ import {
   camposFaltandoNoEscopo,
 } from '@/lib/dominio/escopo';
 import { contextoDosCampos, vereditoDeCache } from '@/lib/dominio/dispensa';
+import { faixaDeNegociacao, tabelaDaCategoria } from '@/lib/dominio/estimativa';
 import {
-  faixaDeNegociacao,
-  linhasDaEstimativa,
-  tabelaDaCategoria,
-  totalDoTalento,
-} from '@/lib/dominio/estimativa';
+  calcularLinhas,
+  totalDasLinhas,
+  type LinhaDeEntrega,
+} from '@/lib/dominio/entregas';
+import { EditorDeEntregas } from './EditorDeEntregas';
 import {
   formatarReais,
   TIPOS_PROJETO,
-  type EntregaSocial,
   type LinhaDePreco,
   type TipoProjeto,
 } from '@/lib/dominio/precos';
@@ -117,13 +117,13 @@ function BlocoDoTalento({
     });
   }
 
-  const linhas = linhasDaEstimativa(precos, {
+  const linhas = calcularLinhas(precos, {
     categoria: talento.categoria,
     tamanho,
     tipoProjeto: escopo.tipoProjeto,
-    quantidades: escopo.quantidades,
+    linhas: escopo.entregas,
   });
-  const { total, semReferencia } = totalDoTalento(linhas);
+  const { total, semReferencia, temCollab } = totalDasLinhas(linhas);
   const faixa = faixaDeNegociacao(total);
   const faltando = camposFaltandoNoEscopo(definicoes, escopo.campos);
 
@@ -134,12 +134,8 @@ function BlocoDoTalento({
     talento.permissoes,
   );
 
-  function mudarQuantidade(entrega: EntregaSocial, texto: string) {
-    const numero = Number(texto.replace(/\D/g, '')) || 0;
-    aoMudarEscopo({
-      ...escopo,
-      quantidades: { ...escopo.quantidades, [entrega]: numero },
-    });
+  function mudarEntregas(entregas: LinhaDeEntrega[]) {
+    aoMudarEscopo({ ...escopo, entregas });
   }
 
   function mudarCampo(chave: string, valor: string) {
@@ -234,59 +230,13 @@ function BlocoDoTalento({
               Escopo de entregas
             </span>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[440px] border-collapse text-[12.5px]">
-                <thead>
-                  <tr className="border-b border-borda text-left text-[11px] uppercase tracking-[0.05em] text-tinta-4">
-                    <th className="py-1.5 font-bold">Entrega</th>
-                    <th className="w-[80px] py-1.5 font-bold">Qtd</th>
-                    <th className="w-[110px] py-1.5 text-right font-bold">
-                      Unitário
-                    </th>
-                    <th className="w-[110px] py-1.5 text-right font-bold">
-                      Subtotal
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {linhas.map((linha) => (
-                    <tr key={linha.entrega} className="border-b border-borda">
-                      <td className="py-2 text-tinta">{linha.entrega}</td>
-                      <td className="py-2">
-                        <input
-                          value={linha.quantidade || ''}
-                          inputMode="numeric"
-                          placeholder="0"
-                          aria-label={`Quantidade de ${linha.entrega} para ${talento.nomeArtistico}`}
-                          onChange={(evento) =>
-                            mudarQuantidade(linha.entrega, evento.target.value)
-                          }
-                          className="h-[32px] w-[64px] rounded-[7px] border border-borda-forte bg-white px-2 text-[12.5px] text-tinta"
-                        />
-                      </td>
-                      <td className="py-2 text-right text-tinta-3">
-                        {/* Sem referência e zero são coisas diferentes, e a
-                            tela precisa dizer qual é qual. */}
-                        {linha.unitario === null
-                          ? 'sob consulta'
-                          : formatarReais(linha.unitario)}
-                      </td>
-                      <td
-                        className={`py-2 text-right font-bold ${
-                          linha.quantidade > 0 && linha.subtotal !== null
-                            ? 'text-sucesso'
-                            : 'text-tinta-5'
-                        }`}
-                      >
-                        {linha.quantidade > 0 && linha.subtotal !== null
-                          ? formatarReais(linha.subtotal)
-                          : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <EditorDeEntregas
+              linhas={linhas}
+              verticais={opcoesDeLista.verticais ?? []}
+              redes={opcoesDeLista.redesSociais ?? []}
+              aoMudar={mudarEntregas}
+              temTabela={temTabela}
+            />
 
             <div className="flex flex-wrap items-baseline justify-between gap-2 rounded-[10px] bg-fundo-2 px-3.5 py-2.5">
               <span className="text-[12px] font-bold text-tinta">
@@ -307,8 +257,17 @@ function BlocoDoTalento({
 
             {semReferencia.length > 0 && (
               <p className="rounded-[9px] border border-aviso-borda bg-aviso-fundo px-3 py-2 text-[12px] leading-[1.5] text-tinta-2">
-                Sem valor de tabela para {semReferencia.join(', ')}. Fica fora
+                Sem valor de tabela para {semReferencia.join('; ')}. Fica fora
                 do total — a área responsável precifica.
+              </p>
+            )}
+
+            {/* A tabela não conhece collab, então o total não o reflete. Dizer
+                isso evita que alguém leve o número como fechado. */}
+            {temCollab && (
+              <p className="rounded-[9px] border border-aviso-borda bg-aviso-fundo px-3 py-2 text-[12px] leading-[1.5] text-tinta-2">
+                Há collab no escopo. A tabela de referência não precifica
+                collab, então o valor acima é piso — a área ajusta.
               </p>
             )}
           </div>

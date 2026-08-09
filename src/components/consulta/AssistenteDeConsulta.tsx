@@ -18,10 +18,7 @@ import {
   type EscopoDoTalento,
 } from '@/lib/dominio/consulta';
 import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
-import {
-  linhasDaEstimativa,
-  totalDoTalento,
-} from '@/lib/dominio/estimativa';
+import { calcularLinhas, totalDasLinhas } from '@/lib/dominio/entregas';
 import {
   formatarReais,
   type LinhaDePreco,
@@ -108,13 +105,13 @@ export function AssistenteDeConsulta({
   const totalGeral = selecionados.reduce((soma, talento) => {
     const escopo = escopos[talento.id];
     if (!escopo) return soma;
-    const linhas = linhasDaEstimativa(precos, {
+    const linhas = calcularLinhas(precos, {
       categoria: talento.categoria,
       tamanho: tamanhoDoTalento(talento.seguidores),
       tipoProjeto: escopo.tipoProjeto,
-      quantidades: escopo.quantidades,
+      linhas: escopo.entregas,
     });
-    return soma + totalDoTalento(linhas).total;
+    return soma + totalDasLinhas(linhas).total;
   }, 0);
 
   const impedimentos = impedimentosParaEnviar({

@@ -14,10 +14,10 @@ import {
 } from '@/lib/dominio/alertas';
 import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
 import {
-  entregasParaGravar,
-  linhasDaEstimativa,
-  totalDoTalento,
-} from '@/lib/dominio/estimativa';
+  calcularLinhas,
+  descrever,
+  totalDasLinhas,
+} from '@/lib/dominio/entregas';
 import { formatarReais, type LinhaDePreco } from '@/lib/dominio/precos';
 import type { CabecalhoConsulta, EscopoDoTalento } from '@/lib/dominio/consulta';
 import type { TalentoComRestricoes } from '@/lib/dados/talentos';
@@ -98,18 +98,18 @@ export function PassoRevisao({
               hoje,
             );
             const nivel = nivelDoConjunto(alertas);
-            const entregas = escopo
-              ? entregasParaGravar(escopo.quantidades)
-              : [];
+            const entregas = (escopo?.entregas ?? []).filter(
+              (linha) => linha.quantidade > 0,
+            );
             const linhas = escopo
-              ? linhasDaEstimativa(precos, {
+              ? calcularLinhas(precos, {
                   categoria: talento.categoria,
                   tamanho: tamanhoDoTalento(talento.seguidores),
                   tipoProjeto: escopo.tipoProjeto,
-                  quantidades: escopo.quantidades,
+                  linhas: escopo.entregas,
                 })
               : [];
-            const { total, semReferencia } = totalDoTalento(linhas);
+            const { total, semReferencia } = totalDasLinhas(linhas);
             const faltando = camposFaltandoNoEscopo(
               definicoes,
               escopo?.campos ?? {},
@@ -151,9 +151,13 @@ export function PassoRevisao({
 
                 <p className="mt-2 text-[12.5px] leading-[1.55] text-tinta-2">
                   {entregas.length > 0 ? (
-                    entregas
-                      .map((item) => `${item.qtd}× ${item.entrega}`)
-                      .join(' · ')
+                    // Uma por linha: com vertical, collab e réplica, juntá-las
+                    // numa frase só viraria um parágrafo ilegível.
+                    <span className="flex flex-col gap-0.5">
+                      {entregas.map((linha) => (
+                        <span key={linha.id}>{descrever(linha)}</span>
+                      ))}
+                    </span>
                   ) : (
                     <span className="text-tinta-4">
                       Sem entregas sociais — a área calcula o valor.
@@ -172,7 +176,7 @@ export function PassoRevisao({
 
                 {semReferencia.length > 0 && (
                   <p className="mt-1.5 text-[11.5px] leading-[1.5] text-aviso">
-                    Fora do total: {semReferencia.join(', ')} — sem valor de
+                    Fora do total: {semReferencia.join('; ')} — sem valor de
                     tabela.
                   </p>
                 )}

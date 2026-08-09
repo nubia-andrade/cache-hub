@@ -1,6 +1,7 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
 import { CATEGORIAS, type Categoria } from '@/lib/dominio/categorias';
 import { validarConversao } from '@/lib/dominio/conversao';
+import { lerEntregasGravadas } from '@/lib/dominio/entregas';
 import { statusDoProjeto, validarStatus } from '@/lib/dominio/solicitacao';
 import { mapaDeSegmentoPorPrograma } from '@/lib/dados/listas';
 import type { ProjetoDetalhado } from '@/lib/dominio/projeto-detalhe';
@@ -32,7 +33,7 @@ type LinhaProjeto = {
     validade: string | null;
     conversao: string | null;
     devolvido_para: string | null;
-    entregas: { entrega: string; qtd: number }[] | null;
+    entregas: unknown;
     campos_extra: Record<string, string> | null;
     tipo_projeto: string | null;
     talento: { nome: string; nome_artistico: string | null } | null;
@@ -105,7 +106,7 @@ export async function lerProjeto(
     cache: item.cache,
     parecer: item.parecer ?? '',
     validade: item.validade,
-    entregas: item.entregas ?? [],
+    entregas: lerEntregasGravadas(item.entregas),
     campos: item.campos_extra ?? {},
     tipoProjeto: item.tipo_projeto,
   }));

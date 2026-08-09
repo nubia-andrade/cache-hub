@@ -1,4 +1,5 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
+import { lerEntregasGravadas } from '@/lib/dominio/entregas';
 import { CATEGORIAS, type Categoria } from '@/lib/dominio/categorias';
 import { categoriasVisiveisNaFila, type Perfil } from '@/lib/dominio/perfis';
 import { validarStatus } from '@/lib/dominio/solicitacao';
@@ -29,7 +30,7 @@ type LinhaItem = {
   validade: string | null;
   conversao: string | null;
   devolvido_para: string | null;
-  entregas: { entrega: string; qtd: number }[] | null;
+  entregas: unknown;
   campos_extra: Record<string, string> | null;
   tipo_projeto: string | null;
   atualizado_em: string | null;
@@ -105,7 +106,7 @@ export async function listarFila(perfis: Perfil[]): Promise<ItemDaFila[]> {
     cache: linha.cache,
     parecer: linha.parecer ?? '',
     validade: linha.validade,
-    entregas: linha.entregas ?? [],
+    entregas: lerEntregasGravadas(linha.entregas),
     campos: linha.campos_extra ?? {},
     tipoProjeto: linha.tipo_projeto,
     atualizadoEm: linha.atualizado_em,

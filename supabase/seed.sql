@@ -1038,7 +1038,7 @@ on conflict (categoria, entrega, tamanho, tipo_projeto) do update set valor = ex
 
 
 -- ----------------------------------------------------------------------
--- Parte 7 — Listas configuráveis (21 listas, 123 itens)
+-- Parte 7 — Listas configuráveis (21 listas, 124 itens)
 -- ----------------------------------------------------------------------
 insert into lista (id, label) values
   ('marcas', 'Marcas e anunciantes'),
@@ -1106,11 +1106,12 @@ insert into lista_item (lista_id, valor, ordem) values
   ('redesSociais', 'YouTube', 2),
   ('redesSociais', 'X (Twitter)', 3),
   ('redesSociais', 'Facebook', 4),
-  ('verticais', 'Multishow', 0),
+  ('verticais', 'Redes do talento', 0),
   ('verticais', 'Globo', 1),
-  ('verticais', 'GNT', 2),
-  ('verticais', 'gshow', 3),
-  ('verticais', 'Receitas', 4),
+  ('verticais', 'gshow', 2),
+  ('verticais', 'Receitas', 3),
+  ('verticais', 'GNT', 4),
+  ('verticais', 'Multishow', 5),
   ('formatos', 'Ação de Conteúdo', 0),
   ('formatos', 'Chamada', 1),
   ('formatos', 'Conteúdo no Break', 2),

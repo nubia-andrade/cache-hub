@@ -1,5 +1,5 @@
 import type { ValoresDoEscopo } from './escopo';
-import type { Quantidades } from './estimativa';
+import type { LinhaDeEntrega } from './entregas';
 import type { TipoProjeto } from './precos';
 
 /**
@@ -50,12 +50,12 @@ export const CABECALHO_VAZIO: CabecalhoConsulta = {
  */
 export type EscopoDoTalento = {
   tipoProjeto: TipoProjeto;
-  quantidades: Quantidades;
+  entregas: LinhaDeEntrega[];
   campos: ValoresDoEscopo;
 };
 
 export function escopoVazioPara(tipoProjeto: TipoProjeto): EscopoDoTalento {
-  return { tipoProjeto, quantidades: {}, campos: {} };
+  return { tipoProjeto, entregas: [], campos: {} };
 }
 
 /** Os campos sem os quais o passo 2 não faz sentido, com o rótulo da tela. */

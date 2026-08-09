@@ -1,5 +1,6 @@
 import type { Categoria } from './categorias';
 import type { Conversao } from './conversao';
+import type { LinhaDeEntrega } from './entregas';
 import type { StatusSolicitacao } from './solicitacao';
 
 /**
@@ -21,7 +22,7 @@ export type ItemDetalhado = {
   cache: number | null;
   parecer: string;
   validade: string | null;
-  entregas: { entrega: string; qtd: number }[];
+  entregas: LinhaDeEntrega[];
   campos: Record<string, string>;
   tipoProjeto: string | null;
 };

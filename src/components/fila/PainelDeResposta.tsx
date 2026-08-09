@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { areaDaCategoria, slaDaCategoria } from '@/lib/dominio/categorias';
 import { localidade, tamanhoDoTalento } from '@/lib/dominio/talento';
 import { formatarReais } from '@/lib/dominio/precos';
+import { descrever } from '@/lib/dominio/entregas';
 import { mascararMoeda, mascaraDeReais, reaisDeMascara } from '@/lib/dominio/moeda';
 import {
   acoesPara,
@@ -102,9 +103,7 @@ export function PainelDeResposta({
         </span>
         <p className="text-[12.5px] leading-[1.55] text-tinta-2">
           {item.entregas.length > 0
-            ? item.entregas
-                .map((entrega) => `${entrega.qtd}× ${entrega.entrega}`)
-                .join(' · ')
+            ? item.entregas.map(descrever).join(' | ')
             : 'Sem entregas sociais — valor a definir pela área.'}
         </p>
       </div>

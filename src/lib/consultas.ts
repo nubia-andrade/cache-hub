@@ -17,10 +17,10 @@ import {
   type EscopoDoTalento,
 } from './dominio/consulta';
 import {
+  calcularLinhas,
   entregasParaGravar,
-  linhasDaEstimativa,
-  totalDoTalento,
-} from './dominio/estimativa';
+  totalDasLinhas,
+} from './dominio/entregas';
 import { reaisDeMascara } from './dominio/moeda';
 import type { LinhaDePreco } from './dominio/precos';
 import type { Tamanho } from './dominio/talento';
@@ -200,13 +200,13 @@ async function inserirItens(
   // recusa a linha se as duas não combinarem.
   const { error } = await supabase.from('solicitacao_item').insert(
     talentos.map((talento) => {
-      const linhas = linhasDaEstimativa(precos, {
+      const linhas = calcularLinhas(precos, {
         categoria: talento.categoria,
         tamanho: talento.tamanho,
         tipoProjeto: talento.escopo.tipoProjeto,
-        quantidades: talento.escopo.quantidades,
+        linhas: talento.escopo.entregas,
       });
-      const { total } = totalDoTalento(linhas);
+      const { total } = totalDasLinhas(linhas);
 
       return {
         solicitacao_id: solicitacaoId,
@@ -216,7 +216,7 @@ async function inserirItens(
         status: 'Rascunho' as const,
         criado_por: usuarioId,
         tipo_projeto: talento.escopo.tipoProjeto,
-        entregas: entregasParaGravar(talento.escopo.quantidades),
+        entregas: entregasParaGravar(talento.escopo.entregas),
         campos_extra: talento.escopo.campos,
         verba: reaisDeMascara(talento.escopo.campos.verba),
         // Congelado no envio, de propósito: quando a tabela de referência for

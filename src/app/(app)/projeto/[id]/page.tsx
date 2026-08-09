@@ -5,6 +5,7 @@ import { areaDaCategoria, COR_POR_CATEGORIA } from '@/lib/dominio/categorias';
 import { iniciais } from '@/lib/dominio/perfis';
 import { coresDoStatus } from '@/lib/dominio/solicitacao';
 import { formatarReais } from '@/lib/dominio/precos';
+import { descrever } from '@/lib/dominio/entregas';
 import {
   formatarTaxa,
   resultadoDoProjeto,
@@ -206,9 +207,7 @@ function Talento({ item }: { item: ItemDetalhado }) {
 
       {item.entregas.length > 0 && (
         <p className="mt-2 text-[12.5px] text-tinta-2">
-          {item.entregas
-            .map((entrega) => `${entrega.qtd}× ${entrega.entrega}`)
-            .join(' · ')}
+          {item.entregas.map(descrever).join(' | ')}
         </p>
       )}
 
