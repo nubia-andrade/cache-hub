@@ -10,6 +10,8 @@ import {
   type DefinicaoDeLista,
 } from '@/lib/dominio/listas';
 import { gravarLista } from '@/lib/acoes/listas';
+import { InclusaoEmMassa } from './InclusaoEmMassa';
+import { CABECALHOS_LISTA, planejarLista } from '@/lib/dominio/importacao';
 import { EditorDeMarcas, EditorDeProgramas } from './EditorDoCatalogo';
 import type { CadastroComercial } from '@/lib/dados/cadastro-comercial';
 
@@ -338,6 +340,31 @@ function EditorDaLista({
               Acrescentar
             </button>
           </form>
+
+          <InclusaoEmMassa
+            titulo={`Incluir vários em ${lista.rotulo}`}
+            cabecalhos={CABECALHOS_LISTA}
+            exemplos={[['Primeira opção'], ['Segunda opção']]}
+            nomeDoArquivo={`modelo-${lista.id}.csv`}
+            planejar={(texto) => planejarLista(texto, valores)}
+            descrever={(valor) => valor}
+            aplicar={async (novos) => {
+              // Acrescenta ao fim, preservando a ordem já ajustada à mão. A
+              // gravação passa pela mesma função do botão Salvar, então a
+              // recusa das listas protegidas continua valendo.
+              const resultado = await gravarLista(lista.id, [
+                ...valores,
+                ...novos,
+              ]);
+              if (!resultado.ok) return { erro: resultado.mensagem };
+
+              setValores((atuais) => [...atuais, ...novos]);
+              router.refresh();
+              return {
+                resumo: `${novos.length} ${novos.length === 1 ? 'opção incluída' : 'opções incluídas'}.`,
+              };
+            }}
+          />
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button

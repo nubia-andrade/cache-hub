@@ -199,3 +199,110 @@ export async function removerPrograma(
   revalidatePath('/', 'layout');
   return { ok: true };
 }
+
+// ---- Inclusão em massa ---------------------------------------------------
+
+/**
+ * Grava as linhas já conferidas na prévia.
+ *
+ * Uma a uma, e não em lote, porque marca depende de anunciante: o lote
+ * obrigaria a ordenar as escritas por dependência, e um erro no meio deixaria
+ * metade dentro sem ninguém saber qual metade. Aqui cada linha responde por si,
+ * e o resultado diz quantas entraram e quais falharam.
+ */
+export type ResultadoEmMassa = {
+  gravados: number;
+  falhas: { nome: string; motivo: string }[];
+};
+
+export async function importarMarcas(
+  linhas: {
+    nome: string;
+    anunciante: string;
+    setor: string;
+    segmento: string;
+  }[],
+): Promise<ResultadoEmMassa | { ok: false; mensagem: string }> {
+  const impedimento = await permitido();
+  if (impedimento) return { ok: false, mensagem: impedimento };
+
+  const supabase = await criarClienteNoServidor();
+  const falhas: ResultadoEmMassa['falhas'] = [];
+  let gravados = 0;
+
+  for (const linha of linhas) {
+    // O anunciante entra antes da marca, e sem reclamar quando já existe: a
+    // planilha repete o mesmo anunciante em várias linhas, e isso é normal.
+    const { data: dono } = await supabase
+      .from('anunciante')
+      .select('id')
+      .eq('nome', linha.anunciante.trim())
+      .maybeSingle<{ id: string }>();
+
+    let anuncianteId = dono?.id;
+
+    if (!anuncianteId) {
+      const { data, error } = await supabase
+        .from('anunciante')
+        .insert({ nome: linha.anunciante.trim(), setor: linha.setor.trim() })
+        .select('id')
+        .maybeSingle<{ id: string }>();
+
+      if (error || !data) {
+        falhas.push({
+          nome: linha.nome,
+          motivo: traduzir(
+            error?.message ?? 'Não consegui criar o anunciante.',
+          ),
+        });
+        continue;
+      }
+      anuncianteId = data.id;
+    }
+
+    const { error } = await supabase.from('marca').upsert(
+      {
+        nome: linha.nome.trim(),
+        anunciante_id: anuncianteId,
+        setor: linha.setor.trim(),
+        segmento: linha.segmento.trim(),
+      },
+      { onConflict: 'nome' },
+    );
+
+    if (error)
+      falhas.push({ nome: linha.nome, motivo: traduzir(error.message) });
+    else gravados += 1;
+  }
+
+  revalidatePath('/', 'layout');
+  return { gravados, falhas };
+}
+
+export async function importarProgramas(
+  linhas: { nome: string; segmentoProduto: string }[],
+): Promise<ResultadoEmMassa | { ok: false; mensagem: string }> {
+  const impedimento = await permitido();
+  if (impedimento) return { ok: false, mensagem: impedimento };
+
+  const supabase = await criarClienteNoServidor();
+  const falhas: ResultadoEmMassa['falhas'] = [];
+  let gravados = 0;
+
+  for (const linha of linhas) {
+    const { error } = await supabase.from('programa').upsert(
+      {
+        nome: linha.nome.trim(),
+        segmento_produto: linha.segmentoProduto.trim(),
+      },
+      { onConflict: 'nome' },
+    );
+
+    if (error)
+      falhas.push({ nome: linha.nome, motivo: traduzir(error.message) });
+    else gravados += 1;
+  }
+
+  revalidatePath('/', 'layout');
+  return { gravados, falhas };
+}

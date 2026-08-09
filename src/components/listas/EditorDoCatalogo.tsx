@@ -21,7 +21,28 @@ import {
   salvarMarca,
   salvarPrograma,
 } from '@/lib/acoes/catalogo';
+import { importarMarcas, importarProgramas } from '@/lib/acoes/catalogo';
+import {
+  CABECALHOS_MARCA,
+  CABECALHOS_PROGRAMA,
+  planejarMarcas,
+  planejarProgramas,
+} from '@/lib/dominio/importacao';
+import { InclusaoEmMassa } from './InclusaoEmMassa';
 import type { CadastroComercial } from '@/lib/dados/cadastro-comercial';
+
+/** Resumo comum às duas importações em massa. */
+function resumir(resultado: {
+  gravados: number;
+  falhas: { nome: string; motivo: string }[];
+}) {
+  const base = `${resultado.gravados} ${resultado.gravados === 1 ? 'cadastro gravado' : 'cadastros gravados'}.`;
+  return resultado.falhas.length === 0
+    ? base
+    : `${base} ${resultado.falhas.length} com falha: ${resultado.falhas
+        .map((f) => `${f.nome} (${f.motivo})`)
+        .join('; ')}`;
+}
 
 /**
  * Marcas, anunciantes e programas.
@@ -127,7 +148,7 @@ function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
         )}
       </ul>
 
-      <div className="border-t border-borda-suave px-4 py-3">
+      <div className="flex flex-col gap-3 border-t border-borda-suave px-4 py-3">
         {criando ? (
           <FormularioDeMarca
             inicial={null}
@@ -135,13 +156,17 @@ function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
             aoFechar={() => setCriando(false)}
           />
         ) : (
-          <button
-            type="button"
-            onClick={() => setCriando(true)}
-            className="h-[32px] cursor-pointer rounded-full bg-magenta px-3.5 text-[12.5px] font-bold text-white"
-          >
-            + Nova marca
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setCriando(true)}
+              className="h-[32px] cursor-pointer rounded-full bg-magenta px-3.5 text-[12.5px] font-bold text-white"
+            >
+              + Nova marca
+            </button>
+
+            <InclusaoEmMassaDeMarcas dados={dados} />
+          </div>
         )}
       </div>
     </div>
@@ -539,7 +564,7 @@ export function EditorDeProgramas({
         )}
       </ul>
 
-      <div className="border-t border-borda-suave px-4 py-3">
+      <div className="flex flex-col gap-3 border-t border-borda-suave px-4 py-3">
         {criando ? (
           <FormularioDePrograma
             inicial={null}
@@ -548,13 +573,17 @@ export function EditorDeProgramas({
             aoFechar={() => setCriando(false)}
           />
         ) : (
-          <button
-            type="button"
-            onClick={() => setCriando(true)}
-            className="h-[32px] cursor-pointer rounded-full bg-magenta px-3.5 text-[12.5px] font-bold text-white"
-          >
-            + Novo programa
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setCriando(true)}
+              className="h-[32px] cursor-pointer rounded-full bg-magenta px-3.5 text-[12.5px] font-bold text-white"
+            >
+              + Novo programa
+            </button>
+
+            <InclusaoEmMassaDeProgramas dados={dados} segmentos={segmentos} />
+          </div>
         )}
       </div>
     </div>
@@ -751,5 +780,71 @@ function Campo({
         className="h-[32px] rounded-[8px] border border-borda-forte bg-white px-2 text-[12.5px] text-tinta"
       />
     </label>
+  );
+}
+
+// ==========================================================================
+// Inclusão em massa
+// ==========================================================================
+
+function InclusaoEmMassaDeMarcas({ dados }: { dados: CadastroComercial }) {
+  const router = useRouter();
+
+  return (
+    <InclusaoEmMassa
+      titulo="Incluir várias marcas"
+      cabecalhos={CABECALHOS_MARCA}
+      exemplos={[
+        [
+          'Heineken',
+          'Cervejaria Heineken',
+          'Bebidas alcoólicas',
+          'Cerveja premium',
+        ],
+        ['Brahma', 'Ambev', '', 'Cerveja'],
+      ]}
+      nomeDoArquivo="modelo-marcas.csv"
+      planejar={(texto) => planejarMarcas(texto, dados)}
+      descrever={(marca) =>
+        `${marca.nome} · ${marca.anunciante}${marca.anuncianteNovo ? ' (anunciante novo)' : ''}${
+          marca.segmento ? ` · ${marca.segmento}` : ''
+        }`
+      }
+      aplicar={async (marcas) => {
+        const resultado = await importarMarcas(marcas);
+        if ('ok' in resultado) return { erro: resultado.mensagem };
+
+        router.refresh();
+        return { resumo: resumir(resultado) };
+      }}
+    />
+  );
+}
+
+function InclusaoEmMassaDeProgramas({
+  dados,
+  segmentos,
+}: {
+  dados: CadastroComercial;
+  segmentos: string[];
+}) {
+  const router = useRouter();
+
+  return (
+    <InclusaoEmMassa
+      titulo="Incluir vários programas"
+      cabecalhos={CABECALHOS_PROGRAMA}
+      exemplos={[['Nome do programa', segmentos[0] ?? 'Variedades']]}
+      nomeDoArquivo="modelo-programas.csv"
+      planejar={(texto) => planejarProgramas(texto, dados.programas)}
+      descrever={(programa) => `${programa.nome} · ${programa.segmentoProduto}`}
+      aplicar={async (programas) => {
+        const resultado = await importarProgramas(programas);
+        if ('ok' in resultado) return { erro: resultado.mensagem };
+
+        router.refresh();
+        return { resumo: resumir(resultado) };
+      }}
+    />
   );
 }
