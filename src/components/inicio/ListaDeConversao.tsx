@@ -13,15 +13,32 @@ import { formatarReais } from '@/lib/dominio/precos';
 import { informarConversao } from '@/lib/conversoes';
 import type { ItemDoProjeto, ProjetoResumo } from '@/lib/dominio/projeto';
 
+/** Talentos já orçados cuja conversão ninguém informou ainda. */
+export function quantosAguardam(projeto: ProjetoResumo): number {
+  return projeto.itens.filter(
+    (item) => item.status === 'Orçado' && item.conversao === 'pendente',
+  ).length;
+}
+
 /**
  * As minhas consultas, em lista, para informar o que fechou.
  *
  * É lista e não cartão de propósito: aqui a pergunta é "quais talentos
  * fecharam", e responder isso pede uma coluna de marcação alinhada, não seis
  * cartões espalhados pela tela.
+ *
+ * A orientação aparece em três alturas — no topo da lista, no contador de cada
+ * projeto e dentro dele. Uma caixa de marcar sozinha não diz o que se espera
+ * de quem olha, e essa é uma tela que a pessoa visita de vez em quando.
  */
 export function ListaDeConversao({ projetos }: { projetos: ProjetoResumo[] }) {
-  const [aberto, setAberto] = useState<string | null>(projetos[0]?.id ?? null);
+  // Quem espera resposta sua vem primeiro. Ordenar por data deixaria a tarefa
+  // pendente no meio da lista, e ela é justamente o motivo desta tela existir.
+  const ordenados = [...projetos].sort(
+    (a, b) => quantosAguardam(b) - quantosAguardam(a),
+  );
+
+  const [aberto, setAberto] = useState<string | null>(ordenados[0]?.id ?? null);
 
   if (projetos.length === 0) {
     return (
@@ -31,18 +48,49 @@ export function ListaDeConversao({ projetos }: { projetos: ProjetoResumo[] }) {
     );
   }
 
+  const aguardando = projetos.reduce(
+    (soma, projeto) => soma + quantosAguardam(projeto),
+    0,
+  );
+
   return (
-    <div className="overflow-hidden rounded-cartao border border-borda">
-      {projetos.map((projeto) => (
-        <LinhaDoProjeto
-          key={projeto.id}
-          projeto={projeto}
-          aberto={aberto === projeto.id}
-          aoAlternar={() =>
-            setAberto(aberto === projeto.id ? null : projeto.id)
-          }
-        />
-      ))}
+    <div className="flex flex-col gap-3">
+      <div
+        className={`rounded-cartao border px-4 py-3 ${
+          aguardando > 0
+            ? 'border-magenta bg-magenta-suave'
+            : 'border-borda bg-fundo-3'
+        }`}
+      >
+        <p className="text-[13px] font-bold text-tinta">
+          {aguardando > 0
+            ? `${aguardando} talento${aguardando > 1 ? 's' : ''} orçado${
+                aguardando > 1 ? 's' : ''
+              } esperando você dizer se fechou`
+            : 'Nada esperando você por aqui.'}
+        </p>
+        <p className="mt-1 text-[12.5px] leading-[1.55] text-tinta-2">
+          Quando o cliente responder, abra o projeto e{' '}
+          <strong>marque a caixa dos talentos que foram fechados</strong>. Nos
+          que o cliente recusou, clique em <strong>“não fechou”</strong> — é o
+          que separa &ldquo;o cliente disse não&rdquo; de &ldquo;ainda não
+          perguntei&rdquo;, e sem essa diferença a taxa de conversão do time
+          fica errada.
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-cartao border border-borda">
+        {ordenados.map((projeto) => (
+          <LinhaDoProjeto
+            key={projeto.id}
+            projeto={projeto}
+            aberto={aberto === projeto.id}
+            aoAlternar={() =>
+              setAberto(aberto === projeto.id ? null : projeto.id)
+            }
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -59,6 +107,7 @@ function LinhaDoProjeto({
   const resultado = resultadoDoProjeto(projeto.itens);
   const taxa = taxaDeConversao(projeto.itens);
   const orcados = projeto.itens.filter((item) => item.status === 'Orçado');
+  const aguardam = quantosAguardam(projeto);
   const cores = CORES_STATUS[projeto.status];
 
   return (
@@ -94,10 +143,18 @@ function LinhaDoProjeto({
           {projeto.status}
         </span>
 
-        <span className="whitespace-nowrap text-[11.5px] text-tinta-3">
-          {resultado}
-          {taxa !== null && ` · ${formatarTaxa(taxa)}`}
-        </span>
+        {/* O contador de pendências é o que faz a pessoa saber onde clicar
+            sem abrir projeto por projeto. */}
+        {aguardam > 0 ? (
+          <span className="whitespace-nowrap rounded-full bg-magenta px-2 py-0.5 text-[10.5px] font-bold text-white">
+            {aguardam} a informar
+          </span>
+        ) : (
+          <span className="whitespace-nowrap text-[11.5px] text-tinta-3">
+            {resultado}
+            {taxa !== null && ` · ${formatarTaxa(taxa)}`}
+          </span>
+        )}
       </button>
 
       {aberto && (
@@ -108,11 +165,18 @@ function LinhaDoProjeto({
               quando a área responder com o valor.
             </p>
           ) : (
-            <ul className="flex flex-col gap-1.5">
-              {orcados.map((item) => (
-                <LinhaDoTalento key={item.id} item={item} />
-              ))}
-            </ul>
+            <>
+              <p className="mb-2 text-[11.5px] leading-[1.5] text-tinta-3">
+                {aguardam > 0
+                  ? 'Marque a caixa de quem fechou. Para quem o cliente recusou, use “não fechou”.'
+                  : 'Tudo informado. Dá para mudar a qualquer momento clicando de novo.'}
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                {orcados.map((item) => (
+                  <LinhaDoTalento key={item.id} item={item} />
+                ))}
+              </ul>
+            </>
           )}
 
           {/* Os que ainda não foram orçados aparecem, mas sem marcação: some
@@ -201,7 +265,7 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
         </button>
 
         <span
-          className={`w-[70px] text-right text-[11px] font-bold ${
+          className={`w-[92px] text-right text-[11px] font-bold ${
             fechado
               ? 'text-sucesso'
               : naoFechado
@@ -209,7 +273,7 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
                 : 'text-tinta-5'
           }`}
         >
-          {item.conversao}
+          {fechado ? 'fechado' : naoFechado ? 'não fechou' : 'a informar'}
         </span>
       </div>
 

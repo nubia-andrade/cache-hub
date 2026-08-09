@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CartaoProjeto } from './CartaoProjeto';
-import { ListaDeConversao } from './ListaDeConversao';
+import { ListaDeConversao, quantosAguardam } from './ListaDeConversao';
 import { DIAS_NO_INICIO, type ProjetoResumo } from '@/lib/dominio/projeto';
 import { STATUS_SOLICITACAO } from '@/lib/dominio/solicitacao';
 
@@ -67,6 +67,12 @@ export function ListaDeProjetos({
       (projeto) => status === TODOS_STATUS || projeto.status === status,
     );
 
+  /** Pendências de conversão nas MINHAS consultas — o contador do botão.
+   *  Ele existe para a tarefa não depender de a pessoa lembrar de conferir. */
+  const aguardandoConversao = projetos
+    .filter((projeto) => projeto.solicitanteId === usuarioId)
+    .reduce((soma, projeto) => soma + quantosAguardam(projeto), 0);
+
   const temFiltroAplicado =
     filtro === 'minha' ||
     segmento !== TODOS_SEGMENTOS ||
@@ -104,6 +110,11 @@ export function ListaDeProjetos({
               }`}
             >
               {opcao.rotulo}
+              {opcao.id === 'minhas-consultas' && aguardandoConversao > 0 && (
+                <span className="ml-1.5 rounded-full bg-magenta px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {aguardandoConversao}
+                </span>
+              )}
             </button>
           );
         })}
