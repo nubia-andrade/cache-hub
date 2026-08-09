@@ -696,6 +696,74 @@ create policy "remover talento em rascunho" on solicitacao_item
 
 
 -- ----------------------------------------------------------------------
+-- Parte 1c — Quem respondeu, e quando
+-- ----------------------------------------------------------------------
+-- Sem estas duas colunas não há como medir prazo, e prazo é metade do que se
+-- pede a um relatório de fila.
+--
+-- Também existe solto em supabase/quem-respondeu.sql. Mantenha os dois iguais.
+--
+-- Por que colunas, e não a linha do tempo: os eventos trazem a informação, mas
+-- ler "quando este item saiu da fila" de lá exige varrer texto e adivinhar o
+-- título. Duas colunas respondem direto, e o gatilho as preenche sozinho —
+-- nenhum caminho de código precisa lembrar.
+alter table solicitacao_item
+  add column if not exists respondido_em  timestamptz,
+  add column if not exists respondido_por uuid references perfil_usuario(id) on delete set null;
+
+-- A PRIMEIRA resposta, e não a última.
+--
+-- Reorçar depois de uma devolução não pode zerar o relógio: o solicitante
+-- esperou desde o pedido, e reescrever a data faria uma demora de duas semanas
+-- virar um dia. Daí o `is null` — a marca é gravada uma vez só.
+create or replace function public.marcar_a_resposta()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = old.status then
+    return new;
+  end if;
+
+  -- Sair de Rascunho ou de Fila de cachê é o solicitante andando, não resposta.
+  if new.status in ('Em análise', 'Orçado', 'Devolvido', 'Rejeitado')
+     and new.respondido_em is null then
+    new.respondido_em  := now();
+    new.respondido_por := auth.uid();
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_responder_marcar on solicitacao_item;
+create trigger ao_responder_marcar
+  before update on solicitacao_item
+  for each row execute function public.marcar_a_resposta();
+
+-- O que já aconteceu antes da coluna existir fica de fora do relatório para
+-- sempre; a linha do tempo guarda a data e o autor, então dá para recuperar.
+-- Uma vez só — o `is null` protege contra rodar de novo.
+update solicitacao_item i
+   set respondido_em  = e.criado_em,
+       respondido_por = e.autor_id
+  from (
+    select distinct on (solicitacao_id)
+           solicitacao_id, criado_em, autor_id
+      from evento
+     where titulo like '%orçou%'
+        or titulo like '%devolveu%'
+        or titulo like '%rejeitou%'
+        or titulo like '%para análise%'
+     order by solicitacao_id, criado_em asc
+  ) e
+ where e.solicitacao_id = i.solicitacao_id
+   and i.respondido_em is null
+   and i.status in ('Em análise', 'Orçado', 'Devolvido', 'Rejeitado');
+
+
+-- ----------------------------------------------------------------------
 -- Parte 2 — Criar o cadastro do Hub junto com o usuário de autenticação
 -- ----------------------------------------------------------------------
 -- O schema não tem isto, e sem isto quem se cadastra no Supabase Auth não
