@@ -95,42 +95,12 @@ export async function criarRascunho(
     };
   }
 
-  // A área sai da categoria, e o banco confere: existe uma restrição CHECK que
-  // recusa a linha se as duas não combinarem.
-  const { error: erroItens } = await supabase.from('solicitacao_item').insert(
-    talentos.map((talento) => {
-      const linhas = linhasDaEstimativa(precos, {
-        categoria: talento.categoria,
-        tamanho: talento.tamanho,
-        tipoProjeto: talento.escopo.tipoProjeto,
-        quantidades: talento.escopo.quantidades,
-      });
-      const { total } = totalDoTalento(linhas);
-
-      return {
-        solicitacao_id: consulta.id,
-        talento_id: talento.id,
-        categoria: talento.categoria,
-        area: areaDaCategoria(talento.categoria),
-        status: 'Rascunho' as const,
-        tipo_projeto: talento.escopo.tipoProjeto,
-        entregas: entregasParaGravar(talento.escopo.quantidades),
-        campos_extra: talento.escopo.campos,
-        verba: reaisDeMascara(talento.escopo.campos.verba),
-        // Congelado no envio, de propósito: quando a tabela de referência for
-        // reajustada, esta solicitação tem de continuar mostrando o valor que
-        // estava na tela de quem a abriu. Recalcular na leitura faria o
-        // histórico mudar sozinho.
-        valor_sugerido: total > 0 ? Math.round(total) : null,
-      };
-    }),
-  );
-
+  const erroItens = await inserirItens(supabase, consulta.id, talentos, precos, user.id);
   if (erroItens) {
     await supabase.from('solicitacao').delete().eq('id', consulta.id);
     return {
       ok: false,
-      mensagem: `Não consegui incluir os talentos: ${erroItens.message}`,
+      mensagem: `Não consegui incluir os talentos: ${erroItens}`,
     };
   }
 
@@ -152,4 +122,111 @@ export async function criarRascunho(
   }
 
   return { ok: true, id: consulta.id, protocolo };
+}
+
+/**
+ * Acrescenta talentos a uma consulta que já existe.
+ *
+ * Não copia o cabeçalho para uma consulta nova: os itens entram na
+ * solicitação original, que é o ponto — no e-mail de referência, Caldeirão, É
+ * de Casa e a websérie eram a mesma campanha tocada por gente diferente, e
+ * copiar o cabeçalho só mudaria o lugar da fragmentação.
+ *
+ * Aqui não há o que apagar se falhar. A consulta é de outra pessoa e existia
+ * antes; o que não aconteceu foi a inclusão.
+ */
+export async function acrescentarTalentos(
+  solicitacaoId: string,
+  talentos: TalentoEscolhido[],
+  precos: LinhaDePreco[],
+  enviar = false,
+): Promise<ResultadoGravacao> {
+  const supabase = criarClienteNoNavegador();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { ok: false, mensagem: 'Sua sessão expirou. Entre de novo.' };
+  }
+
+  const erroItens = await inserirItens(
+    supabase,
+    solicitacaoId,
+    talentos,
+    precos,
+    user.id,
+  );
+
+  if (erroItens) {
+    return {
+      ok: false,
+      mensagem: `Não consegui incluir os talentos: ${erroItens}`,
+    };
+  }
+
+  if (enviar) {
+    // Só os que EU acabei de incluir vão para a fila. Um `eq` na solicitação
+    // arrastaria junto rascunhos que outra pessoa esteja montando no mesmo
+    // projeto, enviando trabalho pela metade em nome dela.
+    const { error: erroEnvio } = await supabase
+      .from('solicitacao_item')
+      .update({ status: 'Fila de cachê' })
+      .eq('solicitacao_id', solicitacaoId)
+      .eq('criado_por', user.id)
+      .eq('status', 'Rascunho');
+
+    if (erroEnvio) {
+      return {
+        ok: false,
+        mensagem: `Salvei como rascunho, mas não consegui enviar: ${erroEnvio.message}`,
+      };
+    }
+  }
+
+  return { ok: true, id: solicitacaoId, protocolo: '' };
+}
+
+/** Devolve a mensagem de erro, ou null quando deu certo. */
+async function inserirItens(
+  supabase: ReturnType<typeof criarClienteNoNavegador>,
+  solicitacaoId: string,
+  talentos: TalentoEscolhido[],
+  precos: LinhaDePreco[],
+  usuarioId: string,
+): Promise<string | null> {
+  // A área sai da categoria, e o banco confere: existe uma restrição CHECK que
+  // recusa a linha se as duas não combinarem.
+  const { error } = await supabase.from('solicitacao_item').insert(
+    talentos.map((talento) => {
+      const linhas = linhasDaEstimativa(precos, {
+        categoria: talento.categoria,
+        tamanho: talento.tamanho,
+        tipoProjeto: talento.escopo.tipoProjeto,
+        quantidades: talento.escopo.quantidades,
+      });
+      const { total } = totalDoTalento(linhas);
+
+      return {
+        solicitacao_id: solicitacaoId,
+        talento_id: talento.id,
+        categoria: talento.categoria,
+        area: areaDaCategoria(talento.categoria),
+        status: 'Rascunho' as const,
+        criado_por: usuarioId,
+        tipo_projeto: talento.escopo.tipoProjeto,
+        entregas: entregasParaGravar(talento.escopo.quantidades),
+        campos_extra: talento.escopo.campos,
+        verba: reaisDeMascara(talento.escopo.campos.verba),
+        // Congelado no envio, de propósito: quando a tabela de referência for
+        // reajustada, esta solicitação tem de continuar mostrando o valor que
+        // estava na tela de quem a abriu. Recalcular na leitura faria o
+        // histórico mudar sozinho.
+        valor_sugerido: total > 0 ? Math.round(total) : null,
+      };
+    }),
+  );
+
+  return error?.message ?? null;
 }

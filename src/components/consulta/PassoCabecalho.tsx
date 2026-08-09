@@ -20,11 +20,39 @@ export function PassoCabecalho({
   cabecalho,
   catalogo,
   aoMudar,
+  travado = false,
 }: {
   cabecalho: CabecalhoConsulta;
   catalogo: Catalogo;
   aoMudar: (novo: CabecalhoConsulta) => void;
+  /** Consulta vinculada: o cabeçalho é do projeto e vira só leitura. */
+  travado?: boolean;
 }) {
+  // Travado, o formulário inteiro vira ficha — inclusive os campos que o
+  // catálogo preencheria. Deixar um só editável faria parecer que a edição
+  // vale, quando ela não seria gravada em lugar nenhum.
+  if (travado) {
+    return (
+      <div className="grid gap-x-4 gap-y-[18px] sm:grid-cols-2">
+        <Derivado rotulo="Marca" valor={cabecalho.marca} />
+        <Derivado rotulo="Anunciante" valor={cabecalho.anunciante} />
+        <Derivado rotulo="Setor do cliente" valor={cabecalho.setorCliente} />
+        <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
+        <Derivado rotulo="Programa" valor={cabecalho.programa} />
+        <Derivado rotulo="Tipo de mídia" valor={cabecalho.tipoMidia} />
+        <Derivado rotulo="Tipo de projeto" valor={cabecalho.tipoProjeto} />
+        <Derivado
+          rotulo="Exibição"
+          valor={
+            cabecalho.exibicaoInicio && cabecalho.exibicaoFim
+              ? `${cabecalho.exibicaoInicio} a ${cabecalho.exibicaoFim}`
+              : ''
+          }
+        />
+      </div>
+    );
+  }
+
   const periodoInvertido =
     Boolean(cabecalho.exibicaoInicio) &&
     Boolean(cabecalho.exibicaoFim) &&

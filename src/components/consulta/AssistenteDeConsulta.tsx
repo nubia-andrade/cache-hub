@@ -6,6 +6,7 @@ import { PassoCabecalho } from './PassoCabecalho';
 import { PassoTalentos } from './PassoTalentos';
 import { PassoEntregas } from './PassoEntregas';
 import { PassoRevisao } from './PassoRevisao';
+import { EscolhaDoProjeto } from './EscolhaDoProjeto';
 import {
   CABECALHO_VAZIO,
   cabecalhoCompleto,
@@ -27,7 +28,11 @@ import {
   type TipoProjeto,
 } from '@/lib/dominio/precos';
 import { tamanhoDoTalento } from '@/lib/dominio/talento';
-import { criarRascunho } from '@/lib/consultas';
+import { acrescentarTalentos, criarRascunho } from '@/lib/consultas';
+import {
+  cabecalhoDoVinculo,
+  type ProjetoVinculavel,
+} from '@/lib/dominio/vinculo';
 import type { Catalogo } from '@/lib/dados/catalogo';
 import type { TalentoComRestricoes } from '@/lib/dados/talentos';
 
@@ -51,6 +56,7 @@ export function AssistenteDeConsulta({
   talentos,
   precos,
   opcoesDeLista,
+  vinculaveis,
   hoje,
   equipeDoSolicitante,
 }: {
@@ -58,6 +64,7 @@ export function AssistenteDeConsulta({
   talentos: TalentoComRestricoes[];
   precos: LinhaDePreco[];
   opcoesDeLista: Record<string, string[]>;
+  vinculaveis: ProjetoVinculavel[];
   hoje: string;
   equipeDoSolicitante: string;
 }) {
@@ -69,6 +76,19 @@ export function AssistenteDeConsulta({
   const [escopos, setEscopos] = useState<Record<string, EscopoDoTalento>>({});
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [vinculado, setVinculado] = useState<ProjetoVinculavel | null>(null);
+
+  /** Vincular traz o cabeçalho do projeto e o congela: quem abriu responde
+   *  por ele, e editar aqui mudaria o projeto de outra pessoa. */
+  function vincular(projeto: ProjetoVinculavel) {
+    setVinculado(projeto);
+    setCabecalho(cabecalhoDoVinculo(projeto));
+  }
+
+  function desvincular() {
+    setVinculado(null);
+    setCabecalho(CABECALHO_VAZIO);
+  }
 
   const faltando = camposFaltando(cabecalho);
   const cabecalhoOk = cabecalhoCompleto(cabecalho);
@@ -164,18 +184,27 @@ export function AssistenteDeConsulta({
     setGravando(true);
     setErro(null);
 
-    const resultado = await criarRascunho(
-      cabecalho,
-      selecionados.map((talento) => ({
-        id: talento.id,
-        categoria: talento.categoria,
-        tamanho: tamanhoDoTalento(talento.seguidores),
-        escopo: escopos[talento.id] ?? escopoVazioPara('Sob demanda'),
-      })),
-      equipeDoSolicitante,
-      precos,
-      enviar,
-    );
+    const escolhidosParaGravar = selecionados.map((talento) => ({
+      id: talento.id,
+      categoria: talento.categoria,
+      tamanho: tamanhoDoTalento(talento.seguidores),
+      escopo: escopos[talento.id] ?? escopoVazioPara('Sob demanda'),
+    }));
+
+    const resultado = vinculado
+      ? await acrescentarTalentos(
+          vinculado.id,
+          escolhidosParaGravar,
+          precos,
+          enviar,
+        )
+      : await criarRascunho(
+          cabecalho,
+          escolhidosParaGravar,
+          equipeDoSolicitante,
+          precos,
+          enviar,
+        );
 
     if (!resultado.ok) {
       setErro(resultado.mensagem);
@@ -183,7 +212,7 @@ export function AssistenteDeConsulta({
       return;
     }
 
-    router.push('/inicio');
+    router.push(vinculado ? `/projeto/${vinculado.id}` : '/inicio');
     router.refresh();
   }
 
@@ -234,11 +263,20 @@ export function AssistenteDeConsulta({
       ) : (
         <div className="rounded-cartao border border-borda p-5">
           {passo === 1 ? (
-            <PassoCabecalho
-              cabecalho={cabecalho}
-              catalogo={catalogo}
-              aoMudar={setCabecalho}
-            />
+            <div className="flex flex-col gap-4">
+              <EscolhaDoProjeto
+                projetos={vinculaveis}
+                vinculado={vinculado}
+                aoVincular={vincular}
+                aoDesvincular={desvincular}
+              />
+              <PassoCabecalho
+                cabecalho={cabecalho}
+                catalogo={catalogo}
+                aoMudar={setCabecalho}
+                travado={vinculado !== null}
+              />
+            </div>
           ) : (
             <PassoTalentos
               talentos={talentos}

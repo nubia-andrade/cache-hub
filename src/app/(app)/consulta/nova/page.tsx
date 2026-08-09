@@ -5,6 +5,7 @@ import { lerCatalogo } from '@/lib/dados/catalogo';
 import { lerListas } from '@/lib/dados/listas';
 import { listarTabelaDePrecos } from '@/lib/dados/precos';
 import { listarTalentos } from '@/lib/dados/talentos';
+import { listarVinculaveis } from '@/lib/dados/vinculaveis';
 import { hojeISO } from '@/lib/dominio/restricoes';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
@@ -23,12 +24,14 @@ export default async function PaginaNovaConsulta() {
   const usuario = await obterUsuarioLogado();
   if (!usuario) redirect('/login');
 
-  const [catalogo, talentos, precos, opcoesDeLista] = await Promise.all([
-    lerCatalogo(),
-    listarTalentos(),
-    listarTabelaDePrecos(),
-    lerListas(LISTAS_DO_ESCOPO),
-  ]);
+  const [catalogo, talentos, precos, opcoesDeLista, vinculaveis] =
+    await Promise.all([
+      lerCatalogo(),
+      listarTalentos(),
+      listarTabelaDePrecos(),
+      lerListas(LISTAS_DO_ESCOPO),
+      listarVinculaveis(),
+    ]);
 
   return (
     <section className="px-[26px] pb-[30px] pt-6">
@@ -53,6 +56,7 @@ export default async function PaginaNovaConsulta() {
         talentos={talentos}
         precos={precos}
         opcoesDeLista={opcoesDeLista}
+        vinculaveis={vinculaveis}
         hoje={hojeISO()}
         equipeDoSolicitante={usuario.equipe}
       />

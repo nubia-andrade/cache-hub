@@ -687,19 +687,59 @@ create policy "descartar a propria consulta" on solicitacao
   for delete to authenticated
   using (solicitante_id = auth.uid());
 
--- Talentos dentro da consulta: só na consulta que é sua, e sempre nascendo
--- como Rascunho. Sem essa segunda parte, daria para inserir um item já com
--- status 'Aprovada' e pular a fila inteira — o schema tem 'Em análise' como
+-- "É meu?" numa função só, porque a resposta é usada por três policies e
+-- vale a mesma em todas: é meu o talento que eu incluí, e também qualquer um
+-- da consulta que eu abri — quem abre responde pelo conjunto.
+create or replace function public.eh_meu_item(
+  id_da_solicitacao uuid,
+  quem_incluiu uuid
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select quem_incluiu = auth.uid()
+      or exists (
+           select 1 from public.solicitacao s
+            where s.id = id_da_solicitacao and s.solicitante_id = auth.uid()
+         );
+$$;
+
+grant execute on function public.eh_meu_item(uuid, uuid) to authenticated;
+
+-- Quem incluiu cada talento.
+--
+-- Existe porque um projeto é de várias pessoas. No e-mail que serviu de
+-- referência, Caldeirão, É de Casa e a websérie eram a MESMA campanha tocada
+-- por gente diferente — e, sem poder incluir talento numa consulta aberta por
+-- outro, cada um abriria a sua e ninguém veria o conjunto.
+--
+-- Aberto para incluir, fechado para mexer: qualquer solicitante ativo
+-- acrescenta talento a uma consulta existente, mas só mexe no que ele mesmo
+-- pôs. Sem esta coluna, "só mexe no que é seu" não teria como ser dito.
+alter table solicitacao_item add column if not exists criado_por uuid references perfil_usuario(id) on delete set null;
+
+-- Linhas antigas nasceram antes da coluna: o dono da consulta responde por elas.
+update solicitacao_item i
+   set criado_por = s.solicitante_id
+  from solicitacao s
+ where s.id = i.solicitacao_id and i.criado_por is null;
+
+-- Talentos dentro da consulta: em qualquer consulta, mas sempre assinando
+-- quem incluiu, e sempre nascendo como Rascunho. Sem essa última parte, daria
+-- para inserir um item já Orçado e pular a fila inteira — o schema tem um
 -- padrão, mas padrão não é trava: quem chama a API escolhe o que mandar.
 drop policy if exists "incluir talento na propria consulta" on solicitacao_item;
-create policy "incluir talento na propria consulta" on solicitacao_item
+drop policy if exists "incluir talento em consulta aberta" on solicitacao_item;
+create policy "incluir talento em consulta aberta" on solicitacao_item
   for insert to authenticated
   with check (
-    status = 'Rascunho'
-    and exists (
-      select 1 from public.solicitacao s
-      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
-    )
+    public.pode_solicitar()
+    and status = 'Rascunho'
+    and criado_por = auth.uid()
+    and exists (select 1 from public.solicitacao s where s.id = solicitacao_id)
   );
 
 -- A primeira metade da trava de ajuste.
@@ -712,13 +752,7 @@ create policy "incluir talento na propria consulta" on solicitacao_item
 drop policy if exists "ajustar talento em rascunho" on solicitacao_item;
 create policy "ajustar talento em rascunho" on solicitacao_item
   for update to authenticated
-  using (
-    status = 'Rascunho'
-    and exists (
-      select 1 from public.solicitacao s
-      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
-    )
-  )
+  using (status = 'Rascunho' and public.eh_meu_item(solicitacao_id, criado_por))
   with check (status in ('Rascunho', 'Fila de cachê'));
 
 -- A exceção à trava: informar se fechou.
@@ -729,13 +763,7 @@ create policy "ajustar talento em rascunho" on solicitacao_item
 drop policy if exists "informar conversao do proprio talento" on solicitacao_item;
 create policy "informar conversao do proprio talento" on solicitacao_item
   for update to authenticated
-  using (
-    status = 'Orçado'
-    and exists (
-      select 1 from public.solicitacao s
-      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
-    )
-  )
+  using (status = 'Orçado' and public.eh_meu_item(solicitacao_id, criado_por))
   with check (status = 'Orçado');
 
 -- RLS decide QUAIS LINHAS, nunca quais colunas. Sem o gatilho abaixo, a policy
@@ -748,14 +776,14 @@ language plpgsql
 security definer
 set search_path = public
 as $$
-declare
-  eh_o_solicitante boolean;
 begin
-  select s.solicitante_id = auth.uid() into eh_o_solicitante
-    from public.solicitacao s where s.id = old.solicitacao_id;
-
+  -- Vale para quem incluiu o talento, e não só para o dono da consulta: desde
+  -- que projetos são compartilhados, quem acrescenta um talento também informa
+  -- a conversão dele — e também não pode reescrever o valor do aprovador.
+  --
   -- Aprovador mexendo na própria fila não passa por aqui.
-  if not coalesce(eh_o_solicitante, false) or old.status <> 'Orçado' then
+  if not public.eh_meu_item(old.solicitacao_id, old.criado_por)
+     or old.status <> 'Orçado' then
     return new;
   end if;
 
@@ -971,13 +999,7 @@ create trigger ao_abrir_consulta
 drop policy if exists "remover talento em rascunho" on solicitacao_item;
 create policy "remover talento em rascunho" on solicitacao_item
   for delete to authenticated
-  using (
-    status = 'Rascunho'
-    and exists (
-      select 1 from public.solicitacao s
-      where s.id = solicitacao_id and s.solicitante_id = auth.uid()
-    )
-  );`,
+  using (status = 'Rascunho' and public.eh_meu_item(solicitacao_id, criado_por));`,
   ),
 );
 
