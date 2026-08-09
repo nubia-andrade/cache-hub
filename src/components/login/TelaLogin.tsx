@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArgumentosLogin, HeroLogin } from './PainelApresentacao';
+import { PainelDaMarca } from './PainelApresentacao';
 import { FormularioEntrada } from './FormularioEntrada';
-import { FormularioSolicitacao, SolicitacaoEnviada } from './SolicitacaoDeAcesso';
+import {
+  FormularioSolicitacao,
+  SolicitacaoEnviada,
+} from './SolicitacaoDeAcesso';
 import { BoasVindas } from './BoasVindas';
 import { criarContaDeTeste, entrarComEmailESenha } from '@/lib/autenticacao';
 import { erroDeLogin, type ErroLogin } from '@/lib/dominio/login';
@@ -80,55 +83,51 @@ export function TelaLogin() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-fundo p-4 sm:p-8">
-      <div className="w-full max-w-[1340px] overflow-hidden rounded-[20px] bg-azul shadow-[0_30px_70px_rgba(18,17,90,0.28)]">
-        <HeroLogin />
+      <div className="grid w-full max-w-[1180px] overflow-hidden rounded-[22px] bg-white shadow-[0_30px_70px_rgba(18,17,90,0.22)] lg:grid-cols-[1.15fr_1fr]">
+        <PainelDaMarca />
 
-        <div className="grid lg:grid-cols-[1fr_540px]">
-          <ArgumentosLogin />
+        <div className="flex flex-col justify-center px-8 py-10 sm:px-11">
+          {tela === 'login' && (
+            <FormularioEntrada
+              email={email}
+              senha={senha}
+              erro={erro}
+              entrando={entrando}
+              aoMudarEmail={(valor) => {
+                setEmail(valor);
+                setErro(null);
+              }}
+              aoMudarSenha={(valor) => {
+                setSenha(valor);
+                setErro(null);
+              }}
+              aoEntrar={() => tentar(entrarComEmailESenha)}
+              aoCriarConta={() => tentar(criarContaDeTeste)}
+              aoPedirAcesso={irParaSolicitacao}
+            />
+          )}
 
-          <div className="flex min-h-[470px] flex-col justify-center bg-white px-10 pb-[38px] pt-[34px] lg:rounded-tl-[20px]">
-            {tela === 'login' && (
-              <FormularioEntrada
-                email={email}
-                senha={senha}
-                erro={erro}
-                entrando={entrando}
-                aoMudarEmail={(valor) => {
-                  setEmail(valor);
-                  setErro(null);
-                }}
-                aoMudarSenha={(valor) => {
-                  setSenha(valor);
-                  setErro(null);
-                }}
-                aoEntrar={() => tentar(entrarComEmailESenha)}
-                aoCriarConta={() => tentar(criarContaDeTeste)}
-                aoPedirAcesso={irParaSolicitacao}
-              />
-            )}
+          {tela === 'solicitar' && (
+            <FormularioSolicitacao
+              emailInicial={email}
+              aoVoltar={voltarAoLogin}
+              aoEnviar={(emailDoPedido) => {
+                setEmailSolicitado(emailDoPedido);
+                setTela('enviado');
+              }}
+            />
+          )}
 
-            {tela === 'solicitar' && (
-              <FormularioSolicitacao
-                emailInicial={email}
-                aoVoltar={voltarAoLogin}
-                aoEnviar={(emailDoPedido) => {
-                  setEmailSolicitado(emailDoPedido);
-                  setTela('enviado');
-                }}
-              />
-            )}
+          {tela === 'enviado' && (
+            <SolicitacaoEnviada
+              email={emailSolicitado}
+              aoVoltar={voltarAoLogin}
+            />
+          )}
 
-            {tela === 'enviado' && (
-              <SolicitacaoEnviada
-                email={emailSolicitado}
-                aoVoltar={voltarAoLogin}
-              />
-            )}
-
-            {tela === 'entrando' && usuarioEntrando && (
-              <BoasVindas usuario={usuarioEntrando} />
-            )}
-          </div>
+          {tela === 'entrando' && usuarioEntrando && (
+            <BoasVindas usuario={usuarioEntrando} />
+          )}
         </div>
       </div>
     </main>

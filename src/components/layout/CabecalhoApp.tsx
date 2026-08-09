@@ -29,7 +29,8 @@ export function CabecalhoApp({ usuario }: { usuario: Usuario }) {
   return (
     <header className="flex h-[62px] shrink-0 items-center justify-between gap-4 border-b border-borda px-[26px]">
       <div className="flex shrink-0 items-center gap-[13px]">
-        <LogoGlobo className="h-[30px] w-[30px] text-tinta" />
+        {/* Sobre o branco do cabeçalho, a versão colorida — é o logo de verdade. */}
+        <LogoGlobo className="h-[30px] w-[30px]" />
         <div className="flex flex-col">
           <span className="font-titulo text-[16px] font-bold tracking-[-0.01em] text-tinta">
             Cachê Hub
