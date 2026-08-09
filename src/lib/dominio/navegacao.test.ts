@@ -103,3 +103,22 @@ describe('rota inicial', () => {
     expect(rotaInicialPara([])).toBe('/talentos');
   });
 });
+
+describe('rotas por prefixo', () => {
+  it('o detalhe do projeto abre para qualquer perfil ativo', () => {
+    expect(podeAcessar(['Solicitante'], '/projeto/abc-123')).toBe(true);
+    expect(podeAcessar(['Aprovador ViU'], '/projeto/abc-123')).toBe(true);
+    expect(podeAcessar(['Gerente ViU'], '/projeto/abc-123')).toBe(true);
+  });
+
+  it('a guarda não olha perfil aqui — quem filtra as linhas é o RLS', () => {
+    // Sem perfil, a pessoa nem passa do login; e mesmo passando, a consulta
+    // ao banco só devolve o que a policy de leitura permitir.
+    expect(podeAcessar([], '/projeto/abc-123')).toBe(true);
+  });
+
+  it('o prefixo não vale para caminho parecido de outra seção', () => {
+    expect(podeAcessar(['Solicitante'], '/projetos')).toBe(false);
+    expect(podeAcessar(['Solicitante'], '/projeto')).toBe(false);
+  });
+});

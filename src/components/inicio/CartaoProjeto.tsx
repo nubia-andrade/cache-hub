@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { iniciais } from '@/lib/dominio/perfis';
 import { coresDoStatus, corDoAvatar } from '@/lib/dominio/solicitacao';
 import type { ProjetoResumo } from '@/lib/dominio/projeto';
@@ -32,7 +33,10 @@ export function CartaoProjeto({
   const cores = coresDoStatus(projeto.status);
 
   return (
-    <article className="flex flex-col gap-[9px] rounded-[14px] border border-borda bg-white px-4 py-[15px] transition-colors hover:border-magenta">
+    <Link
+      href={`/projeto/${projeto.id}`}
+      className="flex flex-col gap-[9px] rounded-[14px] border border-borda bg-white px-4 py-[15px] transition-colors hover:border-magenta"
+    >
       <div className="flex items-center justify-between gap-2">
         <h2
           className="truncate font-titulo text-[15px] font-bold text-tinta"
@@ -92,6 +96,6 @@ export function CartaoProjeto({
           )}
         </span>
       </div>
-    </article>
+    </Link>
   );
 }

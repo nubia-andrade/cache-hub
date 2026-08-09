@@ -57,8 +57,18 @@ export function rotaInicialPara(perfis: Perfil[]): string {
  * rota nova aqui não abre buraco de segurança: o efeito é o contrário, a tela
  * fica inacessível para todo mundo.
  */
-const ROTAS_FORA_DO_MENU: { caminho: string; permitido: (p: Perfil[]) => boolean }[] =
-  [{ caminho: '/consulta/nova', permitido: ehSolicitante }];
+const ROTAS_FORA_DO_MENU: {
+  caminho: string;
+  /** `prefixo` casa tudo abaixo do caminho; sem ele, a igualdade é exata. */
+  prefixo?: boolean;
+  permitido: (p: Perfil[]) => boolean;
+}[] = [
+  { caminho: '/consulta/nova', permitido: ehSolicitante },
+  // O detalhe do projeto é aberto por qualquer membro ativo: aprovador precisa
+  // ver o contexto do que respondeu, e gerente precisa acompanhar sem estar na
+  // fila. Quais LINHAS cada um enxerga continua sendo decisão do RLS.
+  { caminho: '/projeto/', prefixo: true, permitido: () => true },
+];
 
 /** O usuário pode abrir este caminho? */
 export function podeAcessar(perfis: Perfil[], caminho: string | null): boolean {
@@ -66,7 +76,9 @@ export function podeAcessar(perfis: Perfil[], caminho: string | null): boolean {
 
   if (navegacaoPara(perfis).some((item) => item.href === caminho)) return true;
 
-  return ROTAS_FORA_DO_MENU.some(
-    (rota) => rota.caminho === caminho && rota.permitido(perfis),
+  return ROTAS_FORA_DO_MENU.some((rota) =>
+    rota.prefixo
+      ? caminho.startsWith(rota.caminho) && rota.permitido(perfis)
+      : rota.caminho === caminho && rota.permitido(perfis),
   );
 }

@@ -875,6 +875,99 @@ create trigger ao_responder_item
   before update on solicitacao_item
   for each row execute function public.transicao_do_aprovador();
 
+-- ---- A linha do tempo, escrita pelo próprio banco ------------------------
+--
+-- O evento é gravado por GATILHO, e não pelo aplicativo. A diferença importa:
+-- pelo aplicativo, todo caminho de código novo precisaria lembrar de registrar
+-- — e o dia em que alguém esquecer produz um histórico com buraco, que é pior
+-- que não ter histórico, porque parece completo.
+--
+-- SECURITY DEFINER de propósito: a trilha não depende de o autor ter permissão
+-- de escrita em evento. Ninguém escreve nessa tabela pela API; ela só recebe o
+-- que aconteceu de fato.
+create or replace function public.registrar_evento_do_item()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  quem text;
+  nome_do_talento text;
+begin
+  select nome into quem from public.perfil_usuario where id = auth.uid();
+  select coalesce(t.nome_artistico, t.nome) into nome_do_talento
+    from public.talento t where t.id = new.talento_id;
+
+  quem := coalesce(quem, 'alguém');
+  nome_do_talento := coalesce(nome_do_talento, 'talento removido');
+
+  if tg_op = 'UPDATE' and new.status is distinct from old.status then
+    insert into public.evento (solicitacao_id, titulo, descricao, alerta, autor_id)
+    values (
+      new.solicitacao_id,
+      case new.status::text
+        when 'Fila de cachê' then nome_do_talento || ' foi enviado para a fila'
+        when 'Em análise'    then quem || ' pegou ' || nome_do_talento || ' para análise'
+        when 'Orçado'        then quem || ' orçou ' || nome_do_talento
+        when 'Devolvido'     then quem || ' devolveu ' || nome_do_talento
+        when 'Rejeitado'     then quem || ' rejeitou ' || nome_do_talento
+        else nome_do_talento || ' mudou para ' || new.status
+      end,
+      nullif(btrim(coalesce(new.parecer, '')), ''),
+      new.status in ('Devolvido', 'Rejeitado'),
+      auth.uid()
+    );
+  end if;
+
+  -- Conversão é a outra coisa que vale registrar: é ela que fecha o ciclo
+  -- comercial, e sem data no histórico não dá para dizer quando fechou.
+  if tg_op = 'UPDATE' and new.conversao is distinct from old.conversao
+     and new.conversao <> 'pendente' then
+    insert into public.evento (solicitacao_id, titulo, descricao, alerta, autor_id)
+    values (
+      new.solicitacao_id,
+      nome_do_talento || ': ' || new.conversao,
+      quem || ' informou a conversão',
+      false,
+      auth.uid()
+    );
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_mudar_item on solicitacao_item;
+create trigger ao_mudar_item
+  after update on solicitacao_item
+  for each row execute function public.registrar_evento_do_item();
+
+create or replace function public.registrar_abertura()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  quem text;
+begin
+  select nome into quem from public.perfil_usuario where id = new.solicitante_id;
+  insert into public.evento (solicitacao_id, titulo, descricao, alerta, autor_id)
+  values (
+    new.id,
+    'Consulta aberta',
+    coalesce(quem, 'alguém') || ' abriu a consulta para ' || coalesce(new.marca, 'a marca'),
+    false,
+    new.solicitante_id
+  );
+  return new;
+end $$;
+
+drop trigger if exists ao_abrir_consulta on solicitacao;
+create trigger ao_abrir_consulta
+  after insert on solicitacao
+  for each row execute function public.registrar_abertura();
+
 drop policy if exists "remover talento em rascunho" on solicitacao_item;
 create policy "remover talento em rascunho" on solicitacao_item
   for delete to authenticated

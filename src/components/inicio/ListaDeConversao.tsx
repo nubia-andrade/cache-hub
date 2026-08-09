@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CORES_STATUS } from '@/lib/dominio/solicitacao';
 import {
@@ -125,6 +126,13 @@ function LinhaDoProjeto({
                 .join(' · ')}
             </p>
           )}
+
+          <Link
+            href={`/projeto/${projeto.id}`}
+            className="mt-2.5 inline-block text-[11.5px] font-semibold text-magenta hover:underline"
+          >
+            Abrir o projeto →
+          </Link>
         </div>
       )}
     </div>
