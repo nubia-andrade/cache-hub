@@ -17,6 +17,7 @@ import {
   proprietariosAtivos,
   ROTULO_ACAO,
 } from '@/lib/dominio/administracao';
+import { paginar } from '@/lib/dominio/paginacao';
 import { mudarEstado, mudarPerfis } from '@/lib/administracao';
 import { bloqueioDoConvite } from '@/lib/dominio/convite';
 import { NovoUsuario } from './NovoUsuario';
@@ -28,10 +29,20 @@ const CORES_ESTADO: Record<EstadoAcesso, string> = {
 };
 
 /**
+ * Dez por página.
+ *
+ * A base caminha para mais de cinquenta cadastros, e a tela é de consulta
+ * rápida: rolar cinquenta linhas para achar um nome é pior do que buscar. A
+ * busca filtra a lista inteira, não a página — senão procurar alguém exigiria
+ * saber em que página ele está.
+ */
+const POR_PAGINA = 10;
+
+/**
  * A administração de acessos.
  *
- * Quem está pendente aparece primeiro: a pergunta que traz alguém a esta tela
- * é quase sempre "tem gente esperando liberação?".
+ * Três blocos, e não uma lista corrida: "tem gente esperando?" e "quem tem
+ * acesso a quê?" são perguntas diferentes.
  */
 export function PainelDeUsuarios({
   usuarios,
@@ -41,6 +52,7 @@ export function PainelDeUsuarios({
   quemAdministra: Usuario;
 }) {
   const [busca, setBusca] = useState('');
+  const [aberto, setAberto] = useState<string | null>(null);
 
   const termo = busca.trim().toLowerCase();
   const visiveis = usuarios.filter(
@@ -103,84 +115,158 @@ export function PainelDeUsuarios({
       />
 
       {grupos.map((grupo) => (
-        <section key={grupo.estado} className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-            <h2 className="font-titulo text-[14px] font-semibold text-tinta">
-              {grupo.titulo}
-            </h2>
-            <span
-              className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${CORES_ESTADO[grupo.estado]}`}
-            >
-              {grupo.usuarios.length}
-            </span>
-            <span className="text-[12px] text-tinta-4">{grupo.explicacao}</span>
-          </div>
-
-          {grupo.usuarios.length === 0 ? (
-            <p className="rounded-cartao border border-dashed border-borda bg-fundo-3 px-4 py-3 text-[12.5px] text-tinta-4">
-              {termo ? 'Ninguém com esse termo aqui.' : 'Ninguém neste grupo.'}
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-2.5">
-              {grupo.usuarios.map((usuario) => (
-                <CartaoDoUsuario
-                  key={usuario.id}
-                  usuario={usuario}
-                  quemAdministra={quemAdministra}
-                  todos={usuarios}
-                />
-              ))}
-            </ul>
-          )}
-        </section>
+        <GrupoDeUsuarios
+          key={grupo.estado}
+          titulo={grupo.titulo}
+          explicacao={grupo.explicacao}
+          estado={grupo.estado}
+          usuarios={grupo.usuarios}
+          buscando={termo.length > 0}
+          quemAdministra={quemAdministra}
+          todos={usuarios}
+          aberto={aberto}
+          aoAbrir={setAberto}
+        />
       ))}
     </div>
   );
 }
 
-/**
- * O RLS devolveu só a linha de quem está olhando.
- *
- * Vale a pena um aviso em tom de erro, e não um texto discreto: a tela fica
- * indistinguível de "o Hub está vazio", e o caminho para consertar é um
- * arquivo que a pessoa não tem como adivinhar.
- */
-function ListaTruncada() {
+function GrupoDeUsuarios({
+  titulo,
+  explicacao,
+  estado,
+  usuarios,
+  buscando,
+  quemAdministra,
+  todos,
+  aberto,
+  aoAbrir,
+}: {
+  titulo: string;
+  explicacao: string;
+  estado: EstadoAcesso;
+  usuarios: Usuario[];
+  buscando: boolean;
+  quemAdministra: Usuario;
+  todos: Usuario[];
+  aberto: string | null;
+  aoAbrir: (id: string | null) => void;
+}) {
+  const [pagina, setPagina] = useState(1);
+
+  // Buscar reduz a lista, e a página em que a pessoa estava pode não existir
+  // mais. Quem resolve é o próprio `paginar`, que corrige a página fora do
+  // intervalo — por isso os botões abaixo partem de `recorte.atual`, e não do
+  // estado. Sem isso, filtrar deixaria a tela em branco.
+  const recorte = paginar(usuarios, pagina, POR_PAGINA);
+
   return (
-    <div className="rounded-cartao border border-erro-borda bg-erro-fundo px-4 py-3.5">
-      <p className="text-[13px] font-bold text-tinta">
-        A lista está incompleta — só o seu cadastro chegou até aqui.
-      </p>
-      <p className="mt-1 text-[12.5px] leading-[1.6] text-tinta-2">
-        Se ao tentar adicionar alguém o Hub responde que o e-mail já existe, é
-        isto: o cadastro está no banco, mas o Postgres não está deixando você
-        ler. Falta a permissão de leitura do Proprietário.
-      </p>
-      <p className="mt-1.5 text-[12.5px] leading-[1.6] text-tinta-2">
-        Para resolver: abra o SQL Editor do Supabase com a Role em{' '}
-        <strong>postgres</strong> e rode{' '}
-        <code className="rounded bg-white px-1 py-0.5 font-mono text-[11.5px]">
-          supabase/acesso-do-proprietario.sql
-        </code>
-        . Ele é curto e termina mostrando um diagnóstico do que ficou faltando.
-      </p>
-    </div>
+    <section className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+        <h2 className="font-titulo text-[14px] font-semibold text-tinta">
+          {titulo}
+        </h2>
+        <span
+          className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${CORES_ESTADO[estado]}`}
+        >
+          {recorte.quantidade}
+        </span>
+        <span className="text-[12px] text-tinta-4">{explicacao}</span>
+      </div>
+
+      {recorte.quantidade === 0 ? (
+        <p className="rounded-cartao border border-dashed border-borda bg-fundo-3 px-4 py-2.5 text-[12.5px] text-tinta-4">
+          {buscando ? 'Ninguém com esse termo aqui.' : 'Ninguém neste grupo.'}
+        </p>
+      ) : (
+        <>
+          <ul className="divide-y divide-borda-suave overflow-hidden rounded-cartao border border-borda bg-white">
+            {recorte.itens.map((usuario) => (
+              <LinhaDoUsuario
+                key={usuario.id}
+                usuario={usuario}
+                quemAdministra={quemAdministra}
+                todos={todos}
+                expandido={aberto === usuario.id}
+                aoAlternar={() =>
+                  aoAbrir(aberto === usuario.id ? null : usuario.id)
+                }
+              />
+            ))}
+          </ul>
+
+          {recorte.total > 1 && (
+            <div className="flex items-center justify-end gap-2 text-[12px] text-tinta-3">
+              <span>
+                {recorte.primeiro}–{recorte.ultimo} de {recorte.quantidade}
+              </span>
+              <BotaoDePagina
+                rotulo="Anterior"
+                desabilitado={recorte.atual === 1}
+                aoClicar={() => setPagina(recorte.atual - 1)}
+              />
+              <span className="tabular-nums">
+                {recorte.atual}/{recorte.total}
+              </span>
+              <BotaoDePagina
+                rotulo="Próxima"
+                desabilitado={recorte.atual === recorte.total}
+                aoClicar={() => setPagina(recorte.atual + 1)}
+              />
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 
-function CartaoDoUsuario({
+function BotaoDePagina({
+  rotulo,
+  desabilitado,
+  aoClicar,
+}: {
+  rotulo: string;
+  desabilitado: boolean;
+  aoClicar: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={desabilitado}
+      onClick={aoClicar}
+      className="h-[28px] rounded-full border border-borda-forte bg-white px-3 text-[12px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-35"
+    >
+      {rotulo}
+    </button>
+  );
+}
+
+/**
+ * Uma linha por pessoa, com as ações escondidas até o clique.
+ *
+ * Cinquenta cadastros com três botões cada viram uma parede. Como administrar
+ * é raro e consultar é frequente, a linha fechada responde "quem é, de que
+ * equipe, com quais perfis, com ou sem acesso" — e só quem vai mexer paga o
+ * clique.
+ */
+function LinhaDoUsuario({
   usuario,
   quemAdministra,
   todos,
+  expandido,
+  aoAlternar,
 }: {
   usuario: Usuario;
   quemAdministra: Usuario;
   todos: Usuario[];
+  expandido: boolean;
+  aoAlternar: () => void;
 }) {
   const router = useRouter();
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [editandoPerfis, setEditandoPerfis] = useState(false);
 
   const souEu = usuario.id === quemAdministra.id;
 
@@ -225,135 +311,169 @@ function CartaoDoUsuario({
   }
 
   return (
-    <li className="rounded-cartao border border-borda bg-white px-4 py-3.5">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-fundo-2 font-titulo text-[12px] font-bold text-tinta-2">
+    <li>
+      <button
+        type="button"
+        onClick={aoAlternar}
+        aria-expanded={expandido}
+        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left hover:bg-fundo-3 ${
+          expandido ? 'bg-fundo-3' : ''
+        }`}
+      >
+        <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-fundo-2 font-titulo text-[10.5px] font-bold text-tinta-2">
           {iniciais(usuario.nome)}
         </span>
 
-        <span className="flex min-w-0 flex-col">
-          <span className="font-titulo text-[14.5px] font-semibold text-tinta">
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13px] font-semibold text-tinta">
             {usuario.nome}
             {souEu && (
-              <span className="ml-1.5 text-[11.5px] font-normal text-tinta-4">
+              <span className="ml-1 text-[11px] font-normal text-tinta-4">
                 (você)
               </span>
             )}
           </span>
-          <span className="truncate text-[12px] text-tinta-4">
+          <span className="block truncate text-[11px] text-tinta-4">
             {usuario.email}
-            {usuario.cargo && ` · ${usuario.cargo}`}
-            {usuario.equipe && ` · ${usuario.equipe}`}
           </span>
+        </span>
+
+        <span className="hidden w-[150px] shrink-0 truncate text-[11.5px] text-tinta-3 lg:block">
+          {usuario.equipe || '—'}
+        </span>
+
+        <span className="hidden min-w-0 flex-1 gap-1 truncate text-[11px] text-tinta-3 md:flex">
+          {usuario.perfis.length === 0 ? (
+            <span className="italic text-tinta-4">sem perfil</span>
+          ) : (
+            <span className="truncate">{usuario.perfis.join(' · ')}</span>
+          )}
         </span>
 
         <span
-          className={`ml-auto rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${CORES_ESTADO[usuario.estado]}`}
-          title={DESCRICAO_ESTADO[usuario.estado]}
+          className={`shrink-0 rounded-full border px-2 py-0.5 text-[10.5px] font-bold ${CORES_ESTADO[usuario.estado]}`}
         >
           {usuario.estado}
         </span>
-      </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-        {usuario.perfis.length === 0 ? (
-          <span className="text-[12px] text-tinta-4">
-            Sem perfil — entra no Hub e não enxerga nenhuma seção.
-          </span>
-        ) : (
-          usuario.perfis.map((perfil) => (
-            <span
-              key={perfil}
-              className="rounded-full bg-azul-suave px-2.5 py-0.5 text-[11.5px] font-semibold text-azul"
+        <span
+          aria-hidden
+          className={`shrink-0 text-[11px] text-tinta-4 transition-transform ${expandido ? 'rotate-180' : ''}`}
+        >
+          ▾
+        </span>
+      </button>
+
+      {expandido && (
+        <div className="border-t border-borda-suave bg-fundo-3 px-3 py-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-tinta-3">
+            {usuario.cargo && <span>{usuario.cargo}</span>}
+            <span className="lg:hidden">{usuario.equipe || 'sem equipe'}</span>
+          </div>
+
+          {erro && (
+            <p
+              role="alert"
+              className="mt-2 rounded-[9px] border border-erro-borda bg-erro-fundo px-3 py-2 text-[12px] leading-[1.5] text-erro"
             >
-              {perfil}
+              {erro}
+            </p>
+          )}
+
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11.5px] font-bold text-tinta-2">
+              Perfis
             </span>
-          ))
-        )}
-      </div>
+            {PERFIS.map((perfil) => {
+              const marcado = usuario.perfis.includes(perfil);
+              return (
+                <button
+                  key={perfil}
+                  type="button"
+                  disabled={gravando}
+                  aria-pressed={marcado}
+                  onClick={() => alternarPerfil(perfil)}
+                  className={`h-[26px] rounded-full border px-2.5 text-[11px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
+                    marcado
+                      ? 'border-azul bg-azul-suave text-azul'
+                      : 'border-borda-forte bg-white text-tinta-4'
+                  }`}
+                >
+                  {perfil}
+                </button>
+              );
+            })}
+          </div>
 
-      {erro && (
-        <p
-          role="alert"
-          className="mt-2.5 rounded-[9px] border border-erro-borda bg-erro-fundo px-3 py-2 text-[12px] leading-[1.5] text-erro"
-        >
-          {erro}
-        </p>
-      )}
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {estadosPossiveis(usuario.estado).map((destino) => {
+              const bloqueio = bloqueioDaAlteracao({
+                quemAdministra,
+                alvo: usuario,
+                alteracao: { tipo: 'estado', para: destino },
+                todos,
+              });
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-borda-suave pt-3">
-        {estadosPossiveis(usuario.estado).map((destino) => {
-          const bloqueio = bloqueioDaAlteracao({
-            quemAdministra,
-            alvo: usuario,
-            alteracao: { tipo: 'estado', para: destino },
-            todos,
-          });
+              return (
+                <button
+                  key={destino}
+                  type="button"
+                  disabled={gravando || bloqueio !== null}
+                  // O motivo vai no title: botão apagado sem explicação numa
+                  // tela de permissões é o que faz alguém abrir chamado.
+                  title={bloqueio ?? DESCRICAO_ESTADO[destino]}
+                  onClick={() =>
+                    aplicar(() => mudarEstado(usuario.id, destino))
+                  }
+                  className={`h-[30px] rounded-full px-3.5 text-[12px] font-bold enabled:cursor-pointer disabled:opacity-40 ${
+                    destino === 'ativo'
+                      ? 'bg-magenta text-white'
+                      : 'border border-borda-forte bg-white text-tinta-2'
+                  }`}
+                >
+                  {ROTULO_ACAO[destino]}
+                </button>
+              );
+            })}
 
-          return (
-            <button
-              key={destino}
-              type="button"
-              disabled={gravando || bloqueio !== null}
-              // O motivo vai no title: botão apagado sem explicação numa tela
-              // de permissões é o que faz alguém abrir chamado.
-              title={bloqueio ?? DESCRICAO_ESTADO[destino]}
-              onClick={() => aplicar(() => mudarEstado(usuario.id, destino))}
-              className={`h-[34px] rounded-full px-3.5 text-[12.5px] font-bold enabled:cursor-pointer disabled:opacity-40 ${
-                destino === 'ativo'
-                  ? 'bg-magenta text-white'
-                  : 'border border-borda-forte bg-white text-tinta-2'
-              }`}
-            >
-              {ROTULO_ACAO[destino]}
-            </button>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => setEditandoPerfis((atual) => !atual)}
-          aria-expanded={editandoPerfis}
-          className="h-[34px] cursor-pointer rounded-full border border-borda-forte bg-white px-3.5 text-[12.5px] font-semibold text-tinta-2"
-        >
-          {editandoPerfis ? 'Fechar perfis' : 'Editar perfis'}
-        </button>
-
-        {bloqueioDaAlteracao({
-          quemAdministra,
-          alvo: usuario,
-          alteracao: { tipo: 'estado', para: usuario.estado },
-          todos,
-        }) && (
-          <span className="text-[11.5px] text-tinta-4">
-            {souEu ? 'Seu próprio cadastro' : 'Cadastro protegido'}
-          </span>
-        )}
-      </div>
-
-      {editandoPerfis && (
-        <div className="mt-2.5 flex flex-wrap gap-1.5 rounded-[10px] bg-fundo-3 p-3">
-          {PERFIS.map((perfil) => {
-            const marcado = usuario.perfis.includes(perfil);
-            return (
-              <button
-                key={perfil}
-                type="button"
-                disabled={gravando}
-                aria-pressed={marcado}
-                onClick={() => alternarPerfil(perfil)}
-                className={`h-[30px] rounded-full border px-3 text-[11.5px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
-                  marcado
-                    ? 'border-azul bg-azul-suave text-azul'
-                    : 'border-borda-forte bg-white text-tinta-4'
-                }`}
-              >
-                {perfil}
-              </button>
-            );
-          })}
+            {souEu && (
+              <span className="text-[11.5px] text-tinta-4">
+                Seu próprio cadastro — peça a outro Proprietário.
+              </span>
+            )}
+          </div>
         </div>
       )}
     </li>
+  );
+}
+
+/**
+ * O RLS devolveu só a linha de quem está olhando.
+ *
+ * Vale um aviso em tom de erro, e não um texto discreto: a tela fica
+ * indistinguível de "o Hub está vazio", e o caminho para consertar é um
+ * arquivo que a pessoa não tem como adivinhar.
+ */
+function ListaTruncada() {
+  return (
+    <div className="rounded-cartao border border-erro-borda bg-erro-fundo px-4 py-3.5">
+      <p className="text-[13px] font-bold text-tinta">
+        A lista está incompleta — só o seu cadastro chegou até aqui.
+      </p>
+      <p className="mt-1 text-[12.5px] leading-[1.6] text-tinta-2">
+        Se ao tentar adicionar alguém o Hub responde que o e-mail já existe, é
+        isto: o cadastro está no banco, mas o Postgres não está deixando você
+        ler. Falta a permissão de leitura do Proprietário.
+      </p>
+      <p className="mt-1.5 text-[12.5px] leading-[1.6] text-tinta-2">
+        Para resolver: abra o SQL Editor do Supabase com a Role em{' '}
+        <strong>postgres</strong> e rode{' '}
+        <code className="rounded bg-white px-1 py-0.5 font-mono text-[11.5px]">
+          supabase/acesso-do-proprietario.sql
+        </code>
+        . Ele é curto e termina mostrando um diagnóstico do que ficou faltando.
+      </p>
+    </div>
   );
 }
