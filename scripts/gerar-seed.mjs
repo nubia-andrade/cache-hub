@@ -1344,6 +1344,76 @@ create trigger ao_editar_lista
   ),
 );
 
+partes.push(
+  bloco(
+    'Parte 2d — O Proprietário cadastrando marcas e programas',
+    `-- As três tabelas tinham só policy de leitura. Sem escrita, o Postgres recusa
+-- em silêncio: a tela mostraria "salvo" e nada mudaria.
+--
+-- Também existe solto em supabase/cadastro-comercial.sql. Mantenha os dois
+-- iguais.
+drop policy if exists "proprietario cadastra anunciantes" on anunciante;
+create policy "proprietario cadastra anunciantes" on anunciante
+  for all to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+drop policy if exists "proprietario cadastra marcas" on marca;
+create policy "proprietario cadastra marcas" on marca
+  for all to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+drop policy if exists "proprietario cadastra programas" on programa;
+create policy "proprietario cadastra programas" on programa
+  for all to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+-- Nome único também em anunciante e programa: a solicitação guarda os dois como
+-- TEXTO, e dois cadastros homônimos deixariam o setor e o segmento ambíguos
+-- justamente nos campos que cruzam com restrições e alimentam os relatórios.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'anunciante_nome_unico'
+  ) then
+    alter table anunciante add constraint anunciante_nome_unico unique (nome);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'programa_nome_unico'
+  ) then
+    alter table programa add constraint programa_nome_unico unique (nome);
+  end if;
+end $$;
+
+-- Marca sem anunciante passa em branco por toda regra de alerta: o cruzamento
+-- de restrição precisa do setor para achar "Bebidas alcoólicas" e do anunciante
+-- para distinguir concorrente de casa própria.
+alter table marca alter column anunciante_id set not null;
+
+create or replace function public.marca_herda_o_setor()
+returns trigger
+language plpgsql
+as $$
+begin
+  -- Verão Lager e Skol Beats são a mesma Ambev; setores diferentes fariam o
+  -- cruzamento responder uma coisa para uma marca e outra para a irmã.
+  select a.setor into new.setor
+    from public.anunciante a
+   where a.id = new.anunciante_id;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_gravar_marca on marca;
+create trigger ao_gravar_marca
+  before insert or update on marca
+  for each row execute function public.marca_herda_o_setor();`,
+  ),
+);
+
 // ---- Catálogo comercial ----
 const anunciantes = [...new Set(MARCAS.map((m) => m.anunciante))].sort();
 

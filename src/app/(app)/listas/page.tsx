@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { PainelDeListas } from '@/components/listas/PainelDeListas';
 import { lerListas } from '@/lib/dados/listas';
+import { lerCadastroComercial } from '@/lib/dados/cadastro-comercial';
 import { LISTAS } from '@/lib/dominio/listas';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 import { ehProprietario } from '@/lib/dominio/perfis';
@@ -10,7 +11,10 @@ export default async function PaginaListas() {
   if (!usuario) redirect('/login');
   if (!ehProprietario(usuario.perfis)) redirect('/conta');
 
-  const conteudo = await lerListas(LISTAS.map((lista) => lista.id));
+  const [conteudo, cadastro] = await Promise.all([
+    lerListas(LISTAS.map((lista) => lista.id)),
+    lerCadastroComercial(),
+  ]);
 
   return (
     <section className="px-[26px] pb-[30px] pt-6">
@@ -22,14 +26,14 @@ export default async function PaginaListas() {
           As opções que aparecem nos campos do Hub. Exclusivo do Proprietário.
         </p>
         <p className="max-w-[720px] text-[12.5px] leading-[1.6] text-tinta-4">
-          Algumas listas são vocabulário livre e você edita à vontade. Outras
-          refletem algo que existe fora daqui — um tipo do banco, as colunas da
-          Tabela de Referência, um cadastro — e vêm somente para leitura, com o
-          motivo à vista.
+          Algumas são vocabulário livre e você edita à vontade. Marcas e
+          programas são cadastro, com campos próprios. E seis refletem algo que
+          existe fora daqui — um tipo do banco, as colunas da Tabela de
+          Referência — e vêm somente para leitura, com o motivo à vista.
         </p>
       </div>
 
-      <PainelDeListas conteudo={conteudo} />
+      <PainelDeListas conteudo={conteudo} cadastro={cadastro} />
     </section>
   );
 }

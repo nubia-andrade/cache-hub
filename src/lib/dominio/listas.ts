@@ -165,7 +165,7 @@ export const LISTAS: DefinicaoDeLista[] = [
     natureza: 'catalogo',
     descricao: 'As marcas que aparecem no cabeçalho da consulta.',
     motivo:
-      'A marca é cadastro, não vocabulário: ela carrega anunciante, setor e segmento, e é por eles que as restrições são cruzadas. Um nome solto aqui viraria uma marca sem anunciante. Ainda não há tela para esse cadastro — hoje ele é feito no seed.',
+      'A marca é cadastro, não vocabulário: ela carrega anunciante, setor e segmento, e é por eles que as restrições são cruzadas. Um nome solto viraria uma marca sem anunciante, que passa em branco por toda regra de alerta. Por isso ela tem editor próprio, com campos.',
   },
   {
     id: 'programas',
@@ -173,7 +173,7 @@ export const LISTAS: DefinicaoDeLista[] = [
     natureza: 'catalogo',
     descricao: 'Os programas em que a ação acontece.',
     motivo:
-      'O programa carrega o segmento do produto, que é um corte dos relatórios. Um nome solto aqui entraria sem segmento e cairia em "Não informado". Ainda não há tela para esse cadastro — hoje ele é feito no seed.',
+      'O programa carrega o segmento do produto, que é um corte dos relatórios. Um nome solto entraria sem segmento e cairia em "Não informado". Por isso ele tem editor próprio, com campos.',
   },
 ];
 

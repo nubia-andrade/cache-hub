@@ -10,6 +10,8 @@ import {
   type DefinicaoDeLista,
 } from '@/lib/dominio/listas';
 import { gravarLista } from '@/lib/acoes/listas';
+import { EditorDeMarcas, EditorDeProgramas } from './EditorDoCatalogo';
+import type { CadastroComercial } from '@/lib/dados/cadastro-comercial';
 
 const CORES_NATUREZA: Record<string, string> = {
   livre: 'border-sucesso-borda bg-sucesso-fundo text-sucesso',
@@ -37,10 +39,22 @@ const ROTULO_NATUREZA: Record<string, string> = {
  */
 export function PainelDeListas({
   conteudo,
+  cadastro,
 }: {
   conteudo: Record<string, string[]>;
+  cadastro: CadastroComercial;
 }) {
   const [selecionada, setSelecionada] = useState<DefinicaoDeLista>(LISTAS[0]);
+
+  // As duas entradas de catálogo têm editor próprio — a barra lateral é a
+  // mesma porque é onde a pessoa procura, mas o conteúdo é cadastro, com
+  // campos, e não uma lista de textos.
+  const quantidadeNaBarra = (lista: DefinicaoDeLista) =>
+    lista.id === 'marcas'
+      ? cadastro.marcas.length
+      : lista.id === 'programas'
+        ? cadastro.programas.length
+        : (conteudo[lista.id]?.length ?? 0);
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -50,7 +64,8 @@ export function PainelDeListas({
       >
         {LISTAS.map((lista) => {
           const ativa = lista.id === selecionada.id;
-          const quantos = conteudo[lista.id]?.length ?? 0;
+          const quantos = quantidadeNaBarra(lista);
+          const ehCadastro = lista.natureza === 'catalogo';
 
           return (
             <button
@@ -70,22 +85,79 @@ export function PainelDeListas({
                 {lista.rotulo}
               </span>
               <span className="whitespace-nowrap text-[11px] text-tinta-4">
-                {quantos} {quantos === 1 ? 'opção' : 'opções'}
-                {lista.natureza !== 'livre' && ' · protegida'}
+                {quantos}{' '}
+                {ehCadastro
+                  ? quantos === 1
+                    ? 'cadastro'
+                    : 'cadastros'
+                  : quantos === 1
+                    ? 'opção'
+                    : 'opções'}
+                {lista.natureza === 'espelho' && ' · protegida'}
               </span>
             </button>
           );
         })}
       </nav>
 
-      <EditorDaLista
-        // Trocar de lista precisa jogar fora o rascunho da anterior; a chave
-        // faz o React remontar o componente com o estado zerado.
-        key={selecionada.id}
-        lista={selecionada}
-        valoresIniciais={conteudo[selecionada.id] ?? []}
-      />
+      {selecionada.natureza === 'catalogo' ? (
+        <CaixaDeCadastro key={selecionada.id} lista={selecionada}>
+          {selecionada.id === 'marcas' ? (
+            <EditorDeMarcas dados={cadastro} />
+          ) : (
+            <EditorDeProgramas
+              dados={cadastro}
+              segmentos={conteudo['segmentosProduto'] ?? []}
+            />
+          )}
+        </CaixaDeCadastro>
+      ) : (
+        <EditorDaLista
+          // Trocar de lista precisa jogar fora o rascunho da anterior; a chave
+          // faz o React remontar o componente com o estado zerado.
+          key={selecionada.id}
+          lista={selecionada}
+          valoresIniciais={conteudo[selecionada.id] ?? []}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * A moldura das duas entradas de cadastro.
+ *
+ * Repete o cabeçalho do editor de listas para que trocar de item na barra
+ * lateral não pareça trocar de tela — mas o corpo é outro, e a tarja diz por
+ * quê antes de a pessoa procurar o campo de texto que não existe aqui.
+ */
+function CaixaDeCadastro({
+  lista,
+  children,
+}: {
+  lista: DefinicaoDeLista;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="min-w-0 flex-1 rounded-cartao border border-borda bg-white">
+      <header className="border-b border-borda-suave px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="font-titulo text-[15px] font-semibold text-tinta">
+            {lista.rotulo}
+          </h2>
+          <span className="rounded-full border border-azul bg-azul-suave px-2 py-0.5 text-[10.5px] font-bold text-azul">
+            cadastro
+          </span>
+        </div>
+        <p className="mt-0.5 max-w-[680px] text-[12px] leading-[1.5] text-tinta-4">
+          {lista.descricao} Não é vocabulário: cada item tem campos, e é isso
+          que impede um cadastro incompleto de virar um alerta que nunca
+          dispara.
+        </p>
+      </header>
+
+      {children}
+    </section>
   );
 }
 
