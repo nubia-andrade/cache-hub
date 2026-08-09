@@ -68,9 +68,18 @@ export type Talento = {
   nomeArtistico: string;
   categoria: Categoria;
   instagramId: string | null;
+  /** Onde o talento mora. Entra no cachê: deslocamento, diária e logística
+   *  mudam conforme a gravação seja na cidade dele ou não. */
+  cidade: string | null;
+  uf: string | null;
   seguidores: SeguidoresPorRede;
   ativo: boolean;
   /** O que o contrato permite: recorte replicado e collab. Decide se a ação
    *  precisa de cachê — ver `dispensa.ts`. */
   permissoes: PermissoesDoTalento;
 };
+
+/** "São Paulo, SP" · "SP" · "—" — o que houver, sem vírgula solta. */
+export function localidade(talento: Pick<Talento, 'cidade' | 'uf'>): string {
+  return [talento.cidade, talento.uf].filter(Boolean).join(', ') || '—';
+}

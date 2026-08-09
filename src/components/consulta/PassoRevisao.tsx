@@ -6,7 +6,7 @@ import {
   slaDaCategoria,
 } from '@/lib/dominio/categorias';
 import { iniciais } from '@/lib/dominio/perfis';
-import { tamanhoDoTalento } from '@/lib/dominio/talento';
+import { localidade, tamanhoDoTalento } from '@/lib/dominio/talento';
 import {
   avaliarRestricoes,
   nivelDoConjunto,
@@ -135,7 +135,7 @@ export function PassoRevisao({
                     <span className="text-[11.5px] text-tinta-4">
                       {talento.categoria} ·{' '}
                       {tamanhoDoTalento(talento.seguidores)} ·{' '}
-                      {escopo?.tipoProjeto}
+                      {localidade(talento)} · {escopo?.tipoProjeto}
                     </span>
                   </span>
 

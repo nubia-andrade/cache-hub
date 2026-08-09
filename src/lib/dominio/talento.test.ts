@@ -3,6 +3,7 @@ import {
   classificaTamanho,
   maiorSeguidor,
   tamanhoDoTalento,
+  localidade,
 } from './talento';
 
 /**
@@ -68,5 +69,21 @@ describe('qual rede manda', () => {
     expect(
       tamanhoDoTalento({ instagram: 880_000, tiktok: 620_000, x: 20_000 }),
     ).toBe('Macro');
+  });
+});
+
+describe('localidade do talento', () => {
+  it('junta cidade e UF', () => {
+    expect(localidade({ cidade: 'São Paulo', uf: 'SP' })).toBe('São Paulo, SP');
+  });
+
+  it('não deixa vírgula solta quando falta um dos dois', () => {
+    expect(localidade({ cidade: null, uf: 'SP' })).toBe('SP');
+    expect(localidade({ cidade: 'Recife', uf: null })).toBe('Recife');
+  });
+
+  it('sem nada, um travessão', () => {
+    expect(localidade({ cidade: null, uf: null })).toBe('—');
+    expect(localidade({ cidade: '', uf: '' })).toBe('—');
   });
 });

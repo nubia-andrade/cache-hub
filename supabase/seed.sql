@@ -168,6 +168,23 @@ alter table solicitacao_item add constraint conversao_coerente check (
                                 and valor_fechado is null)
 );
 
+-- ---- Onde o talento mora ------------------------------------------------
+--
+-- No e-mail que serviu de referência, o "(Mora em SP)" vinha colado no valor
+-- do cachê de cada creator. Não é curiosidade: deslocamento, diária e
+-- logística mudam conforme a gravação seja na cidade dele ou não, e sem esse
+-- dado quem orça pergunta — que é exatamente a ida e volta a evitar.
+alter table talento add column if not exists cidade text;
+alter table talento add column if not exists uf text;
+
+alter table talento drop constraint if exists uf_valida;
+alter table talento add constraint uf_valida check (
+  uf is null or uf in (
+    'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA',
+    'PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'
+  )
+);
+
 -- ---- O que o contrato do talento permite --------------------------------
 --
 -- Duas perguntas que decidem se a ação precisa de cachê: o talento aceita que
@@ -560,16 +577,16 @@ on conflict (nome) do update set segmento_produto = excluded.segmento_produto;
 -- Sem chave única em talento: limpamos e recarregamos. As restrições apontam
 -- para cá com ON DELETE CASCADE, por isso elas são recarregadas logo abaixo.
 delete from talento;
-insert into talento (nome, nome_artistico, categoria, instagram_id, seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab) values
-  ('Helena Barreto Nunes', 'Helena Barreto', 'Talento Globo'::talento_categoria, 'helenabarreto', 4200000, 1100000, 260000, true, 'Sim', 'Não'),
-  ('Rodrigo Sampaio Alves', 'Rodrigo Sampaio', 'Talento Globo'::talento_categoria, 'rodsampaio', 2800000, 640000, 410000, true, 'Sim', 'Sim'),
-  ('Manuela Ferraz', 'Manu Ferraz', 'Influenciador'::talento_categoria, 'manuferraz', 1900000, 2400000, 90000, true, 'Não', 'Sim'),
-  ('Leonardo Vasques', 'Léo Vasques', 'Creator'::talento_categoria, 'leovasques', 760000, 1500000, 40000, true, 'Sim', 'Sim'),
-  ('Camila Duarte Prado', 'Camila Duarte', 'Agenciado'::talento_categoria, 'camiladuarte', 3100000, 890000, 150000, true, 'A consultar', 'Sim'),
-  ('Bruno Tavares Lima', 'Bruno Tavares', 'Influenciador'::talento_categoria, 'brunotavares', 1200000, 430000, 220000, true, 'Sim', 'Sim'),
-  ('Tatiana Rocha', 'Tati Rocha', 'Creator'::talento_categoria, 'tatirocha', 540000, 2100000, 30000, true, 'Sim', 'A consultar'),
-  ('Diego Lemos Farias', 'Diego Lemos', 'Talento Globo'::talento_categoria, 'diegolemos', 1700000, 350000, 310000, true, 'Sim', 'Não'),
-  ('Priscila Anjos Moraes', 'Pri Anjos', 'Influenciador'::talento_categoria, 'prianjos', 880000, 620000, 20000, false, 'A consultar', 'A consultar');
+insert into talento (nome, nome_artistico, categoria, instagram_id, cidade, uf, seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab) values
+  ('Helena Barreto Nunes', 'Helena Barreto', 'Talento Globo'::talento_categoria, 'helenabarreto', 'Rio de Janeiro', 'RJ', 4200000, 1100000, 260000, true, 'Sim', 'Não'),
+  ('Rodrigo Sampaio Alves', 'Rodrigo Sampaio', 'Talento Globo'::talento_categoria, 'rodsampaio', 'Rio de Janeiro', 'RJ', 2800000, 640000, 410000, true, 'Sim', 'Sim'),
+  ('Manuela Ferraz', 'Manu Ferraz', 'Influenciador'::talento_categoria, 'manuferraz', 'São Paulo', 'SP', 1900000, 2400000, 90000, true, 'Não', 'Sim'),
+  ('Leonardo Vasques', 'Léo Vasques', 'Creator'::talento_categoria, 'leovasques', 'Belo Horizonte', 'MG', 760000, 1500000, 40000, true, 'Sim', 'Sim'),
+  ('Camila Duarte Prado', 'Camila Duarte', 'Agenciado'::talento_categoria, 'camiladuarte', 'São Paulo', 'SP', 3100000, 890000, 150000, true, 'A consultar', 'Sim'),
+  ('Bruno Tavares Lima', 'Bruno Tavares', 'Influenciador'::talento_categoria, 'brunotavares', 'Rio de Janeiro', 'RJ', 1200000, 430000, 220000, true, 'Sim', 'Sim'),
+  ('Tatiana Rocha', 'Tati Rocha', 'Creator'::talento_categoria, 'tatirocha', 'Recife', 'PE', 540000, 2100000, 30000, true, 'Sim', 'A consultar'),
+  ('Diego Lemos Farias', 'Diego Lemos', 'Talento Globo'::talento_categoria, 'diegolemos', 'São Paulo', 'SP', 1700000, 350000, 310000, true, 'Sim', 'Não'),
+  ('Priscila Anjos Moraes', 'Pri Anjos', 'Influenciador'::talento_categoria, 'prianjos', 'Curitiba', 'PR', 880000, 620000, 20000, false, 'A consultar', 'A consultar');
 
 
 -- ----------------------------------------------------------------------

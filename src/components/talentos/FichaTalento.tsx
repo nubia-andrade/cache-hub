@@ -10,6 +10,7 @@ import type { Permissao as PermissaoContratual } from '@/lib/dominio/dispensa';
 import { iniciais } from '@/lib/dominio/perfis';
 import {
   formatarNumero,
+  localidade,
   maiorSeguidor,
   tamanhoDoTalento,
 } from '@/lib/dominio/talento';
@@ -117,6 +118,16 @@ export function FichaTalento({
             <span className="text-[12px] text-tinta-4">
               {' '}
               · pela maior rede, {formatarNumero(maiorSeguidor(talento.seguidores))}
+            </span>
+          </Linha>
+
+          <Linha rotulo="Onde mora">
+            <span className="text-[13px] text-tinta">
+              {localidade(talento)}
+            </span>
+            <span className="text-[12px] text-tinta-4">
+              {' '}
+              · pesa em diária e deslocamento
             </span>
           </Linha>
 

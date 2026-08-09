@@ -17,6 +17,8 @@ type LinhaTalento = {
   nome_artistico: string | null;
   categoria: string;
   instagram_id: string | null;
+  cidade: string | null;
+  uf: string | null;
   seg_instagram: number | null;
   seg_tiktok: number | null;
   seg_x: number | null;
@@ -34,7 +36,7 @@ type LinhaTalento = {
 };
 
 const CONSULTA = `
-  id, nome, nome_artistico, categoria, instagram_id,
+  id, nome, nome_artistico, categoria, instagram_id, cidade, uf,
   seg_instagram, seg_tiktok, seg_x, ativo, aceita_recorte, aceita_collab,
   restricoes:restricao ( id, tipo, valor, inicio, fim, obs )
 `;
@@ -72,6 +74,8 @@ export async function listarTalentos(): Promise<TalentoComRestricoes[]> {
     nomeArtistico: linha.nome_artistico ?? linha.nome,
     categoria: validarCategoria(linha.categoria),
     instagramId: linha.instagram_id,
+    cidade: linha.cidade,
+    uf: linha.uf,
     seguidores: {
       instagram: linha.seg_instagram ?? 0,
       tiktok: linha.seg_tiktok ?? 0,

@@ -12,6 +12,8 @@ import { restricoesVigentes } from '@/lib/dominio/restricoes';
 import type { TalentoComRestricoes } from '@/lib/dados/talentos';
 import { FichaTalento } from './FichaTalento';
 
+const TODAS_AS_UFS = 'Todas as UFs';
+
 type FiltroRestricao = 'Todos' | 'Com restrição' | 'Sem restrição';
 type FiltroAtivo = 'Ativos e inativos' | 'Somente ativos' | 'Somente inativos';
 
@@ -29,6 +31,7 @@ export function PainelTalentos({
   const [filtroAtivo, setFiltroAtivo] = useState<FiltroAtivo>(
     'Ativos e inativos',
   );
+  const [uf, setUf] = useState(TODAS_AS_UFS);
   const [selecionado, setSelecionado] = useState(talentos[0]?.id ?? '');
 
   /** Quantas restrições valendo hoje cada talento tem. Calculado uma vez. */
@@ -40,13 +43,23 @@ export function PainelTalentos({
     return mapa;
   }, [talentos, hoje]);
 
+  /** Só as UFs que existem na base — filtrar por estado sem talento nenhum
+   *  não é opção, é armadilha. */
+  const ufsPresentes = [
+    ...new Set(talentos.map((talento) => talento.uf).filter(Boolean)),
+  ].sort() as string[];
+
   const visiveis = talentos.filter((talento) => {
     const termo = busca.trim().toLowerCase();
     if (termo) {
+      // A cidade entra na busca: procurar por "Recife" é tão natural quanto
+      // procurar pelo nome.
       const procuravel = [
         talento.nome,
         talento.nomeArtistico,
         talento.instagramId ?? '',
+        talento.cidade ?? '',
+        talento.uf ?? '',
       ]
         .join(' ')
         .toLowerCase();
@@ -60,6 +73,8 @@ export function PainelTalentos({
     const comRestricao = (vigentesPorTalento.get(talento.id) ?? 0) > 0;
     if (filtroRestricao === 'Com restrição' && !comRestricao) return false;
     if (filtroRestricao === 'Sem restrição' && comRestricao) return false;
+
+    if (uf !== TODAS_AS_UFS && talento.uf !== uf) return false;
 
     if (filtroAtivo === 'Somente ativos' && !talento.ativo) return false;
     if (filtroAtivo === 'Somente inativos' && talento.ativo) return false;
@@ -93,6 +108,14 @@ export function PainelTalentos({
             rotulo="Restrição"
             opcoes={['Todos', 'Com restrição', 'Sem restrição']}
           />
+          {ufsPresentes.length > 1 && (
+            <Selecao
+              valor={uf}
+              aoMudar={setUf}
+              rotulo="UF"
+              opcoes={[TODAS_AS_UFS, ...ufsPresentes]}
+            />
+          )}
           <Selecao
             valor={filtroAtivo}
             aoMudar={(valor) => setFiltroAtivo(valor as FiltroAtivo)}

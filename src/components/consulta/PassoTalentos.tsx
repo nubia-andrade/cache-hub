@@ -9,6 +9,7 @@ import {
 import { iniciais } from '@/lib/dominio/perfis';
 import {
   abreviarNumero,
+  localidade,
   maiorSeguidor,
   tamanhoDoTalento,
 } from '@/lib/dominio/talento';
@@ -141,7 +142,8 @@ export function PassoTalentos({
                     <span className="truncate text-[11.5px] text-tinta-4">
                       {talento.categoria} ·{' '}
                       {tamanhoDoTalento(talento.seguidores)} ·{' '}
-                      {abreviarNumero(maiorSeguidor(talento.seguidores))}
+                      {abreviarNumero(maiorSeguidor(talento.seguidores))} ·{' '}
+                      {localidade(talento)}
                     </span>
                   </span>
 
