@@ -1059,7 +1059,96 @@ create policy "criar o proprio cadastro" on perfil_usuario
     id = auth.uid()
     and estado = 'pendente'
     and perfis = '{}'::text[]
-  );`,
+  );
+
+-- ---- Administração de acessos --------------------------------------------
+--
+-- Só o Proprietário lê a lista inteira e libera gente. Todo mundo continua
+-- lendo a própria linha pela policy "self read perfil" — é assim que quem está
+-- pendente descobre que existe mas ainda não foi liberado.
+create or replace function public.eh_proprietario()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.perfil_usuario
+     where id = auth.uid() and estado = 'ativo'
+       and 'Proprietário' = any(perfis)
+  );
+$$;
+
+grant execute on function public.eh_proprietario() to authenticated;
+
+drop policy if exists "proprietario le todos os cadastros" on perfil_usuario;
+create policy "proprietario le todos os cadastros" on perfil_usuario
+  for select to authenticated
+  using (public.eh_proprietario());
+
+drop policy if exists "proprietario administra acessos" on perfil_usuario;
+create policy "proprietario administra acessos" on perfil_usuario
+  for update to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+-- O Hub não pode ficar sem quem libera acesso.
+--
+-- Se o último Proprietário ativo se suspender ou perder o próprio perfil,
+-- ninguém mais consegue liberar ninguém, e o conserto passa a exigir alguém
+-- com acesso ao banco. Não é cenário hipotético: é o clique errado numa lista
+-- onde a sua linha aparece junto das outras.
+--
+-- Mexer no PRÓPRIO cadastro também é recusado, mesmo havendo outros donos —
+-- protege do engano e de alguém se promover sozinho. O SQL Editor continua
+-- passando por cima disto, que é a saída de emergência.
+create or replace function public.proteger_administracao()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  perdeu_o_dono boolean;
+  donos_restantes integer;
+begin
+  -- Só vigia mudanças de acesso; nome, cargo e equipe passam livres.
+  if new.estado = old.estado and new.perfis = old.perfis then
+    return new;
+  end if;
+
+  if auth.uid() is null then
+    return new; -- SQL Editor / administrador: sem sessão, sem trava.
+  end if;
+
+  if new.id = auth.uid() then
+    raise exception 'Você não pode alterar o próprio acesso.';
+  end if;
+
+  perdeu_o_dono :=
+    old.estado = 'ativo'
+    and 'Proprietário' = any(old.perfis)
+    and (new.estado <> 'ativo' or not ('Proprietário' = any(new.perfis)));
+
+  if perdeu_o_dono then
+    select count(*) into donos_restantes
+      from public.perfil_usuario
+     where id <> old.id and estado = 'ativo' and 'Proprietário' = any(perfis);
+
+    if donos_restantes = 0 then
+      raise exception
+        'Este é o último Proprietário ativo. Promova outra pessoa antes.';
+    end if;
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_administrar_acesso on perfil_usuario;
+create trigger ao_administrar_acesso
+  before update on perfil_usuario
+  for each row execute function public.proteger_administracao();`,
   ),
 );
 
