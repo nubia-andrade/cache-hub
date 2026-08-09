@@ -970,6 +970,61 @@ create trigger ao_definir_acessos
 
 
 -- ----------------------------------------------------------------------
+-- Parte 2c — O Proprietário editando as listas
+-- ----------------------------------------------------------------------
+-- Até aqui `lista_item` só tinha policy de leitura, e sem policy de escrita o
+-- Postgres recusa — a tela salvaria zero linhas sem erro nenhum.
+--
+-- Também existe solto em supabase/editar-listas.sql. Mantenha os dois iguais.
+drop policy if exists "proprietario edita listas" on lista_item;
+create policy "proprietario edita listas" on lista_item
+  for all to authenticated
+  using (public.eh_proprietario())
+  with check (public.eh_proprietario());
+
+-- A tabela `lista` (os títulos) continua fechada de propósito: criar uma lista
+-- nova só faz sentido junto de um campo novo na tela, e campo novo é código.
+
+-- As listas que não se editam pela tela.
+--
+-- Não basta a tela recusar: quem chamar a API direto tiraria "Pacote" de
+-- tiposProjeto e deixaria a Tabela de Referência oferecendo uma coluna que o
+-- banco não aceita.
+--
+-- A lista acompanha src/lib/dominio/listas.ts — as marcadas como 'espelho' ou
+-- 'catalogo'. Acrescentou uma lá, acrescente aqui.
+create or replace function public.proteger_listas_espelhadas()
+returns trigger
+language plpgsql
+as $$
+declare
+  protegidas text[] := array[
+    'entregasSociais', 'tiposProjeto', 'tamanhos', 'categoriasTalento',
+    'tiposRestricao', 'ufs', 'marcas', 'programas'
+  ];
+  alvo text := coalesce(new.lista_id, old.lista_id);
+begin
+  -- Sem sessão é o SQL Editor, que é por onde estas listas mudam quando
+  -- precisam mudar — inclusive na Parte 7 deste próprio arquivo.
+  if auth.uid() is null then
+    return coalesce(new, old);
+  end if;
+
+  if alvo = any(protegidas) then
+    raise exception
+      'A lista "%" reflete algo fora dela (um tipo do banco, a tabela de preços ou um cadastro) e não se edita pelo Hub.', alvo;
+  end if;
+
+  return coalesce(new, old);
+end $$;
+
+drop trigger if exists ao_editar_lista on lista_item;
+create trigger ao_editar_lista
+  before insert or update or delete on lista_item
+  for each row execute function public.proteger_listas_espelhadas();
+
+
+-- ----------------------------------------------------------------------
 -- Parte 3 — Catálogo comercial (anunciantes, marcas, programas)
 -- ----------------------------------------------------------------------
 insert into anunciante (nome, setor) values
