@@ -42,3 +42,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Logo branco: o arquivo é um PNG de 356 KB embutido num SVG, e o PNG
+# colorido já serve as duas versões (ver LogoGlobo). Fica na pasta local de
+# quem quiser conferir, mas não vai para o deploy.
+public/logo globo-Branco.svg
