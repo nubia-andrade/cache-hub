@@ -1,4 +1,9 @@
-import { ehProprietario, type EstadoAcesso, type Perfil, type Usuario } from './perfis';
+import {
+  ehProprietario,
+  type EstadoAcesso,
+  type Perfil,
+  type Usuario,
+} from './perfis';
 
 /**
  * Quem administra acessos, e o que a administração NÃO pode fazer.
@@ -31,8 +36,7 @@ export function proprietariosAtivos(usuarios: readonly Usuario[]): Usuario[] {
 }
 
 export type Alteracao =
-  | { tipo: 'estado'; para: EstadoAcesso }
-  | { tipo: 'perfis'; para: Perfil[] };
+  { tipo: 'estado'; para: EstadoAcesso } | { tipo: 'perfis'; para: Perfil[] };
 
 /**
  * O que impede esta alteração, ou null quando ela pode acontecer.
@@ -48,7 +52,10 @@ export function bloqueioDaAlteracao(entrada: {
 }): string | null {
   const { quemAdministra, alvo, alteracao, todos } = entrada;
 
-  if (!ehProprietario(quemAdministra.perfis) || quemAdministra.estado !== 'ativo') {
+  if (
+    !ehProprietario(quemAdministra.perfis) ||
+    quemAdministra.estado !== 'ativo'
+  ) {
     return MOTIVOS_BLOQUEIO.semPermissao;
   }
 
@@ -110,7 +117,52 @@ export function ordenarParaAdministracao(
 
   return [...usuarios].sort(
     (a, b) =>
-      peso[a.estado] - peso[b.estado] ||
-      a.nome.localeCompare(b.nome, 'pt-BR'),
+      peso[a.estado] - peso[b.estado] || a.nome.localeCompare(b.nome, 'pt-BR'),
   );
+}
+
+/**
+ * A lista partida em três blocos, na ordem em que interessam.
+ *
+ * Uma lista corrida obriga a ler o selo de cada linha para saber quem já
+ * entra e quem ainda espera. São perguntas diferentes — "tem gente
+ * esperando?" e "quem hoje tem acesso a quê?" —, e cada uma merece o seu
+ * bloco. Os vazios continuam na resposta: sumir com o bloco "aguardando"
+ * deixaria dúvida se ele não existe ou se está vazio.
+ */
+export type GrupoDeAcesso = {
+  estado: EstadoAcesso;
+  titulo: string;
+  explicacao: string;
+  usuarios: Usuario[];
+};
+
+const GRUPOS: { estado: EstadoAcesso; titulo: string; explicacao: string }[] = [
+  {
+    estado: 'pendente',
+    titulo: 'Aguardando liberação',
+    explicacao:
+      'Cadastraram-se e ainda não entram. Escolha os perfis e libere o acesso.',
+  },
+  {
+    estado: 'ativo',
+    titulo: 'Com acesso',
+    explicacao: 'Entram no Hub hoje, e enxergam o que os perfis permitem.',
+  },
+  {
+    estado: 'suspenso',
+    titulo: 'Sem acesso',
+    explicacao: 'O cadastro fica, o acesso não. Dá para liberar de volta.',
+  },
+];
+
+export function agruparPorAcesso(
+  usuarios: readonly Usuario[],
+): GrupoDeAcesso[] {
+  const ordenados = ordenarParaAdministracao(usuarios);
+
+  return GRUPOS.map((grupo) => ({
+    ...grupo,
+    usuarios: ordenados.filter((usuario) => usuario.estado === grupo.estado),
+  }));
 }

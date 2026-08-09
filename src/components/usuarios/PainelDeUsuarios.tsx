@@ -10,10 +10,10 @@ import {
   type Usuario,
 } from '@/lib/dominio/perfis';
 import {
+  agruparPorAcesso,
   bloqueioDaAlteracao,
   DESCRICAO_ESTADO,
   estadosPossiveis,
-  ordenarParaAdministracao,
   proprietariosAtivos,
   ROTULO_ACAO,
 } from '@/lib/dominio/administracao';
@@ -42,9 +42,8 @@ export function PainelDeUsuarios({
 }) {
   const [busca, setBusca] = useState('');
 
-  const ordenados = ordenarParaAdministracao(usuarios);
   const termo = busca.trim().toLowerCase();
-  const visiveis = ordenados.filter(
+  const visiveis = usuarios.filter(
     (usuario) =>
       !termo ||
       [usuario.nome, usuario.email, usuario.equipe, usuario.cargo]
@@ -53,11 +52,17 @@ export function PainelDeUsuarios({
         .includes(termo),
   );
 
+  const grupos = agruparPorAcesso(visiveis);
   const pendentes = usuarios.filter((u) => u.estado === 'pendente').length;
   const donos = proprietariosAtivos(usuarios).length;
+  const soEuApareco = usuarios.length === 1;
 
   return (
     <div className="flex flex-col gap-4">
+      {/* O caso em que a tela mente: o RLS devolveu só a linha de quem olha, e
+          sem este aviso a impressão é de que o Hub está vazio. */}
+      {soEuApareco && <ListaTruncada />}
+
       <div
         className={`rounded-cartao border px-4 py-3 ${
           pendentes > 0
@@ -74,7 +79,7 @@ export function PainelDeUsuarios({
           Quem se cadastra entra como <strong>pendente</strong>, sem nenhum
           perfil. Liberar o acesso e escolher os perfis são duas decisões
           separadas — sem perfil, a pessoa entra e não vê nada.
-          {donos <= 1 && (
+          {donos <= 1 && !soEuApareco && (
             <>
               {' '}
               <strong className="text-aviso">
@@ -87,14 +92,6 @@ export function PainelDeUsuarios({
         </p>
       </div>
 
-      {usuarios.length === 1 && (
-        <p className="rounded-cartao border border-borda bg-fundo-3 px-4 py-3 text-[12.5px] leading-[1.55] text-tinta-2">
-          Só o seu cadastro aparece. Ou ninguém mais entrou no Hub ainda — use
-          <strong> Adicionar usuário</strong> —, ou as policies de administração
-          não foram aplicadas: rode o <code>supabase/seed.sql</code> inteiro.
-        </p>
-      )}
-
       {bloqueioDoConvite(quemAdministra) === null && <NovoUsuario />}
 
       <input
@@ -105,22 +102,68 @@ export function PainelDeUsuarios({
         className="h-[38px] w-full rounded-full border border-borda-forte bg-white px-4 text-[13px] text-tinta"
       />
 
-      {visiveis.length === 0 ? (
-        <p className="rounded-cartao border border-dashed border-borda-forte bg-fundo-3 px-4 py-6 text-[13px] text-tinta-3">
-          Nenhum cadastro com esse termo.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2.5">
-          {visiveis.map((usuario) => (
-            <CartaoDoUsuario
-              key={usuario.id}
-              usuario={usuario}
-              quemAdministra={quemAdministra}
-              todos={usuarios}
-            />
-          ))}
-        </ul>
-      )}
+      {grupos.map((grupo) => (
+        <section key={grupo.estado} className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+            <h2 className="font-titulo text-[14px] font-semibold text-tinta">
+              {grupo.titulo}
+            </h2>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${CORES_ESTADO[grupo.estado]}`}
+            >
+              {grupo.usuarios.length}
+            </span>
+            <span className="text-[12px] text-tinta-4">{grupo.explicacao}</span>
+          </div>
+
+          {grupo.usuarios.length === 0 ? (
+            <p className="rounded-cartao border border-dashed border-borda bg-fundo-3 px-4 py-3 text-[12.5px] text-tinta-4">
+              {termo ? 'Ninguém com esse termo aqui.' : 'Ninguém neste grupo.'}
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2.5">
+              {grupo.usuarios.map((usuario) => (
+                <CartaoDoUsuario
+                  key={usuario.id}
+                  usuario={usuario}
+                  quemAdministra={quemAdministra}
+                  todos={usuarios}
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * O RLS devolveu só a linha de quem está olhando.
+ *
+ * Vale a pena um aviso em tom de erro, e não um texto discreto: a tela fica
+ * indistinguível de "o Hub está vazio", e o caminho para consertar é um
+ * arquivo que a pessoa não tem como adivinhar.
+ */
+function ListaTruncada() {
+  return (
+    <div className="rounded-cartao border border-erro-borda bg-erro-fundo px-4 py-3.5">
+      <p className="text-[13px] font-bold text-tinta">
+        A lista está incompleta — só o seu cadastro chegou até aqui.
+      </p>
+      <p className="mt-1 text-[12.5px] leading-[1.6] text-tinta-2">
+        Se ao tentar adicionar alguém o Hub responde que o e-mail já existe, é
+        isto: o cadastro está no banco, mas o Postgres não está deixando você
+        ler. Falta a permissão de leitura do Proprietário.
+      </p>
+      <p className="mt-1.5 text-[12.5px] leading-[1.6] text-tinta-2">
+        Para resolver: abra o SQL Editor do Supabase com a Role em{' '}
+        <strong>postgres</strong> e rode{' '}
+        <code className="rounded bg-white px-1 py-0.5 font-mono text-[11.5px]">
+          supabase/acesso-do-proprietario.sql
+        </code>
+        . Ele é curto e termina mostrando um diagnóstico do que ficou faltando.
+      </p>
     </div>
   );
 }

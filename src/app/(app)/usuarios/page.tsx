@@ -9,13 +9,20 @@ export default async function PaginaUsuarios() {
 
   const usuarios = await listarUsuarios();
 
+  const contagem = (estado: string) =>
+    usuarios.filter((item) => item.estado === estado).length;
+
   return (
     <section className="px-[26px] pb-[30px] pt-6">
       <div className="mb-[18px] flex flex-col gap-1">
         <h1 className="font-titulo text-[25px] font-semibold text-tinta">
-          Usuários
+          Usuários e permissões
         </h1>
-        <p className="max-w-[680px] text-[13px] leading-[1.6] text-tinta-3">
+        <p className="text-[13px] text-tinta-3">
+          {contagem('ativo')} com acesso · {contagem('pendente')} aguardando
+          liberação · {contagem('suspenso')} sem acesso
+        </p>
+        <p className="max-w-[680px] text-[12.5px] leading-[1.6] text-tinta-4">
           Quem entra no Hub e o que cada um enxerga. Exclusivo do Proprietário.
         </p>
       </div>

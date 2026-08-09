@@ -111,7 +111,8 @@ export async function convidarUsuario(
     return {
       ok: false,
       mensagem:
-        'Não consegui completar o cadastro. Provavelmente esse e-mail já tem conta — procure por ele na lista, ou em Authentication > Users.',
+        'Esse e-mail já tem conta. Se ele não aparece na lista acima, o Postgres não está ' +
+        'deixando você ler os outros cadastros — rode supabase/acesso-do-proprietario.sql.',
     };
   }
 

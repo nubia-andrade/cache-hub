@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  agruparPorAcesso,
   bloqueioDaAlteracao,
   estadosPossiveis,
   MOTIVOS_BLOQUEIO,
@@ -192,5 +193,35 @@ describe('ordem da lista', () => {
     const copia = [...lista];
     ordenarParaAdministracao(lista);
     expect(lista).toEqual(copia);
+  });
+});
+
+describe('grupos de acesso', () => {
+  const lista = [
+    usuario({ id: '1', nome: 'Zeca' }),
+    usuario({ id: '2', nome: 'Bruno', estado: 'suspenso' }),
+    usuario({ id: '3', nome: 'Ana', estado: 'pendente' }),
+    usuario({ id: '4', nome: 'Carla' }),
+  ];
+
+  it('separa em aguardando, com acesso e sem acesso, nessa ordem', () => {
+    expect(
+      agruparPorAcesso(lista).map((grupo) => [
+        grupo.estado,
+        grupo.usuarios.map((u) => u.nome),
+      ]),
+    ).toEqual([
+      ['pendente', ['Ana']],
+      ['ativo', ['Carla', 'Zeca']],
+      ['suspenso', ['Bruno']],
+    ]);
+  });
+
+  it('devolve os três grupos mesmo vazios', () => {
+    // Sumir com "Aguardando liberação" deixaria dúvida se o bloco não existe
+    // ou se está vazio — e a pergunta que traz alguém aqui é justamente essa.
+    const grupos = agruparPorAcesso([usuario({ id: '1' })]);
+    expect(grupos).toHaveLength(3);
+    expect(grupos.map((grupo) => grupo.usuarios.length)).toEqual([0, 1, 0]);
   });
 });
