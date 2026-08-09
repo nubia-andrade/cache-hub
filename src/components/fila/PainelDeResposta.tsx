@@ -95,6 +95,10 @@ export function PainelDeResposta({
         <Dado rotulo="Equipe" valor={item.projeto.equipe} />
         <Dado rotulo="Mídia" valor={item.projeto.tipoMidia} />
         <Dado rotulo="Tipo de projeto" valor={item.tipoProjeto ?? '—'} />
+        <Dado
+          rotulo="Resposta pedida para"
+          valor={formatarData(item.projeto.prazoResposta)}
+        />
       </dl>
 
       <div className="flex flex-col gap-1.5 rounded-[10px] bg-fundo-2 p-3">
@@ -347,4 +351,10 @@ function Referencia({ rotulo, valor }: { rotulo: string; valor: string }) {
       </span>
     </div>
   );
+}
+
+function formatarData(iso: string | null): string {
+  if (!iso) return 'sem data marcada';
+  const [ano, mes, dia] = iso.slice(0, 10).split('-');
+  return dia && mes && ano ? `${dia}/${mes}/${ano}` : iso;
 }

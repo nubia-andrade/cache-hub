@@ -20,6 +20,7 @@ const COMPLETO: CabecalhoConsulta = {
   tipoProjeto: 'Sob demanda',
   exibicaoInicio: '2026-08-20',
   exibicaoFim: '2026-09-30',
+  prazoResposta: '',
 };
 
 describe('campos obrigatórios do cabeçalho', () => {
@@ -115,6 +116,7 @@ describe('o que impede enviar', () => {
     tipoProjeto: 'Pacote',
     exibicaoInicio: '2026-09-01',
     exibicaoFim: '2026-09-30',
+    prazoResposta: '',
   };
 
   it('nada impede quando está tudo pronto', () => {

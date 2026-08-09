@@ -168,6 +168,14 @@ alter table solicitacao_item add constraint conversao_coerente check (
                                 and valor_fechado is null)
 );
 
+-- ---- Até quando o solicitante precisa da resposta -----------------------
+--
+-- O e-mail de referência trazia "Prazo: 5/12" no primeiro pedido. O SLA da
+-- área diz quanto ela costuma levar; isto diz de quando o solicitante
+-- precisa, que é outra coisa — e é a informação que faz um aprovador
+-- escolher entre dois itens da fila.
+alter table solicitacao add column if not exists prazo_resposta date;
+
 -- ---- Onde o talento mora ------------------------------------------------
 --
 -- No e-mail que serviu de referência, o "(Mora em SP)" vinha colado no valor

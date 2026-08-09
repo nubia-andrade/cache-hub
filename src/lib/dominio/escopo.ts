@@ -85,9 +85,37 @@ export type DefinicaoCampo = {
 export type ValoresDoEscopo = Record<string, string>;
 
 const RESPONSAVEIS = ['Creator / Talento', 'ViU', 'Linear'] as const;
+
+/** Quem recebe o direito de usar a imagem, do e-mail de referência. */
+const CESSIONARIOS = ['Grupo Globo', 'Marca / anunciante'] as const;
+
+const PRAZOS_DE_USO = [
+  'Período da campanha',
+  '6 meses',
+  '12 meses',
+  'Sem prazo definido',
+] as const;
 const RESPONSABILIDADE_TV = ['Responsabilidade Globo', 'Talento'] as const;
 
 export const CAMPOS_TV: readonly DefinicaoCampo[] = [
+  {
+    chave: 'direitoDeUso', secao: 'Distribuição',
+    rotulo: 'Direito de uso de imagem',
+    // Dois parágrafos explícitos no e-mail de referência, um para o Grupo
+    // Globo e outro para a marca. É cláusula contratual: sem ela, o aprovador
+    // orça sem saber quem poderá repostar e impulsionar o conteúdo depois.
+    tipo: 'multi',
+    opcoes: CESSIONARIOS,
+    nota: 'quem pode repostar e impulsionar',
+  },
+  {
+    chave: 'prazoDeUso', secao: 'Distribuição',
+    rotulo: 'Por quanto tempo',
+    tipo: 'select',
+    opcoes: PRAZOS_DE_USO,
+    dep: 'direitoDeUso',
+  },
+
   {
     chave: 'natureza', secao: 'Verba e contexto',
     rotulo: 'Natureza da ação',
@@ -165,6 +193,24 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
 ];
 
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
+  {
+    chave: 'direitoDeUso', secao: 'Distribuição',
+    rotulo: 'Direito de uso de imagem',
+    // Dois parágrafos explícitos no e-mail de referência, um para o Grupo
+    // Globo e outro para a marca. É cláusula contratual: sem ela, o aprovador
+    // orça sem saber quem poderá repostar e impulsionar o conteúdo depois.
+    tipo: 'multi',
+    opcoes: CESSIONARIOS,
+    nota: 'quem pode repostar e impulsionar',
+  },
+  {
+    chave: 'prazoDeUso', secao: 'Distribuição',
+    rotulo: 'Por quanto tempo',
+    tipo: 'select',
+    opcoes: PRAZOS_DE_USO,
+    dep: 'direitoDeUso',
+  },
+
   {
     chave: 'natureza', secao: 'Verba e contexto',
     rotulo: 'Natureza da ação',

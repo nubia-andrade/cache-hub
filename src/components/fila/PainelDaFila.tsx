@@ -7,8 +7,10 @@ import { COR_POR_CATEGORIA } from '@/lib/dominio/categorias';
 import { iniciais } from '@/lib/dominio/perfis';
 import { CORES_STATUS, STATUS_SOLICITACAO } from '@/lib/dominio/solicitacao';
 import {
+  diasAteOPrazo,
   diasEsperando,
   esperaEmTexto,
+  prazoEmTexto,
   type ItemDaFila,
 } from '@/lib/dominio/fila';
 import { formatarReais } from '@/lib/dominio/precos';
@@ -26,9 +28,11 @@ const TODOS_OS_STATUS = 'Todos os status';
 export function PainelDaFila({
   itens,
   podeResponder,
+  hoje,
 }: {
   itens: ItemDaFila[];
   podeResponder: boolean;
+  hoje: string;
 }) {
   const router = useRouter();
 
@@ -111,7 +115,11 @@ export function PainelDaFila({
           <ul>
             {visiveis.map((item) => {
               const ativo = emFoco?.id === item.id;
-              const dias = diasEsperando(item.atualizadoEm);
+              const diasParado = diasEsperando(item.atualizadoEm);
+              const diasParaOPrazo = diasAteOPrazo(
+                item.projeto.prazoResposta,
+                hoje,
+              );
               const encerrado =
                 item.status === 'Orçado' || item.status === 'Rejeitado';
               const cores = CORES_STATUS[item.status];
@@ -156,8 +164,28 @@ export function PainelDaFila({
                       {/* Só cobra espera de quem ainda deve resposta: um item
                           orçado parou de correr contra o prazo. */}
                       {!encerrado && (
-                        <span className={dias >= 2 ? 'font-bold text-erro' : ''}>
-                          {esperaEmTexto(dias)}
+                        <span
+                          className={
+                            diasParado >= 2 ? 'font-bold text-erro' : ''
+                          }
+                        >
+                          {esperaEmTexto(diasParado)}
+                        </span>
+                      )}
+
+                      {/* Duas contas diferentes: quanto tempo o item está
+                          parado (relógio) e quando o solicitante precisa da
+                          resposta (pedido). É o segundo que decide entre dois
+                          itens da fila. */}
+                      {!encerrado && diasParaOPrazo !== null && (
+                        <span
+                          className={
+                            diasParaOPrazo <= 1
+                              ? 'font-bold text-erro'
+                              : 'text-aviso'
+                          }
+                        >
+                          pedido {prazoEmTexto(diasParaOPrazo)}
                         </span>
                       )}
                       {item.valorSugerido !== null && (

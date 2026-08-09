@@ -19,6 +19,7 @@ function projeto(campos: Partial<ProjetoVinculavel> = {}): ProjetoVinculavel {
     tipoProjeto: 'Sob demanda',
     exibicaoInicio: '2026-08-20',
     exibicaoFim: '2026-09-30',
+    prazoResposta: '2026-08-25',
     criadoEm: '2026-08-08T10:00:00Z',
     solicitante: 'Mariana Vasques',
     talentos: ['Manu Ferraz'],

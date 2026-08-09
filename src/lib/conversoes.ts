@@ -9,7 +9,7 @@
  */
 
 import { criarClienteNoNavegador } from './supabase/cliente-navegador';
-import type { Conversao } from './dominio/conversao';
+import type { Conversao, MotivoNaoFechou } from './dominio/conversao';
 
 export type ResultadoConversao = { ok: true } | { ok: false; mensagem: string };
 
@@ -24,6 +24,7 @@ function hojeISO(): string {
 export async function informarConversao(
   itemId: string,
   conversao: Conversao,
+  motivo: MotivoNaoFechou | null = null,
 ): Promise<ResultadoConversao> {
   const supabase = criarClienteNoNavegador();
 
@@ -42,7 +43,9 @@ export async function informarConversao(
           conversao,
           conversao_em: hojeISO(),
           valor_fechado: null,
-          motivo_nao_fechou: null,
+          // O CHECK só aceita motivo em "não fechado". Mandar motivo junto de
+          // "fechado" seria recusado pelo banco, com razão.
+          motivo_nao_fechou: conversao === 'não fechado' ? motivo : null,
         };
 
   const { error } = await supabase

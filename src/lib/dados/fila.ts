@@ -53,6 +53,7 @@ type LinhaItem = {
     tipo_midia: string | null;
     exibicao_inicio: string | null;
     exibicao_fim: string | null;
+    prazo_resposta: string | null;
     criado_em: string | null;
     solicitante: { nome: string | null } | null;
   } | null;
@@ -64,7 +65,7 @@ const CONSULTA = `
   talento ( nome, nome_artistico, cidade, uf, seg_instagram, seg_tiktok, seg_x ),
   solicitacao (
     protocolo, marca, anunciante, setor_cliente, programa, equipe, tipo_midia,
-    exibicao_inicio, exibicao_fim, criado_em,
+    exibicao_inicio, exibicao_fim, prazo_resposta, criado_em,
     solicitante:perfil_usuario ( nome )
   )
 `;
@@ -133,6 +134,7 @@ export async function listarFila(perfis: Perfil[]): Promise<ItemDaFila[]> {
       exibicaoInicio: linha.solicitacao?.exibicao_inicio ?? null,
       exibicaoFim: linha.solicitacao?.exibicao_fim ?? null,
       criadoEm: linha.solicitacao?.criado_em ?? null,
+      prazoResposta: linha.solicitacao?.prazo_resposta ?? null,
       solicitante: linha.solicitacao?.solicitante?.nome ?? '—',
     },
   }));

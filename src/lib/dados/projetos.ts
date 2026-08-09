@@ -1,6 +1,17 @@
 import { criarClienteNoServidor } from '@/lib/supabase/cliente-servidor';
 import { statusDoProjeto, validarStatus } from '@/lib/dominio/solicitacao';
-import { validarConversao } from '@/lib/dominio/conversao';
+import {
+  MOTIVOS_NAO_FECHOU,
+  validarConversao,
+  type MotivoNaoFechou,
+} from '@/lib/dominio/conversao';
+
+/** Motivo desconhecido vira nulo: melhor sem motivo que com um inventado. */
+function validarMotivo(valor: string | null): MotivoNaoFechou | null {
+  return MOTIVOS_NAO_FECHOU.includes(valor as MotivoNaoFechou)
+    ? (valor as MotivoNaoFechou)
+    : null;
+}
 import { DIAS_NO_INICIO, type ProjetoResumo } from '@/lib/dominio/projeto';
 import { mapaDeSegmentoPorPrograma } from './listas';
 
@@ -32,6 +43,7 @@ type LinhaSolicitacao = {
     status: string | null;
     cache: number | null;
     conversao: string | null;
+    motivo_nao_fechou: string | null;
     talento: { nome_artistico: string | null; nome: string } | null;
   }[];
 };
@@ -40,7 +52,8 @@ const CONSULTA = `
   id, protocolo, marca, anunciante, setor_cliente, programa, equipe,
   exibicao_inicio, criado_em, solicitante_id,
   itens:solicitacao_item (
-    id, status, cache, conversao, talento ( nome_artistico, nome )
+    id, status, cache, conversao, motivo_nao_fechou,
+    talento ( nome_artistico, nome )
   )
 `;
 
@@ -89,6 +102,7 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
       status: validarStatus(item.status),
       cache: item.cache,
       conversao: validarConversao(item.conversao),
+      motivoNaoFechou: validarMotivo(item.motivo_nao_fechou),
     })),
   }));
 }

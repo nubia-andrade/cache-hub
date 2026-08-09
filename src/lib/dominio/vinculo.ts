@@ -31,6 +31,7 @@ export type ProjetoVinculavel = {
   tipoProjeto: string;
   exibicaoInicio: string;
   exibicaoFim: string;
+  prazoResposta: string;
   criadoEm: string | null;
   solicitante: string;
   /** Quem já está no projeto — evita pedir de novo o mesmo talento. */
@@ -58,6 +59,7 @@ export function cabecalhoDoVinculo(
     tipoProjeto: validarTipoProjeto(projeto.tipoProjeto),
     exibicaoInicio: projeto.exibicaoInicio,
     exibicaoFim: projeto.exibicaoFim,
+    prazoResposta: projeto.prazoResposta,
   };
 }
 

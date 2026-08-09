@@ -26,6 +26,7 @@ type Linha = {
   tipo_projeto: string | null;
   exibicao_inicio: string | null;
   exibicao_fim: string | null;
+  prazo_resposta: string | null;
   criado_em: string | null;
   solicitante: { nome: string | null } | null;
   itens: { id: string; talento: { nome_artistico: string | null } | null }[];
@@ -42,7 +43,7 @@ export async function listarVinculaveis(): Promise<ProjetoVinculavel[]> {
     .select(
       `id, protocolo, anunciante, marca, setor_cliente, segmento_marca,
        programa, equipe, tipo_midia, tipo_projeto, exibicao_inicio,
-       exibicao_fim, criado_em,
+       exibicao_fim, prazo_resposta, criado_em,
        solicitante:perfil_usuario ( nome ),
        itens:solicitacao_item ( id, talento ( nome_artistico ) )`,
     )
@@ -68,6 +69,7 @@ export async function listarVinculaveis(): Promise<ProjetoVinculavel[]> {
     tipoProjeto: linha.tipo_projeto ?? '',
     exibicaoInicio: linha.exibicao_inicio ?? '',
     exibicaoFim: linha.exibicao_fim ?? '',
+    prazoResposta: linha.prazo_resposta ?? '',
     criadoEm: linha.criado_em,
     solicitante: linha.solicitante?.nome ?? '—',
     talentos: linha.itens.map((item) => item.talento?.nome_artistico ?? '?'),

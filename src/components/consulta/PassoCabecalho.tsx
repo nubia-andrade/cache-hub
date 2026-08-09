@@ -186,6 +186,27 @@ export function PassoCabecalho({
         />
       </Campo>
 
+      <Campo
+        rotulo="Preciso da resposta até"
+        className="sm:col-span-2"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="date"
+            value={cabecalho.prazoResposta}
+            onChange={(evento) =>
+              aoMudar({ ...cabecalho, prazoResposta: evento.target.value })
+            }
+            className="h-[38px] rounded-[9px] border border-borda-forte bg-white px-2.5 text-[13px] text-tinta"
+          />
+          {/* Opcional de propósito: exigir data faria inventarem prazo, e um
+              prazo inventado na fila de todo mundo não prioriza nada. */}
+          <span className="text-[11.5px] text-tinta-4">
+            opcional — deixe em branco se não houver data marcada
+          </span>
+        </div>
+      </Campo>
+
       {periodoInvertido && (
         <p
           role="alert"

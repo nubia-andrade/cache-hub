@@ -25,6 +25,9 @@ export type CabecalhoConsulta = {
   tipoProjeto: TipoProjeto | '';
   exibicaoInicio: string;
   exibicaoFim: string;
+  /** Quando o solicitante precisa da resposta. Opcional: nem todo pedido tem
+   *  data marcada, e exigir uma faria inventarem prazo. */
+  prazoResposta: string;
 };
 
 export const CABECALHO_VAZIO: CabecalhoConsulta = {
@@ -38,6 +41,7 @@ export const CABECALHO_VAZIO: CabecalhoConsulta = {
   tipoProjeto: '',
   exibicaoInicio: '',
   exibicaoFim: '',
+  prazoResposta: '',
 };
 
 /**

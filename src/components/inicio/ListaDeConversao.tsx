@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { CORES_STATUS } from '@/lib/dominio/solicitacao';
 import {
   formatarTaxa,
+  MOTIVOS_NAO_FECHOU,
   resultadoDoProjeto,
   taxaDeConversao,
+  type MotivoNaoFechou,
 } from '@/lib/dominio/conversao';
 import { formatarReais } from '@/lib/dominio/precos';
 import { informarConversao } from '@/lib/conversoes';
@@ -208,12 +210,15 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  async function marcar(conversao: ItemDoProjeto['conversao']) {
+  async function marcar(
+    conversao: ItemDoProjeto['conversao'],
+    motivo: MotivoNaoFechou | null = null,
+  ) {
     if (gravando) return;
     setGravando(true);
     setErro(null);
 
-    const resultado = await informarConversao(item.id, conversao);
+    const resultado = await informarConversao(item.id, conversao, motivo);
     if (!resultado.ok) {
       setErro(resultado.mensagem);
       setGravando(false);
@@ -276,6 +281,33 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
           {fechado ? 'fechado' : naoFechado ? 'não fechou' : 'a informar'}
         </span>
       </div>
+
+      {/* O motivo é o KPI que diz POR QUE se perde, e é impossível
+          reconstruir depois. Aparece só quando faz sentido responder. */}
+      {naoFechado && (
+        <label className="flex w-full flex-wrap items-center gap-2 border-t border-borda pt-1.5">
+          <span className="text-[11.5px] text-tinta-3">Por quê?</span>
+          <select
+            value={item.motivoNaoFechou ?? ''}
+            disabled={gravando}
+            aria-label={`Motivo de não fechar ${item.talento}`}
+            onChange={(evento) =>
+              marcar(
+                'não fechado',
+                (evento.target.value || null) as MotivoNaoFechou | null,
+              )
+            }
+            className="h-[26px] rounded-lg border border-borda-forte bg-white px-2 text-[11.5px] text-tinta"
+          >
+            <option value="">não informado</option>
+            {MOTIVOS_NAO_FECHOU.map((motivo) => (
+              <option key={motivo} value={motivo}>
+                {motivo}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {erro && (
         <p role="alert" className="w-full text-[11.5px] text-erro">

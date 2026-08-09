@@ -84,6 +84,7 @@ export async function criarRascunho(
       tipo_projeto: cabecalho.tipoProjeto,
       exibicao_inicio: cabecalho.exibicaoInicio,
       exibicao_fim: cabecalho.exibicaoFim,
+      prazo_resposta: cabecalho.prazoResposta || null,
     })
     .select('id')
     .single<{ id: string }>();

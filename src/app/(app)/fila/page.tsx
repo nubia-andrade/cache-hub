@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { PainelDaFila } from '@/components/fila/PainelDaFila';
 import { listarFila } from '@/lib/dados/fila';
 import { categoriasVisiveisNaFila, ehAprovador } from '@/lib/dominio/perfis';
+import { hojeISO } from '@/lib/dominio/restricoes';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
 export default async function PaginaFila() {
@@ -34,7 +35,11 @@ export default async function PaginaFila() {
 
       {/* Gerente vê a fila do time sem responder por ele: acompanhar é uma
           coisa, assumir a demanda de outro é outra. */}
-      <PainelDaFila itens={itens} podeResponder={ehAprovador(usuario.perfis)} />
+      <PainelDaFila
+        itens={itens}
+        podeResponder={ehAprovador(usuario.perfis)}
+        hoje={hojeISO()}
+      />
     </section>
   );
 }

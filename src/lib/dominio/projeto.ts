@@ -1,4 +1,4 @@
-import type { Conversao } from './conversao';
+import type { Conversao, MotivoNaoFechou } from './conversao';
 import type { StatusSolicitacao } from './solicitacao';
 
 /**
@@ -38,6 +38,7 @@ export type ItemDoProjeto = {
   /** Cachê respondido pelo aprovador, em reais. */
   cache: number | null;
   conversao: Conversao;
+  motivoNaoFechou: MotivoNaoFechou | null;
 };
 
 /** Quantos dias para trás a tela de Início olha. Vem do rótulo do protótipo. */
