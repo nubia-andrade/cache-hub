@@ -1,75 +1,68 @@
+import Image from 'next/image';
+
 /**
- * O logo da Globo, desenhado em SVG.
+ * O logo da Globo, a partir do arquivo oficial em `public/logo-globo.png`.
  *
- * É vetor e não imagem por dois motivos práticos: fica nítido em qualquer
- * tamanho e em qualquer tela, e a versão monocromática sai do mesmo desenho —
- * sem precisar de dois arquivos que podem sair de sincronia.
+ * UM arquivo serve as duas versões, e isso é possível por uma propriedade do
+ * próprio arquivo: a faixa do meio é TRANSPARENTE, não branca. Então
+ * `brightness(0) invert(1)` pinta de branco tudo o que é opaco e deixa a faixa
+ * passar o fundo — exatamente o que a versão branca faz. Manter dois arquivos
+ * só criaria a chance de um ser atualizado sem o outro.
  *
- * A faixa branca do meio é um FURO de verdade, feito com `fill-rule="evenodd"`
- * num caminho só. Desenhá-la como um retângulo branco por cima funcionaria
- * sobre fundo branco e falharia sobre o degradê do login, que é justamente
- * onde ela mais aparece.
+ * Vai por `next/image` porque o original tem 3207×3339 e 363 KB, para aparecer
+ * a 30 pixels. O Next redimensiona e entrega WebP; servir o arquivo cru seria
+ * baixar 363 KB para desenhar um selo do tamanho de uma unha.
  */
+
+/** Proporção do arquivo. Não é quadrado, então a altura manda e a largura segue. */
+const LARGURA_ORIGINAL = 3207;
+const ALTURA_ORIGINAL = 3339;
 
 type Variante = 'gradiente' | 'monocromatico';
 
-/** O círculo externo e a faixa, num caminho só. O evenodd abre o furo. */
-const CIRCULO_COM_FAIXA = [
-  // Círculo externo.
-  'M50 1A49 49 0 1 0 50 99A49 49 0 1 0 50 1Z',
-  // Faixa: bordas superior e inferior levemente arqueadas, cantos redondos.
-  'M21 32.5C40 28.6 60 28.6 79 32.5A7 7 0 0 1 85 39.4L85 60.6A7 7 0 0 1 79 67.5C60 71.4 40 71.4 21 67.5A7 7 0 0 1 15 60.6L15 39.4A7 7 0 0 1 21 32.5Z',
-].join(' ');
-
 export function LogoGlobo({
-  className,
+  className = '',
   variante = 'gradiente',
+  prioritario = false,
 }: {
   className?: string;
   variante?: Variante;
+  /** Marque nas telas em que o logo aparece antes de qualquer rolagem. */
+  prioritario?: boolean;
 }) {
-  // Um id por variante evita que duas instâncias na mesma página disputem o
-  // mesmo degradê — o navegador resolve por id, não por escopo do componente.
-  const idDoDegrade = 'degrade-globo';
-  const preenchimento =
-    variante === 'gradiente' ? `url(#${idDoDegrade})` : 'currentColor';
-
   return (
-    <svg
-      viewBox="0 0 100 100"
-      className={className}
-      role="img"
-      aria-label="Globo"
-    >
-      {variante === 'gradiente' && (
-        <defs>
-          <linearGradient id={idDoDegrade} x1="12%" y1="4%" x2="88%" y2="96%">
-            <stop offset="0%" stopColor="#6A18E8" />
-            <stop offset="48%" stopColor="#2020EE" />
-            <stop offset="100%" stopColor="#0A74F0" />
-          </linearGradient>
-        </defs>
-      )}
-
-      <path d={CIRCULO_COM_FAIXA} fill={preenchimento} fillRule="evenodd" />
-      <circle cx="50" cy="50" r="15.5" fill={preenchimento} />
-    </svg>
+    <Image
+      src="/logo-globo.png"
+      alt="Globo"
+      width={LARGURA_ORIGINAL}
+      height={ALTURA_ORIGINAL}
+      priority={prioritario}
+      className={`${className} ${
+        variante === 'monocromatico' ? '[filter:brightness(0)_invert(1)]' : ''
+      }`}
+    />
   );
 }
 
 /** Logo + divisória + nome do produto, como aparece no topo do login e do app. */
 export function MarcaCacheHub({
-  tamanhoLogo = 'h-[38px] w-[38px]',
+  tamanhoLogo = 'h-[38px] w-auto',
   variante = 'gradiente',
+  prioritario = false,
   className = '',
 }: {
   tamanhoLogo?: string;
   variante?: Variante;
+  prioritario?: boolean;
   className?: string;
 }) {
   return (
     <div className={`flex items-center gap-[13px] ${className}`}>
-      <LogoGlobo className={tamanhoLogo} variante={variante} />
+      <LogoGlobo
+        className={tamanhoLogo}
+        variante={variante}
+        prioritario={prioritario}
+      />
       <div className="h-[26px] w-px bg-current opacity-30" aria-hidden="true" />
       <span className="font-titulo text-[19px] font-bold tracking-[-0.01em]">
         Cachê Hub

@@ -16,7 +16,11 @@ export function PainelDaMarca() {
           'linear-gradient(150deg, #2020EE 0%, #4A1FE0 34%, #8B2FD6 62%, #C7168C 100%)',
       }}
     >
-      <MarcaCacheHub variante="monocromatico" className="text-white" />
+      <MarcaCacheHub
+        variante="monocromatico"
+        prioritario
+        className="text-white"
+      />
 
       <div className="flex max-w-[440px] flex-col gap-4">
         <h1 className="font-titulo text-[36px] font-bold leading-[1.08] tracking-[-0.025em] text-white lg:text-[42px]">
