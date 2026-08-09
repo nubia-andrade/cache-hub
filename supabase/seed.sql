@@ -460,6 +460,106 @@ create trigger ao_informar_conversao
   before update on solicitacao_item
   for each row execute function public.so_conversao_depois_de_orcado();
 
+-- ---- O outro lado: o aprovador respondendo -------------------------------
+--
+-- A fila de cada área é definida por CATEGORIA do talento, e não pela área
+-- gravada no item. As duas divergem de propósito: Gestão de Elenco responde
+-- Talento Globo, enquanto ViU e Agenciamento cobrem Influenciador, Creator e
+-- Agenciado juntos. Repetir a regra aqui, e não confiar só na tela, é o que
+-- impede um aprovador de responder item de outra categoria pela API.
+create or replace function public.categorias_que_respondo()
+returns text[]
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case
+    when exists (
+      select 1 from public.perfil_usuario
+       where id = auth.uid() and estado = 'ativo'
+         and 'Proprietário' = any(perfis)
+    ) then array['Talento Globo','Agenciado','Influenciador','Creator']
+    when exists (
+      select 1 from public.perfil_usuario
+       where id = auth.uid() and estado = 'ativo'
+         and exists (
+           select 1 from unnest(perfis) p
+            where p like 'Aprovador ViU%' or p like 'Aprovador Agenciamento%'
+         )
+    ) then array['Agenciado','Influenciador','Creator']
+    when exists (
+      select 1 from public.perfil_usuario
+       where id = auth.uid() and estado = 'ativo'
+         and 'Aprovador Gestão de Elenco' = any(perfis)
+    ) then array['Talento Globo']
+    else array[]::text[]
+  end;
+$$;
+
+grant execute on function public.categorias_que_respondo() to authenticated;
+
+drop policy if exists "responder item da minha area" on solicitacao_item;
+create policy "responder item da minha area" on solicitacao_item
+  for update to authenticated
+  using (
+    categoria::text = any(public.categorias_que_respondo())
+    and status <> 'Rascunho'
+  )
+  with check (categoria::text = any(public.categorias_que_respondo()));
+
+-- A catraca do aprovador, no banco.
+--
+-- Sem ela, a policy acima deixaria voltar um item de Orçado para Fila de
+-- cachê — apagando um valor que já foi ao cliente sem deixar rastro. Reabrir
+-- precisa passar por Devolvido, que registra quem pediu e por quê.
+create or replace function public.transicao_do_aprovador()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  permitidos text[];
+begin
+  if new.status = old.status then
+    return new;
+  end if;
+
+  -- O solicitante enviando (Rascunho -> Fila de cachê) e informando conversão
+  -- não passam por aqui; quem cuida deles é a outra policy.
+  if not (old.categoria::text = any(public.categorias_que_respondo())) then
+    return new;
+  end if;
+
+  permitidos := case old.status::text
+    when 'Fila de cachê' then array['Em análise','Orçado','Devolvido','Rejeitado']
+    when 'Em análise'    then array['Orçado','Devolvido','Rejeitado']
+    when 'Devolvido'     then array['Em análise','Orçado','Rejeitado','Fila de cachê']
+    else array[]::text[]
+  end;
+
+  if not (new.status::text = any(permitidos)) then
+    raise exception 'Não dá para ir de % para %.', old.status, new.status;
+  end if;
+
+  if new.status = 'Orçado' and (new.cache is null or new.cache <= 0) then
+    raise exception 'Orçar exige o valor do cachê.';
+  end if;
+
+  if new.status in ('Devolvido', 'Rejeitado')
+     and coalesce(btrim(new.parecer), '') = '' then
+    raise exception 'Devolver ou rejeitar exige parecer.';
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_responder_item on solicitacao_item;
+create trigger ao_responder_item
+  before update on solicitacao_item
+  for each row execute function public.transicao_do_aprovador();
+
 drop policy if exists "remover talento em rascunho" on solicitacao_item;
 create policy "remover talento em rascunho" on solicitacao_item
   for delete to authenticated
