@@ -904,7 +904,10 @@ create trigger ao_registrar_substituicao
 -- Parte 1e — Destravar para ajuste (a segunda metade da catraca)
 -- ----------------------------------------------------------------------
 -- Também existe solto em supabase/destravar-para-ajuste.sql. Mantenha os dois
--- iguais.
+-- iguais DAQUI PARA BAIXO: o arquivo solto traz antes um bloco de
+-- pré-requisitos (a coluna criado_por, a coluna devolvido_para e a função
+-- eh_meu_item) que aqui já vieram das Partes 0 e 1b. Um recorte que só
+-- funciona se você lembrou de rodar outro recorte antes não é um recorte.
 --
 -- A primeira metade da catraca (Parte 1b) continua: quem envia para de poder
 -- editar. O que faltava era a volta, e ela tem UM critério: alguém já

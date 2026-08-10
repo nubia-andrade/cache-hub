@@ -27,6 +27,58 @@
 -- aprovador devolvia pedindo correção e o solicitante não conseguia corrigir.
 -- ==========================================================================
 
+-- ---- Pré-requisitos ------------------------------------------------------
+--
+-- Estas quatro coisas vêm das Partes 0 e 1b do seed. Estão repetidas aqui
+-- porque um recorte que só funciona se você lembrou de rodar outro recorte
+-- antes não é um recorte — é uma armadilha. Todas são idempotentes: se já
+-- existirem, este bloco não faz nada.
+
+-- Quem incluiu cada talento. Sem ela, "só mexe no que é seu" não tem como ser
+-- dito, e as policies abaixo nem chegam a ser criadas.
+alter table solicitacao_item
+  add column if not exists criado_por uuid
+    references perfil_usuario(id) on delete set null;
+
+-- Linhas antigas nasceram antes da coluna: o dono da consulta responde por elas.
+update solicitacao_item i
+   set criado_por = s.solicitante_id
+  from solicitacao s
+ where s.id = i.solicitacao_id and i.criado_por is null;
+
+-- Para quem a solicitação foi devolvida. Devolvido sozinho não diz o destino,
+-- e os dois lados podem devolver — é o que separa as duas filas.
+alter table solicitacao_item add column if not exists devolvido_para text;
+alter table solicitacao_item drop constraint if exists devolvido_para_valido;
+alter table solicitacao_item add constraint devolvido_para_valido check (
+  devolvido_para is null or devolvido_para in ('Solicitante', 'Aprovador')
+);
+
+-- "É meu?" numa função só, porque a resposta é usada por várias policies e
+-- vale a mesma em todas: é meu o talento que eu incluí, e também qualquer um
+-- da consulta que eu abri — quem abre responde pelo conjunto.
+create or replace function public.eh_meu_item(
+  id_da_solicitacao uuid,
+  quem_incluiu uuid
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select quem_incluiu = auth.uid()
+      or exists (
+           select 1 from public.solicitacao s
+            where s.id = id_da_solicitacao and s.solicitante_id = auth.uid()
+         );
+$$;
+
+grant execute on function public.eh_meu_item(uuid, uuid) to authenticated;
+
+
+-- ---- A catraca ------------------------------------------------------------
+
 -- A policy antiga sai; esta é a mesma coisa, com dois estados a mais na
 -- cláusula USING. O nome muda junto para não sobrar uma órfã ligada.
 drop policy if exists "ajustar talento em rascunho" on solicitacao_item;
@@ -209,6 +261,17 @@ create trigger ao_mudar_item
 -- ==========================================================================
 -- Diagnóstico
 -- ==========================================================================
+
+-- Os pré-requisitos entraram? Os três devem dar 1.
+select
+  (select count(*) from information_schema.columns
+    where table_name = 'solicitacao_item'
+      and column_name = 'criado_por')                    as coluna_criado_por,
+  (select count(*) from information_schema.columns
+    where table_name = 'solicitacao_item'
+      and column_name = 'devolvido_para')                as coluna_devolvido_para,
+  (select count(*) from pg_proc
+    where proname = 'eh_meu_item')                       as funcao_eh_meu_item;
 
 -- A policy nova e o gatilho existem?
 select

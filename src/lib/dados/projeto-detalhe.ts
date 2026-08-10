@@ -39,7 +39,7 @@ type LinhaProjeto = {
     tipo_projeto: string | null;
     substitui_item_id?: string | null;
     talento_id: string;
-    criado_por: string | null;
+    criado_por?: string | null;
     talento: { nome: string; nome_artistico: string | null } | null;
   }[];
   eventos: {
@@ -51,7 +51,15 @@ type LinhaProjeto = {
   }[];
 };
 
-function consulta(comSubstituicao: boolean): string {
+/**
+ * As colunas que só existem depois dos SQL desta fase.
+ *
+ * `criado_por` e `substitui_item_id` viajam juntas na mesma tentativa de
+ * propósito: o `select` do Supabase falha INTEIRO quando qualquer coluna não
+ * existe, e uma matriz de tentativas por coluna cresceria sem fim. Uma
+ * consulta a menos, e a tela abre dizendo qual SQL falta.
+ */
+function consulta(comColunasNovas: boolean): string {
   return `
   id, protocolo, marca, anunciante, setor_cliente, segmento_marca, programa,
   equipe, tipo_midia, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em,
@@ -60,7 +68,7 @@ function consulta(comSubstituicao: boolean): string {
   itens:solicitacao_item (
     id, categoria, status, verba, valor_sugerido, cache, parecer, validade,
     conversao, devolvido_para, entregas, campos_extra, tipo_projeto,
-    talento_id, criado_por${comSubstituicao ? ', substitui_item_id' : ''},
+    talento_id${comColunasNovas ? ', criado_por, substitui_item_id' : ''},
     talento ( nome, nome_artistico )
   ),
   eventos:evento ( id, titulo, descricao, alerta, criado_em )
@@ -85,10 +93,10 @@ export async function lerProjeto(
 ): Promise<ProjetoDetalhado | null> {
   const supabase = await criarClienteNoServidor();
 
-  const ler = (comSubstituicao: boolean) =>
+  const ler = (comColunasNovas: boolean) =>
     supabase
       .from('solicitacao')
-      .select(consulta(comSubstituicao))
+      .select(consulta(comColunasNovas))
       .eq('id', id)
       .maybeSingle<LinhaProjeto>();
 
@@ -97,10 +105,10 @@ export async function lerProjeto(
     mapaDeSegmentoPorPrograma(),
   ]);
 
-  // Se `supabase/substituicao-de-talento.sql` ainda não rodou, a coluna não
-  // existe e o `select` INTEIRO falha — a tela do projeto ficaria em branco por
-  // causa de um recurso que a pessoa nem usou ainda. Aqui ela volta sem a
-  // coluna, e é a tela que avisa que falta rodar o SQL.
+  // Se os SQL desta fase ainda não rodaram, as colunas não existem e o
+  // `select` INTEIRO falha — a tela do projeto ficaria em branco por causa de
+  // recursos que a pessoa nem usou ainda. Aqui ela volta sem eles, e é a tela
+  // que avisa qual arquivo falta rodar.
   const { data, error } = primeira.error ? await ler(false) : primeira;
 
   if (error || !data) {
@@ -110,10 +118,11 @@ export async function lerProjeto(
 
   const substituicaoAtiva = !primeira.error;
 
+
   const itens = data.itens.map((item) => ({
     id: item.id,
     talentoId: item.talento_id,
-    criadoPor: item.criado_por,
+    criadoPor: item.criado_por ?? null,
     substituiItemId: item.substitui_item_id ?? null,
     talento: item.talento?.nome_artistico ?? item.talento?.nome ?? '—',
     categoria: validarCategoria(item.categoria),
