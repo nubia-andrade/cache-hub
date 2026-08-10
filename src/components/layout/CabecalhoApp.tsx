@@ -7,6 +7,8 @@ import { LogoGlobo } from '@/components/marca/LogoGlobo';
 import type { ItemNav } from '@/lib/dominio/navegacao';
 import { ehProprietario, iniciais, type Usuario } from '@/lib/dominio/perfis';
 import { sairDoHub } from '@/lib/autenticacao';
+import { SinoDePendencias } from './SinoDePendencias';
+import type { Pendencia } from '@/lib/dominio/pendencias';
 
 /**
  * Barra superior do Hub.
@@ -18,9 +20,12 @@ import { sairDoHub } from '@/lib/autenticacao';
 export function CabecalhoApp({
   usuario,
   itens,
+  pendencias,
 }: {
   usuario: Usuario;
   itens: ItemNav[];
+  /** Já calculadas no servidor: o cabeçalho não decide o que cobra. */
+  pendencias: Pendencia[];
 }) {
   const caminhoAtual = usePathname();
   const router = useRouter();
@@ -73,6 +78,10 @@ export function CabecalhoApp({
       </nav>
 
       <div className="flex shrink-0 items-center gap-3">
+        {/* Antes do botão de sair, e não depois: é o que a pessoa procura ao
+            chegar, e sair é o que ela faz ao terminar. */}
+        <SinoDePendencias pendencias={pendencias} />
+
         <button
           type="button"
           onClick={sair}

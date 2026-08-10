@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { CabecalhoApp } from '@/components/layout/CabecalhoApp';
 import { navegacaoPara, podeAcessar } from '@/lib/dominio/navegacao';
 import { carregarMatriz } from '@/lib/dados/permissoes';
+import { lerPendencias } from '@/lib/dados/pendencias';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 import { MODO_TESTE_SEM_APROVACAO } from '@/lib/modo-teste';
 import { CABECALHO_CAMINHO } from '@/proxy';
@@ -39,7 +40,13 @@ export default async function LayoutDoApp({
   // A matriz é lida uma vez por requisição (`cache` do React) e serve tanto ao
   // menu quanto à guarda: se as duas lessem separado, o menu poderia oferecer
   // uma seção que a guarda nega.
-  const matriz = await carregarMatriz();
+  // As duas em paralelo: a matriz decide o menu, as pendências enchem o sino,
+  // e nenhuma depende da outra.
+  const [matriz, pendencias] = await Promise.all([
+    carregarMatriz(),
+    lerPendencias(usuario.id, usuario.perfis),
+  ]);
+
   const temAcesso = podeAcessar(usuario.perfis, caminhoAtual, matriz);
 
   return (
@@ -49,6 +56,7 @@ export default async function LayoutDoApp({
         <CabecalhoApp
           usuario={usuario}
           itens={navegacaoPara(usuario.perfis, matriz)}
+          pendencias={pendencias}
         />
         {temAcesso ? children : <SemAcesso />}
       </div>
