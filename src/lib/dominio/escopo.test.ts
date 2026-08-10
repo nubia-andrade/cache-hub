@@ -8,6 +8,8 @@ import {
   camposFaltandoNoEscopo,
   camposVisiveis,
   escopoParaLeitura,
+  escoposPendentes,
+  motivoDoEscopoPendente,
   SECOES,
   type DefinicaoCampo,
 } from './escopo';
@@ -257,5 +259,64 @@ describe('escopo para leitura', () => {
 
   it('escopo vazio devolve nada, sem seção fantasma', () => {
     expect(escopoParaLeitura(definicoes, {})).toEqual([]);
+  });
+});
+
+/**
+ * Dizer só "falta campo obrigatório em Manu Ferraz" manda a pessoa abrir o
+ * bloco dela e conferir seção por seção. Os campos resolvem.
+ */
+describe('quais campos estão pendentes', () => {
+  // Todo campo VISÍVEL é obrigatório — não existe marca de opcional. O que
+  // dispensa um campo é `dep`: ele some enquanto o campo do qual depende não
+  // disser Sim, e o que não está na tela não é pendência.
+  const definicoes: DefinicaoCampo[] = [
+    { chave: 'verba', rotulo: 'Verba disponível', tipo: 'moeda', secao: 'Verba e adicionais' },
+    { chave: 'formato', rotulo: 'Formato', tipo: 'select', secao: 'Formato e produção' },
+    { chave: 'ondeRepostar', rotulo: 'Onde repostar', tipo: 'select', secao: 'Distribuição', dep: 'repost' },
+  ];
+
+  const talentos = [
+    { id: 'a', nome: 'Manu' },
+    { id: 'b', nome: 'Bruna' },
+  ];
+
+  it('lista o que falta em cada um', () => {
+    expect(
+      escoposPendentes(talentos, definicoes, {
+        a: { formato: 'Reels' },
+        b: {},
+      }),
+    ).toEqual([
+      { talento: 'Manu', campos: ['Verba disponível'] },
+      { talento: 'Bruna', campos: ['Verba disponível', 'Formato'] },
+    ]);
+  });
+
+  it('quem está completo não aparece', () => {
+    expect(
+      escoposPendentes(talentos, definicoes, {
+        a: { verba: '10', formato: 'Reels' },
+        b: { verba: '10', formato: 'Story' },
+      }),
+    ).toEqual([]);
+  });
+
+  it('campo escondido por dep não vira pendência', () => {
+    // Cobrar o que a tela não mostra é mandar procurar o que não existe.
+    expect(
+      escoposPendentes([talentos[0]], definicoes, {
+        a: { verba: '10', formato: 'Reels' },
+      }),
+    ).toEqual([]);
+  });
+
+  it('a frase concorda em número', () => {
+    expect(
+      motivoDoEscopoPendente({ talento: 'Manu', campos: ['Formato'] }),
+    ).toBe('Manu: falta Formato.');
+    expect(
+      motivoDoEscopoPendente({ talento: 'Bruna', campos: ['Formato', 'Vertical'] }),
+    ).toBe('Bruna: faltam Formato, Vertical.');
   });
 });

@@ -159,14 +159,34 @@ describe('o que impede enviar', () => {
     expect(motivos).toEqual(['Escolha ao menos um talento.']);
   });
 
-  it('escopo incompleto nomeia quem está pendente', () => {
+  it('escopo incompleto nomeia quem está pendente E o que falta', () => {
+    // Só o nome mandaria a pessoa abrir o bloco e conferir seção por seção —
+    // em mídia `Ambos` são seis seções e mais de vinte campos.
     const motivos = impedimentosParaEnviar({
       cabecalho: COMPLETO,
       quantidadeDeTalentos: 2,
-      talentosComEscopoIncompleto: ['Manu Ferraz'],
+      talentosComEscopoIncompleto: [
+        { talento: 'Manu Ferraz', campos: ['Contexto do projeto'] },
+      ],
     });
-    expect(motivos).toHaveLength(1);
-    expect(motivos[0]).toContain('Manu Ferraz');
+    expect(motivos).toEqual([
+      'Manu Ferraz: falta Contexto do projeto.',
+    ]);
+  });
+
+  it('um motivo por talento, em vez de uma lista de nomes', () => {
+    const motivos = impedimentosParaEnviar({
+      cabecalho: COMPLETO,
+      quantidadeDeTalentos: 2,
+      talentosComEscopoIncompleto: [
+        { talento: 'Manu', campos: ['Verba disponível'] },
+        { talento: 'Bruna', campos: ['Formato', 'Vertical'] },
+      ],
+    });
+    expect(motivos).toEqual([
+      'Manu: falta Verba disponível.',
+      'Bruna: faltam Formato, Vertical.',
+    ]);
   });
 
   it('junta todos os motivos de uma vez, em vez de um por vez', () => {

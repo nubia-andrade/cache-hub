@@ -540,3 +540,33 @@ export function escopoParaLeitura(
 
   return secoes;
 }
+
+/**
+ * Um talento cujo escopo ainda não pode ser enviado, e o que falta nele.
+ *
+ * Os campos viajam junto com o nome de propósito. Dizer só "falta campo
+ * obrigatório em Manu Ferraz" manda a pessoa abrir o bloco dela e conferir
+ * seção por seção — e em mídia `Ambos` são seis seções e mais de vinte campos.
+ * O nome sozinho identifica o problema; os campos resolvem.
+ */
+export type EscopoPendente = { talento: string; campos: string[] };
+
+/** "Manu Ferraz: falta Contexto do projeto." — com plural quando é o caso. */
+export function motivoDoEscopoPendente(pendente: EscopoPendente): string {
+  const verbo = pendente.campos.length === 1 ? 'falta' : 'faltam';
+  return `${pendente.talento}: ${verbo} ${pendente.campos.join(', ')}.`;
+}
+
+/** Só quem tem pendência, com os campos que faltam em cada um. */
+export function escoposPendentes(
+  talentos: readonly { id: string; nome: string }[],
+  definicoes: readonly DefinicaoCampo[],
+  escopos: Record<string, ValoresDoEscopo | undefined>,
+): EscopoPendente[] {
+  return talentos
+    .map((talento) => ({
+      talento: talento.nome,
+      campos: camposFaltandoNoEscopo(definicoes, escopos[talento.id] ?? {}),
+    }))
+    .filter((pendente) => pendente.campos.length > 0);
+}

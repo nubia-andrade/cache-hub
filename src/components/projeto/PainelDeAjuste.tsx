@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PassoEntregas } from '@/components/consulta/PassoEntregas';
-import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
+import { camposDaMidia, escoposPendentes } from '@/lib/dominio/escopo';
 import { calcularLinhas, totalDasLinhas } from '@/lib/dominio/entregas';
 import { tamanhoDoTalento } from '@/lib/dominio/talento';
 import { reaisDeMascara } from '@/lib/dominio/moeda';
@@ -69,13 +69,18 @@ export function PainelDeAjuste({
 
   const definicoes = camposDaMidia(cabecalho.tipoMidia);
 
-  const incompletos = escolhidos
-    .filter(
-      (talento) =>
-        camposFaltandoNoEscopo(definicoes, escopos[talento.id]?.campos ?? {})
-          .length > 0,
-    )
-    .map((talento) => talento.nomeArtistico);
+  // Com os campos, e não só o nome: "falta campo obrigatório em Manu Ferraz"
+  // manda a pessoa abrir o bloco dela e conferir seção por seção.
+  const incompletos = escoposPendentes(
+    escolhidos.map((talento) => ({
+      id: talento.id,
+      nome: talento.nomeArtistico,
+    })),
+    definicoes,
+    Object.fromEntries(
+      escolhidos.map((talento) => [talento.id, escopos[talento.id]?.campos]),
+    ),
+  );
 
   function mudarEscopo(talentoId: string, escopo: EscopoDoTalento) {
     setEscopos((atuais) => ({ ...atuais, [talentoId]: escopo }));
@@ -225,10 +230,20 @@ export function PainelDeAjuste({
       />
 
       {incompletos.length > 0 && (
-        <p className="rounded-cartao border border-aviso-borda bg-aviso-fundo px-4 py-2.5 text-[12.5px] leading-[1.55] text-tinta-2">
-          Ainda falta campo obrigatório em <strong>{incompletos.join(', ')}</strong>
-          . Dá para salvar assim e continuar depois; enviar, não.
-        </p>
+        <div className="rounded-cartao border border-aviso-borda bg-aviso-fundo px-4 py-2.5 text-[12.5px] leading-[1.55] text-tinta-2">
+          <p>
+            Ainda falta preencher. Dá para salvar assim e continuar depois;
+            enviar, não.
+          </p>
+          <ul className="mt-1 flex flex-col gap-0.5">
+            {incompletos.map((pendente) => (
+              <li key={pendente.talento}>
+                <strong>{pendente.talento}:</strong>{' '}
+                {pendente.campos.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {erro && (

@@ -17,7 +17,11 @@ import {
   type CabecalhoConsulta,
   type EscopoDoTalento,
 } from '@/lib/dominio/consulta';
-import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
+import {
+  camposDaMidia,
+  escoposPendentes,
+  motivoDoEscopoPendente,
+} from '@/lib/dominio/escopo';
 import { calcularLinhas, totalDasLinhas } from '@/lib/dominio/entregas';
 import {
   formatarReais,
@@ -93,14 +97,17 @@ export function AssistenteDeConsulta({
 
   const definicoes = camposDaMidia(cabecalho.tipoMidia);
 
-  /** Quem ainda tem campo obrigatório em branco no passo 3. */
-  const talentosPendentes = selecionados
-    .filter(
-      (talento) =>
-        camposFaltandoNoEscopo(definicoes, escopos[talento.id]?.campos ?? {})
-          .length > 0,
-    )
-    .map((talento) => talento.nomeArtistico);
+  /** Quem ainda tem campo obrigatório em branco no passo 3, e quais campos. */
+  const talentosPendentes = escoposPendentes(
+    selecionados.map((talento) => ({
+      id: talento.id,
+      nome: talento.nomeArtistico,
+    })),
+    definicoes,
+    Object.fromEntries(
+      selecionados.map((talento) => [talento.id, escopos[talento.id]?.campos]),
+    ),
+  );
 
   const totalGeral = selecionados.reduce((soma, talento) => {
     const escopo = escopos[talento.id];
@@ -321,7 +328,8 @@ export function AssistenteDeConsulta({
               </strong>
               {talentosPendentes.length > 0 && (
                 <>
-                  {' · '}escopo incompleto: {talentosPendentes.join(', ')}
+                  {' · '}
+                  {talentosPendentes.map(motivoDoEscopoPendente).join(' ')}
                 </>
               )}
             </>

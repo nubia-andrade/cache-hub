@@ -1,3 +1,4 @@
+import { motivoDoEscopoPendente, type EscopoPendente } from './escopo';
 import type { ValoresDoEscopo } from './escopo';
 import type { LinhaDeEntrega } from './entregas';
 import type { TipoProjeto } from './precos';
@@ -126,7 +127,8 @@ export function cabecalhoCompleto(cabecalho: CabecalhoConsulta): boolean {
 export function impedimentosParaEnviar(entrada: {
   cabecalho: CabecalhoConsulta;
   quantidadeDeTalentos: number;
-  talentosComEscopoIncompleto: readonly string[];
+  /** Quem está pendente, e o que falta em cada um. */
+  talentosComEscopoIncompleto: readonly EscopoPendente[];
 }): string[] {
   const motivos: string[] = [];
 
@@ -143,10 +145,11 @@ export function impedimentosParaEnviar(entrada: {
     motivos.push('Escolha ao menos um talento.');
   }
 
-  if (entrada.talentosComEscopoIncompleto.length > 0) {
-    motivos.push(
-      `Escopo incompleto: ${entrada.talentosComEscopoIncompleto.join(', ')}.`,
-    );
+  // Um motivo por talento, e cada um nomeando os campos. Uma linha só, com
+  // três nomes e nenhum campo, obriga a abrir bloco por bloco para descobrir
+  // o que falta — e em mídia `Ambos` são seis seções e mais de vinte campos.
+  for (const pendente of entrada.talentosComEscopoIncompleto) {
+    motivos.push(motivoDoEscopoPendente(pendente));
   }
 
   return motivos;
