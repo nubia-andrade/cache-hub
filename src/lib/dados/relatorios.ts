@@ -38,19 +38,24 @@ type LinhaBruta = {
     motivo_nao_fechou: string | null;
     cache: number | null;
     valor_fechado: number | null;
+    substitui_item_id?: string | null;
     respondido_em: string | null;
     respondido_por: { nome: string | null } | null;
   }[];
 };
 
-const CONSULTA = `
+function consulta(comSubstituicao: boolean): string {
+  return `
   id, equipe, anunciante, setor_cliente, programa, criado_em,
   itens:solicitacao_item (
     id, area, categoria, status, conversao, motivo_nao_fechou,
-    cache, valor_fechado, respondido_em,
+    cache, valor_fechado, respondido_em${
+      comSubstituicao ? ', substitui_item_id' : ''
+    },
     respondido_por:perfil_usuario!solicitacao_item_respondido_por_fkey ( nome )
   )
 `;
+}
 
 function validarArea(valor: string | null): Area {
   return AREAS.includes(valor as Area) ? (valor as Area) : 'ViU';
@@ -69,19 +74,38 @@ export async function lerLinhasDeAnalise(): Promise<{
 }> {
   const supabase = await criarClienteNoServidor();
 
-  const [consulta, segmentoPorPrograma] = await Promise.all([
-    supabase.from('solicitacao').select(CONSULTA).overrideTypes<LinhaBruta[]>(),
+  const ler = (comSubstituicao: boolean) =>
+    supabase
+      .from('solicitacao')
+      .select(consulta(comSubstituicao))
+      .overrideTypes<LinhaBruta[]>();
+
+  const [primeira, segmentoPorPrograma] = await Promise.all([
+    ler(true),
     mapaDeSegmentoPorPrograma(),
   ]);
 
-  const { data, error } = consulta;
+  // Sem `supabase/substituicao-de-talento.sql`, a coluna não existe e o select
+  // inteiro falha. O relatório volta sem ela em vez de vir vazio.
+  const { data, error } = primeira.error ? await ler(false) : primeira;
 
   if (error) {
-    // A coluna nova é a causa provável: sem ela, o `select` inteiro falha e a
-    // tela ficaria vazia sem dizer por quê.
+    // Alguma coluna nova é a causa provável: sem ela, o `select` inteiro falha
+    // e a tela ficaria vazia sem dizer por quê.
     console.error('Falha ao ler os dados de relatório:', error.message);
     return { linhas: [], semDadoDePrazo: true };
   }
+
+  // A corrente é montada sobre a base INTEIRA, antes de qualquer agrupamento:
+  // agrupada por categoria, a Manu e a Bruna podem cair em grupos diferentes, e
+  // cada grupo sozinho nunca veria a ligação entre as duas.
+  const substituidos = new Set(
+    (data ?? []).flatMap((projeto) =>
+      projeto.itens
+        .map((item) => item.substitui_item_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
 
   const linhas: LinhaDeAnalise[] = [];
 
@@ -103,6 +127,7 @@ export async function lerLinhasDeAnalise(): Promise<{
         categoria: validarCategoria(item.categoria),
         status: validarStatus(item.status),
         conversao: validarConversao(item.conversao),
+        foiSubstituido: substituidos.has(item.id),
         motivoNaoFechou: item.motivo_nao_fechou,
         cache: item.cache,
         valorFechado: item.valor_fechado,

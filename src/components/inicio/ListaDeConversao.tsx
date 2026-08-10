@@ -12,12 +12,18 @@ import {
   type MotivoNaoFechou,
 } from '@/lib/dominio/conversao';
 import { formatarReais } from '@/lib/dominio/precos';
+import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 import { informarConversao } from '@/lib/conversoes';
 import type { ItemDoProjeto, ProjetoResumo } from '@/lib/dominio/projeto';
 
-/** Talentos já orçados cuja conversão ninguém informou ainda. */
+/**
+ * Talentos já orçados cuja conversão ninguém informou ainda.
+ *
+ * Quem foi substituído não entra: ele fica "pendente" para sempre, e contá-lo
+ * mandaria a pessoa procurar uma caixa de marcar que a tela não mostra mais.
+ */
 export function quantosAguardam(projeto: ProjetoResumo): number {
-  return projeto.itens.filter(
+  return apenasVagasAtuais(projeto.itens).filter(
     (item) => item.status === 'Orçado' && item.conversao === 'pendente',
   ).length;
 }
@@ -108,7 +114,10 @@ function LinhaDoProjeto({
 }) {
   const resultado = resultadoDoProjeto(projeto.itens);
   const taxa = taxaDeConversao(projeto.itens);
-  const orcados = projeto.itens.filter((item) => item.status === 'Orçado');
+  // Uma linha por vaga, como na tela do projeto: marcar "fechou" num talento
+  // que já foi substituído mudaria a conta de um negócio que virou outro.
+  const vagas = apenasVagasAtuais(projeto.itens);
+  const orcados = vagas.filter((item) => item.status === 'Orçado');
   const aguardam = quantosAguardam(projeto);
   const cores = CORES_STATUS[projeto.status];
 
@@ -183,10 +192,10 @@ function LinhaDoProjeto({
 
           {/* Os que ainda não foram orçados aparecem, mas sem marcação: some
               a linha e a pessoa acha que o Hub perdeu o talento. */}
-          {projeto.itens.length > orcados.length && (
+          {vagas.length > orcados.length && (
             <p className="mt-2 text-[11.5px] text-tinta-4">
               Ainda sem orçamento:{' '}
-              {projeto.itens
+              {vagas
                 .filter((item) => item.status !== 'Orçado')
                 .map((item) => `${item.talento} (${item.status})`)
                 .join(' · ')}

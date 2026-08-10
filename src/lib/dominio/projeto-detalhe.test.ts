@@ -9,6 +9,8 @@ function item(campos: Partial<ItemDetalhado>): ItemDetalhado {
   return {
     id: 'i1',
     talento: 'Alguém',
+    talentoId: 't1',
+    substituiItemId: null,
     categoria: 'Creator',
     status: 'Orçado',
     conversao: 'pendente',

@@ -39,6 +39,8 @@ export type ItemDoProjeto = {
   cache: number | null;
   conversao: Conversao;
   motivoNaoFechou: MotivoNaoFechou | null;
+  /** Quem este item substituiu. Ver [[substituicao]]: a corrente é uma vaga. */
+  substituiItemId: string | null;
 };
 
 /** Quantos dias para trás a tela de Início olha. Vem do rótulo do protótipo. */

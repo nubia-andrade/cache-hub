@@ -5,6 +5,7 @@ import {
   validarConversao,
   type MotivoNaoFechou,
 } from '@/lib/dominio/conversao';
+import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 
 /** Motivo desconhecido vira nulo: melhor sem motivo que com um inventado. */
 function validarMotivo(valor: string | null): MotivoNaoFechou | null {
@@ -44,18 +45,23 @@ type LinhaSolicitacao = {
     cache: number | null;
     conversao: string | null;
     motivo_nao_fechou: string | null;
+    substitui_item_id?: string | null;
     talento: { nome_artistico: string | null; nome: string } | null;
   }[];
 };
 
-const CONSULTA = `
+function consulta(comSubstituicao: boolean): string {
+  return `
   id, protocolo, marca, anunciante, setor_cliente, programa, equipe,
   exibicao_inicio, criado_em, solicitante_id,
   itens:solicitacao_item (
-    id, status, cache, conversao, motivo_nao_fechou,
+    id, status, cache, conversao, motivo_nao_fechou${
+      comSubstituicao ? ', substitui_item_id' : ''
+    },
     talento ( nome_artistico, nome )
   )
 `;
+}
 
 export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
   const supabase = await criarClienteNoServidor();
@@ -63,17 +69,23 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
   const limite = new Date();
   limite.setDate(limite.getDate() - DIAS_NO_INICIO);
 
-  const [consulta, segmentoPorPrograma] = await Promise.all([
+  const ler = (comSubstituicao: boolean) =>
     supabase
       .from('solicitacao')
-      .select(CONSULTA)
+      .select(consulta(comSubstituicao))
       .gte('criado_em', limite.toISOString())
       .order('criado_em', { ascending: false })
-      .overrideTypes<LinhaSolicitacao[]>(),
+      .overrideTypes<LinhaSolicitacao[]>();
+
+  const [primeira, segmentoPorPrograma] = await Promise.all([
+    ler(true),
     mapaDeSegmentoPorPrograma(),
   ]);
 
-  const { data, error } = consulta;
+  // Sem `supabase/substituicao-de-talento.sql` rodado, a coluna não existe e o
+  // `select` inteiro falha. A tela de Início não pode ficar vazia por causa
+  // disso; ela volta sem a coluna e a contagem fica como era antes.
+  const { data, error } = primeira.error ? await ler(false) : primeira;
 
   if (error) {
     // Sem dado é melhor que uma tela quebrada: a página mostra o estado vazio.
@@ -81,28 +93,36 @@ export async function listarProjetosRecentes(): Promise<ProjetoResumo[]> {
     return [];
   }
 
-  return (data ?? []).map((linha) => ({
-    id: linha.id,
-    protocolo: linha.protocolo,
-    marca: linha.marca ?? '—',
-    anunciante: linha.anunciante ?? '',
-    setorCliente: linha.setor_cliente ?? '',
-    programa: linha.programa ?? '',
-    segmentoProduto: segmentoPorPrograma.get(linha.programa ?? '') ?? '',
-    equipe: linha.equipe ?? '',
-    exibicaoInicio: linha.exibicao_inicio,
-    criadoEm: linha.criado_em,
-    status: statusDoProjeto(
-      linha.itens.map((item) => validarStatus(item.status)),
-    ),
-    solicitanteId: linha.solicitante_id,
-    itens: linha.itens.map((item) => ({
+  return (data ?? []).map((linha) => {
+    const itens = linha.itens.map((item) => ({
       id: item.id,
       talento: item.talento?.nome_artistico ?? item.talento?.nome ?? '?',
       status: validarStatus(item.status),
       cache: item.cache,
       conversao: validarConversao(item.conversao),
       motivoNaoFechou: validarMotivo(item.motivo_nao_fechou),
-    })),
-  }));
+      substituiItemId: item.substitui_item_id ?? null,
+    }));
+
+    return {
+      id: linha.id,
+      protocolo: linha.protocolo,
+      marca: linha.marca ?? '—',
+      anunciante: linha.anunciante ?? '',
+      setorCliente: linha.setor_cliente ?? '',
+      programa: linha.programa ?? '',
+      segmentoProduto: segmentoPorPrograma.get(linha.programa ?? '') ?? '',
+      equipe: linha.equipe ?? '',
+      exibicaoInicio: linha.exibicao_inicio,
+      criadoEm: linha.criado_em,
+      // Só as vagas vivas decidem o status: um talento substituído parou onde
+      // estava, e deixá-lo pesar aqui faria o card anunciar "Rejeitado" num
+      // projeto que já mandou o substituto para a fila.
+      status: statusDoProjeto(
+        apenasVagasAtuais(itens).map((item) => item.status),
+      ),
+      solicitanteId: linha.solicitante_id,
+      itens,
+    };
+  });
 }

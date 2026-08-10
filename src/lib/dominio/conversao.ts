@@ -1,4 +1,5 @@
 import { type StatusSolicitacao } from './solicitacao';
+import { apenasVagasAtuais } from './substituicao';
 
 /**
  * REGRA CRÍTICA — conversão.
@@ -51,6 +52,15 @@ export function podeInformarConversao(status: StatusSolicitacao): boolean {
 export type ItemParaConversao = {
   status: StatusSolicitacao;
   conversao: Conversao;
+  /**
+   * Os dois campos da substituição, opcionais de propósito.
+   *
+   * Uma lista que não sabe de troca nenhuma continua contando como sempre
+   * contou. Quem passa os dois ganha a contagem por VAGA — ver
+   * [[substituicao]] para o motivo de a corrente valer por um só negócio.
+   */
+  id?: string;
+  substituiItemId?: string | null;
 };
 
 export const RESULTADOS_PROJETO = [
@@ -73,11 +83,17 @@ export type ResultadoProjeto = (typeof RESULTADOS_PROJETO)[number];
  *
  * Só entram itens que chegaram a Orçado. Um talento rejeitado ou ainda na fila
  * não foi orçado, então não é conversão perdida — é outra coisa.
+ *
+ * E só entra a ponta viva de cada vaga: o talento que foi substituído sai da
+ * conta, senão o projeto ficaria "Pendente" para sempre esperando resposta de
+ * uma negociação que virou outra.
  */
 export function resultadoDoProjeto(
   itens: readonly ItemParaConversao[],
 ): ResultadoProjeto {
-  const orcados = itens.filter((item) => item.status === 'Orçado');
+  const orcados = apenasVagasAtuais(itens).filter(
+    (item) => item.status === 'Orçado',
+  );
   if (orcados.length === 0) return 'Não orçada';
 
   if (orcados.some((item) => item.conversao === 'pendente')) return 'Pendente';
@@ -94,11 +110,15 @@ export function resultadoDoProjeto(
  * Devolve `null` quando ninguém respondeu ainda. Zero seria mentira — diria
  * "não fechamos nada" onde a verdade é "ainda não sabemos", e a diferença
  * entre as duas é o que faz o indicador servir para alguma coisa.
+ *
+ * Uma vaga, um negócio: trocar a Manu pela Bruna e fechar a Bruna é 100%, e
+ * não 50%. Contando as duas linhas, toda substituição viraria uma perda
+ * inventada no relatório.
  */
 export function taxaDeConversao(
   itens: readonly ItemParaConversao[],
 ): number | null {
-  const respondidos = itens.filter(
+  const respondidos = apenasVagasAtuais(itens).filter(
     (item) => item.status === 'Orçado' && item.conversao !== 'pendente',
   );
   if (respondidos.length === 0) return null;

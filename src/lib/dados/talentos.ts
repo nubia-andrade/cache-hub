@@ -96,3 +96,51 @@ export async function listarTalentos(): Promise<TalentoComRestricoes[]> {
     })),
   }));
 }
+
+/** Só o suficiente para uma caixa de busca: nome, categoria e nada mais. */
+export type TalentoParaEscolha = {
+  id: string;
+  nome: string;
+  categoria: Categoria;
+};
+
+/**
+ * A lista curta, para quando a tela só precisa oferecer nomes.
+ *
+ * Existe separada de `listarTalentos` porque aquela traz restrições, redes e
+ * permissões de cada um — dado que a tela do projeto carregaria em toda visita
+ * para usar num botão que quase nunca é clicado.
+ *
+ * Inativos ficam de fora: quem saiu do cadastro não deve ser oferecido como
+ * substituto, e a ação de servidor recusaria de qualquer forma.
+ */
+export async function listarTalentosParaEscolha(): Promise<
+  TalentoParaEscolha[]
+> {
+  const supabase = await criarClienteNoServidor();
+
+  const { data, error } = await supabase
+    .from('talento')
+    .select('id, nome, nome_artistico, categoria')
+    .eq('ativo', true)
+    .order('nome_artistico', { ascending: true })
+    .overrideTypes<
+      {
+        id: string;
+        nome: string;
+        nome_artistico: string | null;
+        categoria: string;
+      }[]
+    >();
+
+  if (error) {
+    console.error('Falha ao listar talentos para escolha:', error.message);
+    return [];
+  }
+
+  return (data ?? []).map((linha) => ({
+    id: linha.id,
+    nome: linha.nome_artistico ?? linha.nome,
+    categoria: validarCategoria(linha.categoria),
+  }));
+}

@@ -16,6 +16,17 @@ import {
   totalOrcado,
   type ItemDetalhado,
 } from '@/lib/dominio/projeto-detalhe';
+import {
+  antecessoresDe,
+  apenasVagasAtuais,
+  type ItemParaSubstituir,
+} from '@/lib/dominio/substituicao';
+import { ehProprietario, ehSolicitante } from '@/lib/dominio/perfis';
+import {
+  listarTalentosParaEscolha,
+  type TalentoParaEscolha,
+} from '@/lib/dados/talentos';
+import { SubstituirTalento } from '@/components/projeto/SubstituirTalento';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
 export default async function PaginaProjeto({
@@ -35,6 +46,25 @@ export default async function PaginaProjeto({
   const fechado = totalFechado(projeto.itens);
   const resultado = resultadoDoProjeto(projeto.itens);
   const taxa = taxaDeConversao(projeto.itens);
+
+  // A lista mostra uma linha por VAGA. Quem foi substituído não some da tela —
+  // aparece dentro da linha de quem entrou no lugar dele, com o valor que a
+  // área respondeu. Ver [[substituicao]].
+  const vagas = apenasVagasAtuais(projeto.itens);
+
+  const paraSubstituir: ItemParaSubstituir[] =
+    projeto.itens.map(paraTroca);
+
+  // A troca só é oferecida a quem abriu a consulta, e só se ela já saiu do
+  // rascunho. O banco confere de novo — a tela não é a única porta.
+  const podeSubstituir =
+    projeto.substituicaoAtiva &&
+    ehSolicitante(usuario.perfis) &&
+    projeto.solicitanteId === usuario.id;
+
+  const talentos: TalentoParaEscolha[] = podeSubstituir
+    ? await listarTalentosParaEscolha()
+    : [];
 
   return (
     <section className="px-[26px] pb-[30px] pt-6">
@@ -113,11 +143,35 @@ export default async function PaginaProjeto({
 
           <section className="rounded-cartao border border-borda p-4">
             <h2 className="mb-3 text-[10.5px] font-bold uppercase tracking-[0.06em] text-tinta-4">
-              Talentos · {projeto.itens.length}
+              Talentos · {vagas.length}
             </h2>
+
+            {/* O aviso é só para quem consegue resolver. Para os outros, a
+                ausência do botão não é um defeito visível. */}
+            {!projeto.substituicaoAtiva && ehProprietario(usuario.perfis) && (
+              <p className="mb-3 rounded-[9px] bg-fundo-2 px-3 py-2 text-[11.5px] leading-[1.5] text-tinta-3">
+                A substituição de talento ainda não está ligada no banco. Rode{' '}
+                <strong>supabase/substituicao-de-talento.sql</strong> no SQL
+                Editor, com a Role em <strong>postgres</strong>.
+              </p>
+            )}
             <ul className="flex flex-col gap-2.5">
-              {projeto.itens.map((item) => (
-                <Talento key={item.id} item={item} />
+              {vagas.map((item) => (
+                <Talento
+                  key={item.id}
+                  item={item}
+                  anteriores={antecessoresDe(item, projeto.itens)}
+                  substituicao={
+                    podeSubstituir ? (
+                      <SubstituirTalento
+                        item={paraTroca(item)}
+                        itens={paraSubstituir}
+                        talentos={talentos}
+                        nomeDeQuemSai={item.talento}
+                      />
+                    ) : null
+                  }
+                />
               ))}
             </ul>
           </section>
@@ -175,7 +229,27 @@ export default async function PaginaProjeto({
   );
 }
 
-function Talento({ item }: { item: ItemDetalhado }) {
+/** O recorte do item que a regra de substituição precisa — e só ele. */
+function paraTroca(item: ItemDetalhado): ItemParaSubstituir {
+  return {
+    id: item.id,
+    talentoId: item.talentoId,
+    status: item.status,
+    conversao: item.conversao,
+    substituiItemId: item.substituiItemId,
+  };
+}
+
+function Talento({
+  item,
+  anteriores,
+  substituicao,
+}: {
+  item: ItemDetalhado;
+  /** Quem passou por esta vaga antes, do mais recente para o mais antigo. */
+  anteriores: ItemDetalhado[];
+  substituicao: React.ReactNode;
+}) {
   const cores = coresDoStatus(item.status);
 
   return (
@@ -233,6 +307,36 @@ function Talento({ item }: { item: ItemDetalhado }) {
           {item.parecer}
         </p>
       )}
+
+      {/* Quem saiu fica visível, e dentro da vaga. Uma linha que simplesmente
+          desaparece da tela é lida como defeito do Hub, não como a troca que
+          alguém pediu — e o valor que a área orçou para essa pessoa é
+          informação de negociação, não lixo. */}
+      {anteriores.length > 0 && (
+        <div className="mt-2 border-t border-borda pt-2">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.06em] text-tinta-5">
+            Entrou no lugar de
+          </p>
+          <ul className="mt-1 flex flex-col gap-0.5">
+            {anteriores.map((anterior) => (
+              <li
+                key={anterior.id}
+                className="flex flex-wrap items-center gap-x-2 text-[11.5px] text-tinta-4"
+              >
+                <span className="font-semibold text-tinta-3">
+                  {anterior.talento}
+                </span>
+                <span>{anterior.status}</span>
+                {anterior.cache !== null && (
+                  <span>orçado em {formatarReais(anterior.cache)}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {substituicao}
     </li>
   );
 }

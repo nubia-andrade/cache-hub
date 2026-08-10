@@ -28,6 +28,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     categoria: 'Influenciador',
     status: 'Orçado',
     conversao: 'pendente',
+    foiSubstituido: false,
     motivoNaoFechou: null,
     cache: 10000,
     valorFechado: null,
@@ -295,5 +296,48 @@ describe('apresentação', () => {
     expect(formatarDias(1)).toBe('1 dia');
     expect(formatarDias(3.54)).toBe('3,5 dias');
     expect(formatarDias(null)).toBe('—');
+  });
+});
+
+/**
+ * A substituição separa as duas contas: volumetria mede trabalho feito,
+ * conversão mede negócio. Ver [[substituicao]].
+ */
+describe('talento substituído', () => {
+  const substituido = linha({
+    status: 'Orçado',
+    conversao: 'pendente',
+    cache: 40000,
+    foiSubstituido: true,
+  });
+  const substituto = linha({
+    status: 'Orçado',
+    conversao: 'fechado',
+    cache: 55000,
+    valorFechado: 55000,
+  });
+
+  it('continua contando na volumetria — a área orçou os dois', () => {
+    const total = resumoGeral([substituido, substituto]);
+    expect(total.talentos).toBe(2);
+    expect(total.orcados).toBe(2);
+    expect(total.valorOrcado).toBe(95000);
+  });
+
+  it('mas a conversão é de 100%, não de 50%', () => {
+    const total = resumoGeral([substituido, substituto]);
+    expect(total.taxa).toBe(1);
+    expect(total.fechados).toBe(1);
+    expect(total.pendentes).toBe(0);
+  });
+
+  it('não vira perda no ranking de motivos', () => {
+    const perdido = linha({
+      status: 'Orçado',
+      conversao: 'não fechado',
+      motivoNaoFechou: 'Escolheu outro talento',
+      foiSubstituido: true,
+    });
+    expect(motivosDePerda([perdido, substituto])).toEqual([]);
   });
 });

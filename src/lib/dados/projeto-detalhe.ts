@@ -3,6 +3,7 @@ import { CATEGORIAS, type Categoria } from '@/lib/dominio/categorias';
 import { validarConversao } from '@/lib/dominio/conversao';
 import { lerEntregasGravadas } from '@/lib/dominio/entregas';
 import { statusDoProjeto, validarStatus } from '@/lib/dominio/solicitacao';
+import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 import { mapaDeSegmentoPorPrograma } from '@/lib/dados/listas';
 import type { ProjetoDetalhado } from '@/lib/dominio/projeto-detalhe';
 
@@ -36,6 +37,8 @@ type LinhaProjeto = {
     entregas: unknown;
     campos_extra: Record<string, string> | null;
     tipo_projeto: string | null;
+    substitui_item_id?: string | null;
+    talento_id: string;
     talento: { nome: string; nome_artistico: string | null } | null;
   }[];
   eventos: {
@@ -47,7 +50,8 @@ type LinhaProjeto = {
   }[];
 };
 
-const CONSULTA = `
+function consulta(comSubstituicao: boolean): string {
+  return `
   id, protocolo, marca, anunciante, setor_cliente, segmento_marca, programa,
   equipe, tipo_midia, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em,
   solicitante_id,
@@ -55,10 +59,12 @@ const CONSULTA = `
   itens:solicitacao_item (
     id, categoria, status, verba, valor_sugerido, cache, parecer, validade,
     conversao, devolvido_para, entregas, campos_extra, tipo_projeto,
+    talento_id${comSubstituicao ? ', substitui_item_id' : ''},
     talento ( nome, nome_artistico )
   ),
   eventos:evento ( id, titulo, descricao, alerta, criado_em )
 `;
+}
 
 function validarCategoria(valor: string): Categoria {
   return CATEGORIAS.includes(valor as Categoria)
@@ -78,24 +84,35 @@ export async function lerProjeto(
 ): Promise<ProjetoDetalhado | null> {
   const supabase = await criarClienteNoServidor();
 
-  const [consulta, segmentoPorPrograma] = await Promise.all([
+  const ler = (comSubstituicao: boolean) =>
     supabase
       .from('solicitacao')
-      .select(CONSULTA)
+      .select(consulta(comSubstituicao))
       .eq('id', id)
-      .maybeSingle<LinhaProjeto>(),
+      .maybeSingle<LinhaProjeto>();
+
+  const [primeira, segmentoPorPrograma] = await Promise.all([
+    ler(true),
     mapaDeSegmentoPorPrograma(),
   ]);
 
-  const { data, error } = consulta;
+  // Se `supabase/substituicao-de-talento.sql` ainda não rodou, a coluna não
+  // existe e o `select` INTEIRO falha — a tela do projeto ficaria em branco por
+  // causa de um recurso que a pessoa nem usou ainda. Aqui ela volta sem a
+  // coluna, e é a tela que avisa que falta rodar o SQL.
+  const { data, error } = primeira.error ? await ler(false) : primeira;
 
   if (error || !data) {
     if (error) console.error('Falha ao ler o projeto:', error.message);
     return null;
   }
 
+  const substituicaoAtiva = !primeira.error;
+
   const itens = data.itens.map((item) => ({
     id: item.id,
+    talentoId: item.talento_id,
+    substituiItemId: item.substitui_item_id ?? null,
     talento: item.talento?.nome_artistico ?? item.talento?.nome ?? '—',
     categoria: validarCategoria(item.categoria),
     status: validarStatus(item.status),
@@ -128,7 +145,13 @@ export async function lerProjeto(
     criadoEm: data.criado_em,
     solicitanteId: data.solicitante_id,
     solicitante: data.solicitante?.nome ?? '—',
-    status: statusDoProjeto(itens.map((item) => item.status)),
+    substituicaoAtiva,
+    // O status do projeto olha só as vagas vivas: um talento substituído ficou
+    // parado no status em que estava, e deixá-lo pesar aqui faria o card dizer
+    // "Rejeitado" num projeto que já reencaminhou o substituto para a fila.
+    status: statusDoProjeto(
+      apenasVagasAtuais(itens).map((item) => item.status),
+    ),
     itens,
     // Do mais recente para o mais antigo: a última coisa que aconteceu é a
     // que responde "e agora?".

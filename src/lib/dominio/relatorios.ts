@@ -32,6 +32,15 @@ export type LinhaDeAnalise = {
   categoria: Categoria;
   status: StatusSolicitacao;
   conversao: Conversao;
+  /**
+   * Outro talento entrou no lugar deste.
+   *
+   * Vem resolvido da leitura, e não como `substituiItemId`, porque a corrente
+   * precisa ser montada sobre a base INTEIRA: agrupada por categoria, a Manu e
+   * a Bruna podem cair em grupos diferentes, e cada grupo sozinho não veria a
+   * ligação. Ver [[substituicao]].
+   */
+  foiSubstituido: boolean;
   motivoNaoFechou: string | null;
   cache: number | null;
   valorFechado: number | null;
@@ -152,13 +161,28 @@ export function resumoGeral(
   return resumir('Total', linhas);
 }
 
+/**
+ * Aqui as duas contas se separam de propósito.
+ *
+ * VOLUMETRIA (talentos, orçados, valor orçado) conta TUDO, inclusive quem foi
+ * substituído. A área orçou a Manu; esse trabalho foi feito, e tirá-lo do
+ * relatório de carga encolheria a produção do time por causa de uma decisão do
+ * cliente.
+ *
+ * CONVERSÃO (fechados, não fechados, taxa, valor fechado) conta só as vagas
+ * vivas. Trocar a Manu pela Bruna e fechar a Bruna é um negócio, não dois — e
+ * contando os dois, toda substituição viraria uma perda inventada.
+ */
 function resumir(
   rotulo: string,
   linhas: readonly LinhaDeAnalise[],
 ): LinhaDeVolumetria {
   const orcados = linhas.filter((linha) => linha.status === 'Orçado');
-  const fechados = orcados.filter((linha) => linha.conversao === 'fechado');
-  const naoFechados = orcados.filter(
+
+  const vagas = linhas.filter((linha) => !linha.foiSubstituido);
+  const vagasOrcadas = vagas.filter((linha) => linha.status === 'Orçado');
+  const fechados = vagasOrcadas.filter((linha) => linha.conversao === 'fechado');
+  const naoFechados = vagasOrcadas.filter(
     (linha) => linha.conversao === 'não fechado',
   );
 
@@ -169,8 +193,8 @@ function resumir(
     orcados: orcados.length,
     fechados: fechados.length,
     naoFechados: naoFechados.length,
-    pendentes: orcados.length - fechados.length - naoFechados.length,
-    taxa: taxaDeConversao(linhas),
+    pendentes: vagasOrcadas.length - fechados.length - naoFechados.length,
+    taxa: taxaDeConversao(vagas),
     // Item orçado sem valor fica FORA da soma, não entra como zero: somar zero
     // diria que o cachê foi de graça.
     valorOrcado: somar(orcados.map((linha) => linha.cache)),
@@ -225,11 +249,16 @@ export type MotivoContado = {
  *
  * Só entram os "não fechado": incluir os fechados diluiria o ranking, e
  * incluir os pendentes contaria como perda o que ainda não foi decidido.
+ *
+ * Quem foi substituído também fica de fora. A vaga não se perdeu — ela mudou
+ * de nome, e a troca aparece no histórico do projeto, não aqui.
  */
 export function motivosDePerda(
   linhas: readonly LinhaDeAnalise[],
 ): MotivoContado[] {
-  const perdidos = linhas.filter((linha) => linha.conversao === 'não fechado');
+  const perdidos = linhas.filter(
+    (linha) => linha.conversao === 'não fechado' && !linha.foiSubstituido,
+  );
   if (perdidos.length === 0) return [];
 
   const contagem = new Map<string, number>();

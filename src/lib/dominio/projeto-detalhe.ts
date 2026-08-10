@@ -2,6 +2,7 @@ import type { Categoria } from './categorias';
 import type { Conversao } from './conversao';
 import type { LinhaDeEntrega } from './entregas';
 import type { StatusSolicitacao } from './solicitacao';
+import { apenasVagasAtuais } from './substituicao';
 
 /**
  * O projeto inteiro, como a tela de detalhe precisa dele.
@@ -13,6 +14,10 @@ import type { StatusSolicitacao } from './solicitacao';
 export type ItemDetalhado = {
   id: string;
   talento: string;
+  /** Preciso para checar "esse talento já está na consulta" ao substituir. */
+  talentoId: string;
+  /** Quem este item substituiu. Ver [[substituicao]]. */
+  substituiItemId: string | null;
   categoria: Categoria;
   status: StatusSolicitacao;
   conversao: Conversao;
@@ -53,6 +58,8 @@ export type ProjetoDetalhado = {
   solicitanteId: string | null;
   solicitante: string;
   status: StatusSolicitacao;
+  /** Falso enquanto `supabase/substituicao-de-talento.sql` não tiver rodado. */
+  substituicaoAtiva: boolean;
   itens: ItemDetalhado[];
   eventos: EventoDoProjeto[];
 };
@@ -63,12 +70,18 @@ export type ProjetoDetalhado = {
  * Só entra quem tem valor respondido. Um item ainda na fila não contribui com
  * zero — ele simplesmente não faz parte deste número, e a tela diz quantos
  * ainda faltam para o total ficar completo.
+ *
+ * Talento substituído fica de fora. Aqui a pergunta é "quanto custa este
+ * projeto", e somar a Manu e a Bruna daria o preço de duas pessoas numa vaga
+ * que vai contratar uma. No relatório da área é o contrário: os dois orçamentos
+ * contam, porque os dois foram trabalho feito.
  */
-export function totalOrcado(itens: readonly ItemDetalhado[]): {
+export function totalOrcado(todos: readonly ItemDetalhado[]): {
   total: number;
   respondidos: number;
   aguardando: number;
 } {
+  const itens = apenasVagasAtuais(todos);
   let total = 0;
   let respondidos = 0;
 
@@ -84,7 +97,7 @@ export function totalOrcado(itens: readonly ItemDetalhado[]): {
 
 /** O que foi efetivamente fechado, em reais orçados. */
 export function totalFechado(itens: readonly ItemDetalhado[]): number {
-  return itens
+  return apenasVagasAtuais(itens)
     .filter((item) => item.conversao === 'fechado' && item.cache !== null)
     .reduce((soma, item) => soma + (item.cache ?? 0), 0);
 }
