@@ -15,6 +15,9 @@ import {
   textoDoDesvio,
   type AcaoDoAprovador,
 } from '@/lib/dominio/resposta';
+import { camposDaMidia, escopoParaLeitura } from '@/lib/dominio/escopo';
+import { validarTipoMidia } from '@/lib/dominio/consulta';
+import { EscopoLido } from '@/components/comum/EscopoLido';
 import { responderItem } from '@/lib/respostas';
 import type { ItemDaFila } from '@/lib/dominio/fila';
 
@@ -42,6 +45,11 @@ export function PainelDeResposta({
   );
   const [gravando, setGravando] = useState<AcaoDoAprovador | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+
+  const escopoLido = escopoParaLeitura(
+    camposDaMidia(validarTipoMidia(item.projeto.tipoMidia)),
+    item.campos,
+  );
 
   const rascunho = {
     cache: reaisDeMascara(cacheMascara),
@@ -113,20 +121,17 @@ export function PainelDeResposta({
       </div>
 
       {/* As condições vêm inteiras, sem recorte: é o que separa orçar de
-          chutar, e é por não tê-las que a conversa volta por e-mail. */}
-      {Object.keys(item.campos).length > 0 && (
-        <details className="rounded-[10px] border border-borda">
-          <summary className="cursor-pointer px-3 py-2 text-[12px] font-bold text-tinta">
-            Condições informadas ({Object.keys(item.campos).length})
-          </summary>
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 px-3 pb-3">
-            {Object.entries(item.campos)
-              .filter(([, valor]) => valor)
-              .map(([chave, valor]) => (
-                <Dado key={chave} rotulo={chave} valor={valor} />
-              ))}
-          </dl>
-        </details>
+          chutar, e é por não tê-las que a conversa volta por e-mail.
+          Aberto por padrão, e não num `details` fechado: era preciso lembrar
+          de clicar para ver a verba e o contexto, e quem não lembrava
+          respondia sem eles. */}
+      {escopoLido.length > 0 && (
+        <div className="rounded-[10px] border border-borda px-3 py-2.5">
+          <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[0.06em] text-tinta-4">
+            Condições informadas
+          </p>
+          <EscopoLido secoes={escopoLido} />
+        </div>
       )}
 
       <div className="grid grid-cols-2 gap-2">

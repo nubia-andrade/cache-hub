@@ -12,7 +12,12 @@ import {
   nivelDoConjunto,
   ROTULO_NIVEL,
 } from '@/lib/dominio/alertas';
-import { camposDaMidia, camposFaltandoNoEscopo } from '@/lib/dominio/escopo';
+import {
+  camposDaMidia,
+  camposFaltandoNoEscopo,
+  escopoParaLeitura,
+} from '@/lib/dominio/escopo';
+import { EscopoLido } from '@/components/comum/EscopoLido';
 import {
   calcularLinhas,
   descrever,
@@ -114,6 +119,7 @@ export function PassoRevisao({
               definicoes,
               escopo?.campos ?? {},
             );
+            const lido = escopoParaLeitura(definicoes, escopo?.campos ?? {});
 
             return (
               <li
@@ -173,6 +179,16 @@ export function PassoRevisao({
                     {total > 0 ? formatarReais(total) : '—'}
                   </span>
                 </div>
+
+                {/* As condições do projeto por extenso. Sem elas, a revisão
+                    mostrava só entregas e valor — e a pessoa mandava sem
+                    conferir a verba, o contexto e as observações que acabou
+                    de digitar. */}
+                {lido.length > 0 && (
+                  <div className="mt-2.5 border-t border-borda pt-2.5">
+                    <EscopoLido secoes={lido} />
+                  </div>
+                )}
 
                 {semReferencia.length > 0 && (
                   <p className="mt-1.5 text-[11.5px] leading-[1.5] text-aviso">

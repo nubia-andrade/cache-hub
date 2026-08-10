@@ -14,6 +14,17 @@ import type { TipoProjeto } from './precos';
 export const TIPOS_MIDIA = ['TV', 'Digital', 'Social', 'Ambos'] as const;
 export type TipoMidia = (typeof TIPOS_MIDIA)[number];
 
+/**
+ * O tipo de mídia gravado, ou '' quando não é um dos conhecidos.
+ *
+ * Vazio em vez de chutar 'TV': é o tipo de mídia que decide QUAIS campos o
+ * escopo tem, e inventar um faria a tela pedir — ou exibir — condições que
+ * este projeto nunca teve.
+ */
+export function validarTipoMidia(valor: string | null): TipoMidia | '' {
+  return TIPOS_MIDIA.includes(valor as TipoMidia) ? (valor as TipoMidia) : '';
+}
+
 export type CabecalhoConsulta = {
   anunciante: string;
   marca: string;

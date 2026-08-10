@@ -7,6 +7,13 @@ import { coresDoStatus } from '@/lib/dominio/solicitacao';
 import { formatarReais } from '@/lib/dominio/precos';
 import { descrever } from '@/lib/dominio/entregas';
 import {
+  camposDaMidia,
+  escopoParaLeitura,
+  type SecaoLida,
+} from '@/lib/dominio/escopo';
+import { validarTipoMidia } from '@/lib/dominio/consulta';
+import { EscopoLido } from '@/components/comum/EscopoLido';
+import {
   formatarTaxa,
   resultadoDoProjeto,
   taxaDeConversao,
@@ -52,6 +59,10 @@ export default async function PaginaProjeto({
   // aparece dentro da linha de quem entrou no lugar dele, com o valor que a
   // área respondeu. Ver [[substituicao]].
   const vagas = apenasVagasAtuais(projeto.itens);
+
+  // Uma vez para o projeto inteiro: os campos do escopo dependem do tipo de
+  // mídia, que é do projeto, não do talento.
+  const definicoes = camposDaMidia(validarTipoMidia(projeto.tipoMidia));
 
   const paraSubstituir: ItemParaSubstituir[] =
     projeto.itens.map(paraTroca);
@@ -161,6 +172,7 @@ export default async function PaginaProjeto({
                 <Talento
                   key={item.id}
                   item={item}
+                  escopo={escopoParaLeitura(definicoes, item.campos)}
                   anteriores={antecessoresDe(item, projeto.itens)}
                   substituicao={
                     podeSubstituir ? (
@@ -258,11 +270,14 @@ function paraTroca(item: ItemDetalhado): ItemParaSubstituir {
 
 function Talento({
   item,
+  escopo,
   anteriores,
   substituicao,
   catraca,
 }: {
   item: ItemDetalhado;
+  /** As condições preenchidas, prontas para ler. */
+  escopo: SecaoLida[];
   /** Quem passou por esta vaga antes, do mais recente para o mais antigo. */
   anteriores: ItemDetalhado[];
   substituicao: React.ReactNode;
@@ -321,10 +336,27 @@ function Talento({
         )}
       </div>
 
+      {/* As condições por extenso. Antes, a tela mostrava só as entregas e os
+          valores — a verba, o contexto e as observações que a pessoa digitou
+          ficavam gravados e invisíveis, e quem abria o projeto para conferir
+          não tinha como. */}
+      {escopo.length > 0 && (
+        <div className="mt-2.5 border-t border-borda pt-2.5">
+          <EscopoLido secoes={escopo} />
+        </div>
+      )}
+
       {item.parecer && (
-        <p className="mt-2 rounded-[8px] bg-fundo-2 px-2.5 py-1.5 text-[12px] leading-[1.5] text-tinta-2">
-          {item.parecer}
-        </p>
+        <div className="mt-2 rounded-[8px] bg-fundo-2 px-2.5 py-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-tinta-5">
+            Parecer da área
+          </p>
+          {/* `whitespace-pre-line`: o parecer costuma vir em tópicos, e sem
+              isto ele chegava como um parágrafo só. */}
+          <p className="whitespace-pre-line text-[12px] leading-[1.5] text-tinta-2">
+            {item.parecer}
+          </p>
+        </div>
       )}
 
       {/* Quem saiu fica visível, e dentro da vaga. Uma linha que simplesmente

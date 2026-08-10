@@ -7,6 +7,7 @@ import {
   camposDaMidia,
   camposFaltandoNoEscopo,
   camposVisiveis,
+  escopoParaLeitura,
   SECOES,
   type DefinicaoCampo,
 } from './escopo';
@@ -110,7 +111,7 @@ describe('quando um campo está preenchido', () => {
       chave: 'verba',
       rotulo: 'Verba disponível',
       tipo: 'moeda',
-      secao: 'Verba e contexto',
+      secao: 'Verba e adicionais',
     };
     expect(campoPreenchido(campo, { verba: '' })).toBe(false);
     expect(campoPreenchido(campo, { verba: '10.000' })).toBe(true);
@@ -150,10 +151,10 @@ describe('seções recolhíveis', () => {
 
   it('o contador de pendentes acompanha o preenchimento', () => {
     const antes = agruparEmSecoes(CAMPOS_DIGITAL, {}).find(
-      (grupo) => grupo.secao === 'Verba e contexto',
+      (grupo) => grupo.secao === 'Verba e adicionais',
     );
     const depois = agruparEmSecoes(CAMPOS_DIGITAL, { verba: '5000' }).find(
-      (grupo) => grupo.secao === 'Verba e contexto',
+      (grupo) => grupo.secao === 'Verba e adicionais',
     );
     expect(depois?.pendentes).toBe((antes?.pendentes ?? 0) - 1);
   });
@@ -175,5 +176,86 @@ describe('escopo completo', () => {
     const faltando = camposFaltandoNoEscopo(CAMPOS_TV, {});
     const visiveis = camposVisiveis(CAMPOS_TV, {});
     expect(faltando).toHaveLength(visiveis.length);
+  });
+});
+
+/**
+ * A regra: nada que foi preenchido pode sumir da leitura. Um campo que aparece
+ * no formulário e não aparece na revisão é pior que um campo que não existe.
+ */
+describe('escopo para leitura', () => {
+  const definicoes: DefinicaoCampo[] = [
+    { chave: 'formato', rotulo: 'Formato', tipo: 'select', secao: 'Formato e produção' },
+    { chave: 'duracaoVideo', rotulo: 'Duração do vídeo', tipo: 'duracao', secao: 'Formato e produção' },
+    { chave: 'verba', rotulo: 'Verba disponível', tipo: 'moeda', secao: 'Verba e adicionais' },
+    { chave: 'maisInfo', rotulo: 'Mais informações', tipo: 'area', secao: 'Observações' },
+  ];
+
+  it('traz o que foi preenchido, na ordem das seções', () => {
+    const lido = escopoParaLeitura(definicoes, {
+      maisInfo: 'gravação no Rio',
+      verba: '50.000,00',
+      formato: 'Reels',
+    });
+
+    expect(lido.map((s) => s.secao)).toEqual([
+      'Formato e produção',
+      'Verba e adicionais',
+      'Observações',
+    ]);
+    expect(lido[2].campos[0]).toEqual({
+      rotulo: 'Mais informações',
+      valor: 'gravação no Rio',
+      longo: true,
+    });
+  });
+
+  it('campo em branco fica de fora', () => {
+    // Vinte travessões escondem os três valores que interessam.
+    const lido = escopoParaLeitura(definicoes, { formato: 'Reels', verba: '' });
+    expect(lido).toHaveLength(1);
+    expect(lido[0].campos).toHaveLength(1);
+  });
+
+  it('junta minutos e segundos numa frase só', () => {
+    expect(
+      escopoParaLeitura(definicoes, { duracaoVideoMin: '3', duracaoVideoSeg: '20' })[0]
+        .campos[0].valor,
+    ).toBe('3 min 20 seg');
+  });
+
+  it('só os segundos também conta', () => {
+    expect(
+      escopoParaLeitura(definicoes, { duracaoVideoSeg: '45' })[0].campos[0].valor,
+    ).toBe('45 seg');
+  });
+
+  it('texto longo é marcado para virar bloco, e não linha de tabela', () => {
+    const lido = escopoParaLeitura(definicoes, { formato: 'Reels', maisInfo: 'x' });
+    expect(lido[0].campos[0].longo).toBe(false);
+    expect(lido[1].campos[0].longo).toBe(true);
+  });
+
+  it('valor gravado sem definição aparece mesmo assim', () => {
+    // Acontece quando o tipo de mídia do projeto mudou depois do
+    // preenchimento. Esconder apagaria trabalho de alguém.
+    const lido = escopoParaLeitura(definicoes, { campoAntigoQualquer: 'valeu' });
+    expect(lido).toEqual([
+      {
+        secao: 'Outros campos',
+        campos: [
+          { rotulo: 'Campo antigo qualquer', valor: 'valeu', longo: false },
+        ],
+      },
+    ]);
+  });
+
+  it('as duas chaves da duração não viram órfãs', () => {
+    const lido = escopoParaLeitura(definicoes, { duracaoVideoMin: '2' });
+    expect(lido.map((s) => s.secao)).toEqual(['Formato e produção']);
+  });
+
+  it('escopo vazio devolve nada, sem seção fantasma', () => {
+    expect(escopoParaLeitura(definicoes, {})).toEqual([]);
   });
 });

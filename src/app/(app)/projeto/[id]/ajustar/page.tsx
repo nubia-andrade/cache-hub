@@ -9,9 +9,8 @@ import { estaAberto } from '@/lib/dominio/catraca';
 import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 import { TIPOS_PROJETO, type TipoProjeto } from '@/lib/dominio/precos';
 import {
-  TIPOS_MIDIA,
+  validarTipoMidia,
   type CabecalhoConsulta,
-  type TipoMidia,
 } from '@/lib/dominio/consulta';
 import {
   PainelDeAjuste,
@@ -33,17 +32,6 @@ function validarTipoProjeto(valor: string | null): TipoProjeto {
   return TIPOS_PROJETO.includes(valor as TipoProjeto)
     ? (valor as TipoProjeto)
     : TIPOS_PROJETO[0];
-}
-
-/**
- * Devolve '' quando o gravado não é um tipo conhecido.
- *
- * Vazio em vez de chutar 'TV': os campos dinâmicos do escopo dependem do tipo
- * de mídia, e inventar um faria a tela pedir coisas que este projeto nunca
- * teve. Sem tipo, o editor mostra só os campos comuns — que é a verdade.
- */
-function validarTipoMidia(valor: string): TipoMidia | '' {
-  return TIPOS_MIDIA.includes(valor as TipoMidia) ? (valor as TipoMidia) : '';
 }
 
 export default async function PaginaDeAjuste({

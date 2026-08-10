@@ -127,13 +127,13 @@ export function CampoDinamico({
         <div className="flex items-center gap-2">
           <ParDeDuracao
             rotulo={`${campo.rotulo} — minutos`}
-            sufixo="min"
+            unidade="min"
             valor={valores[`${campo.chave}Min`] ?? ''}
             aoMudar={(novo) => aoMudar(`${campo.chave}Min`, novo)}
           />
           <ParDeDuracao
             rotulo={`${campo.rotulo} — segundos`}
-            sufixo="seg"
+            unidade="seg"
             valor={valores[`${campo.chave}Seg`] ?? ''}
             aoMudar={(novo) => aoMudar(`${campo.chave}Seg`, novo)}
           />
@@ -176,19 +176,29 @@ export function CampoDinamico({
   );
 }
 
+/**
+ * Uma das duas metades de "3 min 20 seg".
+ *
+ * A unidade vem ANTES da caixa. Depois, ela só confirma o que já foi digitado;
+ * antes, ela diz o que digitar — e num par de caixas iguais, lado a lado, é a
+ * única coisa que distingue uma da outra.
+ */
 function ParDeDuracao({
   rotulo,
-  sufixo,
+  unidade,
   valor,
   aoMudar,
 }: {
   rotulo: string;
-  sufixo: string;
+  unidade: string;
   valor: string;
   aoMudar: (valor: string) => void;
 }) {
   return (
     <span className="flex flex-1 items-center gap-1.5">
+      <span className="w-[26px] shrink-0 text-[11.5px] text-tinta-4">
+        {unidade}
+      </span>
       <input
         value={valor}
         aria-label={rotulo}
@@ -197,7 +207,6 @@ function ParDeDuracao({
         onChange={(evento) => aoMudar(apenasDigitos(evento.target.value))}
         className="h-[36px] w-full min-w-0 rounded-[9px] border border-borda-forte bg-white px-2.5 text-[12.5px] text-tinta"
       />
-      <span className="text-[11.5px] text-tinta-4">{sufixo}</span>
     </span>
   );
 }

@@ -72,8 +72,13 @@ export function juntarMulti(valores: readonly string[]): string {
  * Agrupar por assunto deixa fechado o que não interessa àquele talento.
  */
 export const SECOES = [
-  'Verba e contexto',
+  // Formato e produção vem primeiro porque é ele que descreve A AÇÃO. Verba e
+  // adicionais responde "quanto e sob que condições", e essa pergunta só faz
+  // sentido depois de dizer o que vai ser feito — tanto que "Natureza da ação"
+  // costuma ser usada para sinalizar reverberação de uma ação de TV, que é
+  // consequência do formato, não o ponto de partida.
   'Formato e produção',
+  'Verba e adicionais',
   'Distribuição',
   'Responsabilidades',
   'Gravação',
@@ -135,7 +140,7 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
   },
 
   {
-    chave: 'natureza', secao: 'Verba e contexto',
+    chave: 'natureza', secao: 'Verba e adicionais',
     rotulo: 'Natureza da ação',
     // Por talento, e não no cabeçalho: no mesmo projeto costuma haver recorte
     // de conteúdo já gravado para uns e gravação nova para outros.
@@ -143,7 +148,7 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
     opcoes: NATUREZAS_DA_ACAO,
     dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
   },
-  { chave: 'verba', secao: 'Verba e contexto', rotulo: 'Verba disponível', tipo: 'moeda' },
+  { chave: 'verba', secao: 'Verba e adicionais', rotulo: 'Verba disponível', tipo: 'moeda' },
   { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
   { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
   { chave: 'vertical', secao: 'Formato e produção', rotulo: 'Vertical', tipo: 'select', lista: 'verticais' },
@@ -155,7 +160,7 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
   },
   { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantos criativos', tipo: 'num' },
   {
-    chave: 'contextoProjeto', secao: 'Verba e contexto',
+    chave: 'contextoProjeto', secao: 'Verba e adicionais',
     rotulo: 'Contexto do projeto',
     tipo: 'area',
     largo: true,
@@ -188,7 +193,7 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
   },
   { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'num' },
   { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
-  { chave: 'exclusividade', secao: 'Verba e contexto', rotulo: 'Exclusividade', tipo: 'bool' },
+  { chave: 'exclusividade', secao: 'Verba e adicionais', rotulo: 'Exclusividade', tipo: 'bool' },
   {
     chave: 'makeHair', secao: 'Responsabilidades',
     rotulo: 'Make e hair',
@@ -230,7 +235,7 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   },
 
   {
-    chave: 'natureza', secao: 'Verba e contexto',
+    chave: 'natureza', secao: 'Verba e adicionais',
     rotulo: 'Natureza da ação',
     // Por talento, e não no cabeçalho: no mesmo projeto costuma haver recorte
     // de conteúdo já gravado para uns e gravação nova para outros.
@@ -239,14 +244,14 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
     dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
   },
   {
-    chave: 'verba', secao: 'Verba e contexto',
+    chave: 'verba', secao: 'Verba e adicionais',
     rotulo: 'Verba disponível',
     tipo: 'moeda',
     nota: 'temos a verba do cliente?',
   },
-  { chave: 'exclusividade', secao: 'Verba e contexto', rotulo: 'Exclusividade', tipo: 'bool' },
+  { chave: 'exclusividade', secao: 'Verba e adicionais', rotulo: 'Exclusividade', tipo: 'bool' },
   {
-    chave: 'contextoProjeto', secao: 'Verba e contexto',
+    chave: 'contextoProjeto', secao: 'Verba e adicionais',
     rotulo: 'Contexto do projeto',
     tipo: 'area',
     largo: true,
@@ -425,4 +430,113 @@ export function camposFaltandoNoEscopo(
   return camposVisiveis(definicoes, valores)
     .filter((campo) => !campoPreenchido(campo, valores))
     .map((campo) => campo.rotulo);
+}
+
+// --------------------------------------------------------------------------
+// O escopo para LER
+// --------------------------------------------------------------------------
+
+/**
+ * REGRA CRÍTICA — nada que foi preenchido pode sumir da leitura.
+ *
+ * Quem preenche vinte e cinco campos precisa vê-los de volta na revisão, e o
+ * aprovador precisa vê-los para conseguir orçar. Um campo que aparece no
+ * formulário e não aparece na leitura é pior do que um campo que não existe:
+ * a pessoa digitou, confia que mandou, e a área responde sem aquilo.
+ */
+
+export type CampoLido = {
+  rotulo: string;
+  valor: string;
+  /** Texto de várias linhas — pede bloco próprio, não uma linha de tabela. */
+  longo: boolean;
+};
+
+export type SecaoLida = { secao: string; campos: CampoLido[] };
+
+/** A parte da duração, sem a unidade quando não há valor. */
+function textoDaDuracao(chave: string, valores: ValoresDoEscopo): string {
+  const min = valores[`${chave}Min`];
+  const seg = valores[`${chave}Seg`];
+  return [min && `${min} min`, seg && `${seg} seg`].filter(Boolean).join(' ');
+}
+
+function textoDoCampo(
+  campo: DefinicaoCampo,
+  valores: ValoresDoEscopo,
+): string {
+  if (campo.tipo === 'duracao') return textoDaDuracao(campo.chave, valores);
+  return (valores[campo.chave] ?? '').trim();
+}
+
+/**
+ * Humaniza uma chave sem definição: `duracaoProjeto` -> `Duracao projeto`.
+ *
+ * Feio de propósito, e melhor que a alternativa. Uma chave órfã só aparece
+ * quando o tipo de mídia do projeto mudou depois de alguém preencher, e nesse
+ * caso o valor existe de verdade — escondê-lo por não ter rótulo bonito seria
+ * apagar trabalho de alguém para poupar uma linha torta na tela.
+ */
+function humanizarChave(chave: string): string {
+  const separada = chave.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+  return separada.charAt(0).toUpperCase() + separada.slice(1);
+}
+
+/**
+ * Tudo que foi preenchido, em seções, pronto para exibir.
+ *
+ * Campos em branco NÃO entram: numa leitura, vinte travessões escondem os três
+ * valores que interessam. Quem precisa saber o que falta usa
+ * `camposFaltandoNoEscopo`, que responde exatamente essa outra pergunta.
+ *
+ * No fim vem a varredura das chaves órfãs — as que estão gravadas e não batem
+ * com nenhuma definição do tipo de mídia atual. É o que garante a regra do
+ * topo mesmo quando o formulário mudou depois do preenchimento.
+ */
+export function escopoParaLeitura(
+  definicoes: readonly DefinicaoCampo[],
+  valores: ValoresDoEscopo,
+): SecaoLida[] {
+  const usadas = new Set<string>();
+  const secoes: SecaoLida[] = [];
+
+  for (const secao of SECOES) {
+    const campos: CampoLido[] = [];
+
+    for (const campo of definicoes) {
+      if (campo.secao !== secao) continue;
+
+      if (campo.tipo === 'duracao') {
+        usadas.add(`${campo.chave}Min`);
+        usadas.add(`${campo.chave}Seg`);
+      } else {
+        usadas.add(campo.chave);
+      }
+
+      const valor = textoDoCampo(campo, valores);
+      if (!valor) continue;
+
+      campos.push({
+        rotulo: campo.rotulo,
+        valor,
+        longo: campo.tipo === 'area',
+      });
+    }
+
+    if (campos.length > 0) secoes.push({ secao, campos });
+  }
+
+  const orfas = Object.entries(valores)
+    .filter(([chave, valor]) => !usadas.has(chave) && String(valor).trim())
+    .map(([chave, valor]) => ({
+      rotulo: humanizarChave(chave),
+      valor: String(valor).trim(),
+      // Sem definição não dá para saber se é texto longo. Quebra de linha é a
+      // pista que sobra, e ela só existe em campo de várias linhas.
+      longo: String(valor).includes('\n'),
+    }));
+
+  if (orfas.length > 0) secoes.push({ secao: 'Outros campos', campos: orfas });
+
+  return secoes;
 }
