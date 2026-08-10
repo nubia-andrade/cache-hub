@@ -6,6 +6,7 @@ import {
   periodoValido,
   type CabecalhoConsulta,
 } from '@/lib/dominio/consulta';
+import { CampoDeBusca } from '@/components/comum/CampoDeBusca';
 import type { Catalogo } from '@/lib/dados/catalogo';
 
 /**
@@ -80,38 +81,39 @@ export function PassoCabecalho({
 
   return (
     <div className="grid gap-x-4 gap-y-[18px] sm:grid-cols-2">
-      <Campo rotulo="Marca" obrigatorio className="sm:col-span-2">
-        <select
-          value={cabecalho.marca}
-          onChange={(evento) => escolherMarca(evento.target.value)}
-          className="h-[38px] w-full rounded-[9px] border border-borda-forte bg-white px-2.5 text-[13px] text-tinta"
-        >
-          <option value="">Escolha a marca…</option>
-          {catalogo.marcas.map((marca) => (
-            <option key={marca.nome} value={marca.nome}>
-              {marca.nome} — {marca.anunciante}
-            </option>
-          ))}
-        </select>
+      {/* Marca e programa usam busca, e não select: o catálogo passa de cem
+          itens depois da primeira carga, e rolar uma coluna dessas para achar
+          um nome é o tipo de atrito que faz o campo ser preenchido errado. */}
+      <Campo rotulo="Marca" obrigatorio className="sm:col-span-2" comoDiv>
+        <CampoDeBusca
+          id="marca"
+          valor={cabecalho.marca}
+          placeholder="Escolha a marca…"
+          opcoes={catalogo.marcas.map((marca) => ({
+            valor: marca.nome,
+            rotulo: marca.nome,
+            detalhe: marca.anunciante,
+          }))}
+          aoEscolher={escolherMarca}
+        />
       </Campo>
 
       <Derivado rotulo="Anunciante" valor={cabecalho.anunciante} />
       <Derivado rotulo="Setor do cliente" valor={cabecalho.setorCliente} />
       <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
 
-      <Campo rotulo="Programa" obrigatorio>
-        <select
-          value={cabecalho.programa}
-          onChange={(evento) => escolherPrograma(evento.target.value)}
-          className="h-[38px] w-full rounded-[9px] border border-borda-forte bg-white px-2.5 text-[13px] text-tinta"
-        >
-          <option value="">Escolha o programa…</option>
-          {catalogo.programas.map((programa) => (
-            <option key={programa.nome} value={programa.nome}>
-              {programa.nome}
-            </option>
-          ))}
-        </select>
+      <Campo rotulo="Programa" obrigatorio comoDiv>
+        <CampoDeBusca
+          id="programa"
+          valor={cabecalho.programa}
+          placeholder="Escolha o programa…"
+          opcoes={catalogo.programas.map((programa) => ({
+            valor: programa.nome,
+            rotulo: programa.nome,
+            detalhe: programa.segmentoProduto,
+          }))}
+          aoEscolher={escolherPrograma}
+        />
       </Campo>
 
       <Derivado
@@ -186,10 +188,7 @@ export function PassoCabecalho({
         />
       </Campo>
 
-      <Campo
-        rotulo="Preciso da resposta até"
-        className="sm:col-span-2"
-      >
+      <Campo rotulo="Preciso da resposta até" className="sm:col-span-2">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="date"
@@ -223,15 +222,26 @@ function Campo({
   rotulo,
   obrigatorio,
   className = '',
+  comoDiv = false,
   children,
 }: {
   rotulo: string;
   obrigatorio?: boolean;
   className?: string;
+  /**
+   * Envolve num `div` em vez de `label`.
+   *
+   * Necessário para a caixa de busca: um `label` repassa o clique ao primeiro
+   * controle interno, e clicar no rótulo reabriria a lista que a pessoa
+   * acabou de fechar.
+   */
+  comoDiv?: boolean;
   children: React.ReactNode;
 }) {
+  const Envolucro = comoDiv ? 'div' : 'label';
+
   return (
-    <label className={`flex flex-col gap-1.5 ${className}`}>
+    <Envolucro className={`flex flex-col gap-1.5 ${className}`}>
       <span className="flex items-center gap-1.5">
         <span className="text-[12px] font-bold text-tinta">{rotulo}</span>
         {obrigatorio && (
@@ -241,7 +251,7 @@ function Campo({
         )}
       </span>
       {children}
-    </label>
+    </Envolucro>
   );
 }
 
@@ -260,7 +270,9 @@ function Derivado({
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <span className="text-[12px] font-bold text-tinta-3">{rotulo}</span>
       <p className="flex h-[38px] items-center rounded-[9px] bg-fundo-2 px-2.5 text-[13px] text-tinta-2">
-        {valor || <span className="text-tinta-5">preenchido pelo catálogo</span>}
+        {valor || (
+          <span className="text-tinta-5">preenchido pelo catálogo</span>
+        )}
       </p>
     </div>
   );

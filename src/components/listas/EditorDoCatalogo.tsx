@@ -29,6 +29,9 @@ import {
   planejarProgramas,
 } from '@/lib/dominio/importacao';
 import { InclusaoEmMassa } from './InclusaoEmMassa';
+import { paginar } from '@/lib/dominio/paginacao';
+import { casaComTermo } from '@/lib/dominio/busca';
+import { Paginador } from '@/components/comum/Paginador';
 import type { CadastroComercial } from '@/lib/dados/cadastro-comercial';
 
 /** Resumo comum às duas importações em massa. */
@@ -58,6 +61,55 @@ function resumir(resultado: {
 
 function usos(mapa: Record<string, number>, nome: string): number {
   return mapa[nome.trim().toLocaleLowerCase('pt-BR')] ?? 0;
+}
+
+/** Dez por página, o mesmo de Usuários e das listas de vocabulário. */
+const POR_PAGINA = 10;
+
+/**
+ * Filtro + página, com a mesma conta nos três cadastros.
+ *
+ * O filtro corre a lista INTEIRA, não a página: procurar um nome não pode
+ * exigir saber em que página ele está. E a busca ignora acento, porque
+ * ninguém digita "Dermáurea" com acento ao procurar.
+ */
+function useRecorte<T>(itens: T[], texto: (item: T) => string) {
+  const [filtro, setFiltro] = useState('');
+  const [pagina, setPagina] = useState(1);
+
+  const filtrados = filtro.trim()
+    ? itens.filter((item) => casaComTermo(texto(item), filtro))
+    : itens;
+
+  return {
+    filtro,
+    setFiltro,
+    setPagina,
+    recorte: paginar(filtrados, pagina, POR_PAGINA),
+    mostrarFiltro: itens.length > POR_PAGINA,
+  };
+}
+
+function CampoDeFiltro({
+  valor,
+  aoMudar,
+  rotulo,
+}: {
+  valor: string;
+  aoMudar: (valor: string) => void;
+  rotulo: string;
+}) {
+  return (
+    <div className="border-b border-borda-suave px-4 py-2">
+      <input
+        value={valor}
+        onChange={(evento) => aoMudar(evento.target.value)}
+        placeholder={rotulo}
+        aria-label={rotulo}
+        className="h-[30px] w-full rounded-full border border-borda-forte bg-white px-3 text-[12.5px] text-tinta"
+      />
+    </div>
+  );
 }
 
 // ==========================================================================
@@ -94,6 +146,10 @@ export function EditorDeMarcas({ dados }: { dados: CadastroComercial }) {
 function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
   const [editando, setEditando] = useState<string | null>(null);
   const [criando, setCriando] = useState(false);
+  const { filtro, setFiltro, setPagina, recorte, mostrarFiltro } = useRecorte(
+    dados.marcas,
+    (marca) => `${marca.nome} ${marca.anunciante} ${marca.segmento}`,
+  );
 
   if (dados.anunciantes.length === 0) {
     return (
@@ -111,8 +167,16 @@ function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
         que as restrições de contrato são cruzadas.
       </p>
 
+      {mostrarFiltro && (
+        <CampoDeFiltro
+          valor={filtro}
+          aoMudar={setFiltro}
+          rotulo="Filtrar por marca, anunciante ou segmento"
+        />
+      )}
+
       <ul className="divide-y divide-borda-suave">
-        {dados.marcas.map((marca) =>
+        {recorte.itens.map((marca) =>
           editando === marca.nome ? (
             <li key={marca.nome} className="bg-fundo-3 px-4 py-3">
               <FormularioDeMarca
@@ -147,6 +211,12 @@ function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
           ),
         )}
       </ul>
+
+      {recorte.total > 1 && (
+        <div className="border-t border-borda-suave px-4 py-2">
+          <Paginador pagina={recorte} aoIr={setPagina} unidade="marcas" />
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-borda-suave px-4 py-3">
         {criando ? (
@@ -330,11 +400,23 @@ function FormularioDeMarca({
 function ListaDeAnunciantes({ dados }: { dados: CadastroComercial }) {
   const [editando, setEditando] = useState<string | null>(null);
   const [criando, setCriando] = useState(false);
+  const { filtro, setFiltro, setPagina, recorte, mostrarFiltro } = useRecorte(
+    dados.anunciantes,
+    (anunciante) => `${anunciante.nome} ${anunciante.setor}`,
+  );
 
   return (
     <div className="flex flex-col">
+      {mostrarFiltro && (
+        <CampoDeFiltro
+          valor={filtro}
+          aoMudar={setFiltro}
+          rotulo="Filtrar por anunciante ou setor"
+        />
+      )}
+
       <ul className="divide-y divide-borda-suave">
-        {dados.anunciantes.map((anunciante) =>
+        {recorte.itens.map((anunciante) =>
           editando === anunciante.nome ? (
             <li key={anunciante.nome} className="bg-fundo-3 px-4 py-3">
               <FormularioDeAnunciante
@@ -369,6 +451,12 @@ function ListaDeAnunciantes({ dados }: { dados: CadastroComercial }) {
           ),
         )}
       </ul>
+
+      {recorte.total > 1 && (
+        <div className="border-t border-borda-suave px-4 py-2">
+          <Paginador pagina={recorte} aoIr={setPagina} unidade="anunciantes" />
+        </div>
+      )}
 
       <div className="border-t border-borda-suave px-4 py-3">
         {criando ? (
@@ -518,6 +606,10 @@ export function EditorDeProgramas({
 }) {
   const [editando, setEditando] = useState<string | null>(null);
   const [criando, setCriando] = useState(false);
+  const { filtro, setFiltro, setPagina, recorte, mostrarFiltro } = useRecorte(
+    dados.programas,
+    (programa) => `${programa.nome} ${programa.segmentoProduto}`,
+  );
 
   return (
     <div className="flex flex-col">
@@ -527,8 +619,16 @@ export function EditorDeProgramas({
         informado&rdquo;. As opções vêm da lista Segmento do produto.
       </p>
 
+      {mostrarFiltro && (
+        <CampoDeFiltro
+          valor={filtro}
+          aoMudar={setFiltro}
+          rotulo="Filtrar por programa ou segmento"
+        />
+      )}
+
       <ul className="divide-y divide-borda-suave">
-        {dados.programas.map((programa) =>
+        {recorte.itens.map((programa) =>
           editando === programa.nome ? (
             <li key={programa.nome} className="bg-fundo-3 px-4 py-3">
               <FormularioDePrograma
@@ -563,6 +663,12 @@ export function EditorDeProgramas({
           ),
         )}
       </ul>
+
+      {recorte.total > 1 && (
+        <div className="border-t border-borda-suave px-4 py-2">
+          <Paginador pagina={recorte} aoIr={setPagina} unidade="programas" />
+        </div>
+      )}
 
       <div className="flex flex-col gap-3 border-t border-borda-suave px-4 py-3">
         {criando ? (

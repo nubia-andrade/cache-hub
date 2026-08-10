@@ -12,6 +12,18 @@ import {
 import { gravarLista } from '@/lib/acoes/listas';
 import { InclusaoEmMassa } from './InclusaoEmMassa';
 import { CABECALHOS_LISTA, planejarLista } from '@/lib/dominio/importacao';
+import { paginar } from '@/lib/dominio/paginacao';
+import { casaComTermo } from '@/lib/dominio/busca';
+import { Paginador } from '@/components/comum/Paginador';
+
+/**
+ * Dez por página, como em Usuários.
+ *
+ * Depois de uma carga em massa, uma lista de duzentos setores rolava a tela
+ * inteira. O mesmo número das outras telas, para a navegação não mudar de
+ * comportamento de seção para seção.
+ */
+const POR_PAGINA = 10;
 import { EditorDeMarcas, EditorDeProgramas } from './EditorDoCatalogo';
 import type { CadastroComercial } from '@/lib/dados/cadastro-comercial';
 
@@ -176,8 +188,19 @@ function EditorDaLista({
   const [erro, setErro] = useState<string | null>(null);
   const [gravando, setGravando] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [pagina, setPagina] = useState(1);
+  const [filtro, setFiltro] = useState('');
 
   const travada = bloqueioDaLista(lista.id);
+
+  // O índice ORIGINAL viaja junto com o valor. Sem ele, editar a linha 3 da
+  // página 2 escreveria na terceira opção da lista inteira — e filtrar
+  // agravaria: a posição na tela deixa de ter relação com a posição real.
+  const comIndice = valores.map((valor, indice) => ({ valor, indice }));
+  const filtrados = filtro.trim()
+    ? comIndice.filter(({ valor }) => casaComTermo(valor, filtro))
+    : comIndice;
+  const recorte = paginar(filtrados, pagina, POR_PAGINA);
   const mudou =
     valores.length !== valoresIniciais.length ||
     valores.some((valor, i) => valor !== valoresIniciais[i]);
@@ -250,13 +273,29 @@ function EditorDaLista({
         </p>
       )}
 
+      {valores.length > POR_PAGINA && (
+        <div className="border-b border-borda-suave px-4 py-2">
+          <input
+            value={filtro}
+            onChange={(evento) => setFiltro(evento.target.value)}
+            placeholder="Filtrar opções"
+            aria-label="Filtrar opções"
+            className="h-[30px] w-full rounded-full border border-borda-forte bg-white px-3 text-[12.5px] text-tinta"
+          />
+        </div>
+      )}
+
       {valores.length === 0 ? (
         <p className="px-4 py-4 text-[12.5px] text-tinta-4">
           Lista vazia. Os campos que dependem dela aparecem sem nenhuma opção.
         </p>
+      ) : recorte.quantidade === 0 ? (
+        <p className="px-4 py-4 text-[12.5px] text-tinta-4">
+          Nenhuma opção com “{filtro}”.
+        </p>
       ) : (
         <ol className="divide-y divide-borda-suave">
-          {valores.map((valor, indice) => (
+          {recorte.itens.map(({ valor, indice }) => (
             <li
               key={`${valor}-${indice}`}
               className="flex items-center gap-2 px-4 py-1.5"
@@ -318,6 +357,16 @@ function EditorDaLista({
             </li>
           ))}
         </ol>
+      )}
+
+      {recorte.total > 1 && (
+        <div className="border-t border-borda-suave px-4 py-2">
+          <Paginador
+            pagina={recorte}
+            aoIr={setPagina}
+            unidade={filtro.trim() ? 'encontradas' : 'opções'}
+          />
+        </div>
       )}
 
       {!travada && (
