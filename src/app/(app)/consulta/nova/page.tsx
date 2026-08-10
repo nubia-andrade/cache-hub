@@ -6,19 +6,9 @@ import { lerListas } from '@/lib/dados/listas';
 import { listarTabelaDePrecos } from '@/lib/dados/precos';
 import { listarTalentos } from '@/lib/dados/talentos';
 import { listarVinculaveis } from '@/lib/dados/vinculaveis';
+import { LISTAS_DO_ESCOPO } from '@/lib/dominio/escopo';
 import { hojeISO } from '@/lib/dominio/restricoes';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
-
-/** As listas que preenchem os selects dos campos dinâmicos do passo 3. */
-const LISTAS_DO_ESCOPO = [
-  'formatos',
-  'verticais',
-  'direcaoRedacao',
-  'ufs',
-  'redesSociais',
-  'localRepost',
-  'localImpulsionamento',
-];
 
 export default async function PaginaNovaConsulta() {
   const usuario = await obterUsuarioLogado();

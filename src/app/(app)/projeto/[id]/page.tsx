@@ -27,6 +27,7 @@ import {
   type TalentoParaEscolha,
 } from '@/lib/dados/talentos';
 import { SubstituirTalento } from '@/components/projeto/SubstituirTalento';
+import { AcoesDaCatraca } from '@/components/projeto/AcoesDaCatraca';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
 export default async function PaginaProjeto({
@@ -171,6 +172,21 @@ export default async function PaginaProjeto({
                       />
                     ) : null
                   }
+                  catraca={
+                    ehSolicitante(usuario.perfis) ? (
+                      <AcoesDaCatraca
+                        projetoId={projeto.id}
+                        itemId={item.id}
+                        item={{
+                          status: item.status,
+                          devolvidoPara: item.devolvidoPara,
+                          ehMeu:
+                            item.criadoPor === usuario.id ||
+                            projeto.solicitanteId === usuario.id,
+                        }}
+                      />
+                    ) : null
+                  }
                 />
               ))}
             </ul>
@@ -244,11 +260,14 @@ function Talento({
   item,
   anteriores,
   substituicao,
+  catraca,
 }: {
   item: ItemDetalhado;
   /** Quem passou por esta vaga antes, do mais recente para o mais antigo. */
   anteriores: ItemDetalhado[];
   substituicao: React.ReactNode;
+  /** Ajustar, retirar da fila, ou a frase que explica por que não dá. */
+  catraca: React.ReactNode;
 }) {
   const cores = coresDoStatus(item.status);
 
@@ -336,6 +355,7 @@ function Talento({
         </div>
       )}
 
+      {catraca}
       {substituicao}
     </li>
   );

@@ -16,6 +16,8 @@ export type ItemDetalhado = {
   talento: string;
   /** Preciso para checar "esse talento já está na consulta" ao substituir. */
   talentoId: string;
+  /** Quem incluiu o talento. Decide quem pode ajustar — ver [[catraca]]. */
+  criadoPor: string | null;
   /** Quem este item substituiu. Ver [[substituicao]]. */
   substituiItemId: string | null;
   categoria: Categoria;

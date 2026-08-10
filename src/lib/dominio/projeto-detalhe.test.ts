@@ -10,6 +10,7 @@ function item(campos: Partial<ItemDetalhado>): ItemDetalhado {
     id: 'i1',
     talento: 'Alguém',
     talentoId: 't1',
+    criadoPor: 'u1',
     substituiItemId: null,
     categoria: 'Creator',
     status: 'Orçado',

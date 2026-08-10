@@ -19,6 +19,24 @@ import { NATUREZAS_DA_ACAO } from './dispensa';
  * `camposDaMidia`.
  */
 
+/**
+ * As listas configuráveis que preenchem os selects dos campos dinâmicos.
+ *
+ * Mora aqui, e não na página, porque duas telas montam o mesmo editor de
+ * escopo — a nova consulta e o ajuste de um item devolvido. Duplicada, a
+ * lista divergiria no dia em que um campo novo aparecesse só numa delas, e o
+ * select ficaria vazio sem ninguém entender por quê.
+ */
+export const LISTAS_DO_ESCOPO = [
+  'formatos',
+  'verticais',
+  'direcaoRedacao',
+  'ufs',
+  'redesSociais',
+  'localRepost',
+  'localImpulsionamento',
+] as const;
+
 export type TipoCampo =
   | 'moeda'
   | 'select'

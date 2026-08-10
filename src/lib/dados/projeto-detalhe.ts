@@ -39,6 +39,7 @@ type LinhaProjeto = {
     tipo_projeto: string | null;
     substitui_item_id?: string | null;
     talento_id: string;
+    criado_por: string | null;
     talento: { nome: string; nome_artistico: string | null } | null;
   }[];
   eventos: {
@@ -59,7 +60,7 @@ function consulta(comSubstituicao: boolean): string {
   itens:solicitacao_item (
     id, categoria, status, verba, valor_sugerido, cache, parecer, validade,
     conversao, devolvido_para, entregas, campos_extra, tipo_projeto,
-    talento_id${comSubstituicao ? ', substitui_item_id' : ''},
+    talento_id, criado_por${comSubstituicao ? ', substitui_item_id' : ''},
     talento ( nome, nome_artistico )
   ),
   eventos:evento ( id, titulo, descricao, alerta, criado_em )
@@ -112,6 +113,7 @@ export async function lerProjeto(
   const itens = data.itens.map((item) => ({
     id: item.id,
     talentoId: item.talento_id,
+    criadoPor: item.criado_por,
     substituiItemId: item.substitui_item_id ?? null,
     talento: item.talento?.nome_artistico ?? item.talento?.nome ?? '—',
     categoria: validarCategoria(item.categoria),
