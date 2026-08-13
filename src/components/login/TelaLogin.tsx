@@ -85,11 +85,11 @@ export function TelaLogin() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-fundo p-4 sm:p-8">
+    <main className="flex min-h-screen items-center justify-center bg-fundo p-3 sm:p-8">
       <div className="grid w-full max-w-[1180px] overflow-hidden rounded-[22px] bg-white shadow-[0_30px_70px_rgba(18,17,90,0.22)] lg:grid-cols-[1.15fr_1fr]">
         <PainelDaMarca />
 
-        <div className="flex flex-col justify-center px-8 py-10 sm:px-11">
+        <div className="flex flex-col justify-center px-5 py-8 sm:px-11 sm:py-10">
           {tela === 'login' && (
             <FormularioEntrada
               email={email}

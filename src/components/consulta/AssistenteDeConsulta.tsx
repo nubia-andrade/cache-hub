@@ -239,7 +239,12 @@ export function AssistenteDeConsulta({
               }`}
             >
               <span>{item.numero}</span>
-              <span>{item.titulo}</span>
+              {/* No celular só o passo atual diz o nome: quatro rótulos
+                  quebram em duas linhas e roubam a tela de quem tem menos.
+                  O número sozinho já orienta quem está no meio do caminho. */}
+              <span className={atual ? '' : 'hidden sm:inline'}>
+                {item.titulo}
+              </span>
             </li>
           );
         })}
@@ -346,12 +351,12 @@ export function AssistenteDeConsulta({
           )}
         </div>
 
-        <div className="flex gap-2.5">
+        <div className="flex w-full gap-2.5 sm:w-auto">
           {passo > 1 && (
             <button
               type="button"
               onClick={() => setPasso(passo - 1)}
-              className="h-[42px] cursor-pointer rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta"
+              className="flex-1 sm:flex-none h-[42px] cursor-pointer rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta"
             >
               Voltar
             </button>
@@ -362,7 +367,7 @@ export function AssistenteDeConsulta({
               type="button"
               onClick={() => setPasso(2)}
               disabled={!cabecalhoOk}
-              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+              className="flex-1 sm:flex-none h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               Escolher talentos
             </button>
@@ -373,7 +378,7 @@ export function AssistenteDeConsulta({
               type="button"
               onClick={irParaEntregas}
               disabled={escolhidos.size === 0}
-              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+              className="flex-1 sm:flex-none h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               Montar entregas
             </button>
@@ -386,7 +391,7 @@ export function AssistenteDeConsulta({
               type="button"
               onClick={() => gravar(false)}
               disabled={gravando || selecionados.length === 0}
-              className="h-[42px] rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta enabled:cursor-pointer disabled:opacity-40"
+              className="flex-1 sm:flex-none h-[42px] rounded-full border border-borda-forte bg-white px-[18px] text-[13.5px] font-semibold text-tinta enabled:cursor-pointer disabled:opacity-40"
             >
               {gravando ? 'Salvando…' : 'Salvar rascunho'}
             </button>
@@ -397,7 +402,7 @@ export function AssistenteDeConsulta({
               type="button"
               onClick={() => setPasso(4)}
               disabled={selecionados.length === 0}
-              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+              className="flex-1 sm:flex-none h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               Revisar
             </button>
@@ -408,7 +413,7 @@ export function AssistenteDeConsulta({
               type="button"
               onClick={() => gravar(true)}
               disabled={gravando || impedimentos.length > 0}
-              className="h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+              className="flex-1 sm:flex-none h-[42px] rounded-full bg-magenta px-[22px] text-[13.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
             >
               {gravando ? 'Enviando…' : 'Enviar para a fila'}
             </button>

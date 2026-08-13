@@ -203,7 +203,7 @@ function ListaDeMarcas({ dados }: { dados: CadastroComercial }) {
               <button
                 type="button"
                 onClick={() => setEditando(marca.nome)}
-                className="h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
+                className="h-[32px] sm:h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
               >
                 Editar
               </button>
@@ -443,7 +443,7 @@ function ListaDeAnunciantes({ dados }: { dados: CadastroComercial }) {
               <button
                 type="button"
                 onClick={() => setEditando(anunciante.nome)}
-                className="h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
+                className="h-[32px] sm:h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
               >
                 Editar
               </button>
@@ -655,7 +655,7 @@ export function EditorDeProgramas({
               <button
                 type="button"
                 onClick={() => setEditando(programa.nome)}
-                className="h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
+                className="h-[32px] sm:h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-2 hover:border-magenta hover:text-magenta"
               >
                 Editar
               </button>
@@ -850,7 +850,7 @@ function Aba({
       type="button"
       onClick={aoClicar}
       aria-current={ativa ? 'true' : undefined}
-      className={`h-[28px] rounded-full px-3 text-[12px] font-semibold ${
+      className={`h-[34px] sm:h-[28px] rounded-full px-3 text-[12px] font-semibold ${
         ativa
           ? 'bg-magenta-suave text-magenta'
           : 'cursor-pointer text-tinta-3 hover:text-tinta'

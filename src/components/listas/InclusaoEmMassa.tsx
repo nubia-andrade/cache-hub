@@ -127,7 +127,7 @@ export function InclusaoEmMassa<T>({
         <button
           type="button"
           onClick={fechar}
-          className="h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-3"
+          className="h-[32px] sm:h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11.5px] font-semibold text-tinta-3"
         >
           Fechar
         </button>

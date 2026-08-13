@@ -58,7 +58,7 @@ function Botao({
       type="button"
       disabled={desabilitado}
       onClick={aoClicar}
-      className="h-[28px] rounded-full border border-borda-forte bg-white px-3 text-[12px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-35"
+      className="h-[34px] sm:h-[28px] rounded-full border border-borda-forte bg-white px-3 text-[12px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-35"
     >
       {rotulo}
     </button>

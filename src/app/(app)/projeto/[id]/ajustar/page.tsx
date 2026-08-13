@@ -90,7 +90,7 @@ export default async function PaginaDeAjuste({
   }));
 
   return (
-    <section className="px-[26px] pb-[30px] pt-6">
+    <section className="px-4 pb-[30px] pt-5 sm:px-[26px] sm:pt-6">
       <div className="mb-5 flex flex-col gap-1">
         <Link
           href={`/projeto/${projeto.id}`}

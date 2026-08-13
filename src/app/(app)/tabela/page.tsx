@@ -36,7 +36,7 @@ export default async function PaginaTabela() {
   ];
 
   return (
-    <section className="px-[26px] pb-[30px] pt-6">
+    <section className="px-4 pb-[30px] pt-5 sm:px-[26px] sm:pt-6">
       {/* Tarja do protótipo. Ela não protege nada — quem protege é o RLS e a
           guarda de rotas. Serve para lembrar quem está com a tela aberta de
           que aquilo ali não se manda por e-mail. */}

@@ -50,8 +50,12 @@ export default async function LayoutDoApp({
   const temAcesso = podeAcessar(usuario.perfis, caminhoAtual, matriz);
 
   return (
-    <div className="flex min-h-screen justify-center bg-fundo px-4 py-8">
-      <div className="flex w-full max-w-[1400px] flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_24px_60px_rgba(18,17,26,0.13)]">
+    // No celular a aplicação ocupa a tela inteira: a moldura arredondada come
+    // 32px de largura e 64px de altura, e num aparelho de 390px isso é a
+    // diferença entre um formulário caber e não caber. Da largura de tablet em
+    // diante ela volta, porque aí sobra espaço e o cartão dá foco ao conteúdo.
+    <div className="flex min-h-screen justify-center bg-fundo sm:px-4 sm:py-8">
+      <div className="flex w-full max-w-[1400px] flex-col overflow-hidden bg-white sm:rounded-[18px] sm:shadow-[0_24px_60px_rgba(18,17,26,0.13)]">
         {MODO_TESTE_SEM_APROVACAO && <TarjaModoTeste />}
         <CabecalhoApp
           usuario={usuario}

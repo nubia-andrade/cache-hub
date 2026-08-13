@@ -79,7 +79,7 @@ export default async function PaginaProjeto({
     : [];
 
   return (
-    <section className="px-[26px] pb-[30px] pt-6">
+    <section className="px-4 pb-[30px] pt-5 sm:px-[26px] sm:pt-6">
       <Link
         href="/inicio"
         className="mb-2 inline-block text-[12.5px] font-semibold text-tinta-3 hover:text-magenta"

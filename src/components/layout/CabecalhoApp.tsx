@@ -40,7 +40,19 @@ export function CabecalhoApp({
   }
 
   return (
-    <header className="flex h-[62px] shrink-0 items-center justify-between gap-4 border-b border-borda px-[26px]">
+    /*
+     * No celular, duas linhas: identidade e ações em cima, seções embaixo.
+     *
+     * Em vez de esconder o menu atrás de um botão sanduíche. Este é um Hub de
+     * ir e voltar — Início, Fila, projeto, Início de novo —, e um menu que
+     * exige um clique para aparecer cobra esse clique em toda troca. Uma fila
+     * de abas que rola de lado mantém tudo a um deslize, e continua mostrando
+     * em qual seção você está.
+     *
+     * `flex-wrap` + `w-full` na navegação é o que a empurra para a segunda
+     * linha sozinha; a partir de `sm` ela volta para o meio, como sempre foi.
+     */
+    <header className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-borda px-4 py-2.5 sm:h-[62px] sm:flex-nowrap sm:justify-between sm:px-[26px] sm:py-0">
       <div className="flex shrink-0 items-center gap-[13px]">
         {/* Sobre o branco do cabeçalho, a versão colorida — é o logo de verdade. */}
         <LogoGlobo className="h-[30px] w-auto" />
@@ -56,7 +68,7 @@ export function CabecalhoApp({
 
       <nav
         aria-label="Seções do Hub"
-        className="flex items-center gap-5 overflow-x-auto"
+        className="order-3 -mx-4 flex w-[calc(100%+2rem)] items-center gap-5 overflow-x-auto px-4 pb-0.5 sm:order-none sm:mx-0 sm:w-auto sm:px-0 sm:pb-0"
       >
         {itens.map((item) => {
           const ativo = caminhoAtual === item.href;
@@ -77,7 +89,7 @@ export function CabecalhoApp({
         })}
       </nav>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="order-2 ml-auto flex shrink-0 items-center gap-2 sm:order-none sm:gap-3">
         {/* Antes do botão de sair, e não depois: é o que a pessoa procura ao
             chegar, e sair é o que ela faz ao terminar. */}
         <SinoDePendencias pendencias={pendencias} />

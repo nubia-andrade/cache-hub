@@ -236,7 +236,7 @@ function BotaoDePagina({
       type="button"
       disabled={desabilitado}
       onClick={aoClicar}
-      className="h-[28px] rounded-full border border-borda-forte bg-white px-3 text-[12px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-35"
+      className="h-[34px] sm:h-[28px] rounded-full border border-borda-forte bg-white px-3 text-[12px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-35"
     >
       {rotulo}
     </button>
@@ -320,7 +320,7 @@ function LinhaDoUsuario({
           expandido ? 'bg-fundo-3' : ''
         }`}
       >
-        <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-fundo-2 font-titulo text-[10.5px] font-bold text-tinta-2">
+        <span className="flex h-[32px] sm:h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-fundo-2 font-titulo text-[10.5px] font-bold text-tinta-2">
           {iniciais(usuario.nome)}
         </span>
 
@@ -393,7 +393,7 @@ function LinhaDoUsuario({
                   disabled={gravando}
                   aria-pressed={marcado}
                   onClick={() => alternarPerfil(perfil)}
-                  className={`h-[26px] rounded-full border px-2.5 text-[11px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
+                  className={`h-[32px] sm:h-[26px] rounded-full border px-2.5 text-[11px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
                     marcado
                       ? 'border-azul bg-azul-suave text-azul'
                       : 'border-borda-forte bg-white text-tinta-4'

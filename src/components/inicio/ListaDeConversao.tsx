@@ -252,7 +252,7 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
           // sozinha não distingue "ainda não sei" de "o cliente disse não", e
           // é essa diferença que mantém a taxa de conversão honesta.
           onChange={() => marcar(fechado ? 'pendente' : 'fechado')}
-          className="h-[16px] w-[16px] cursor-pointer accent-[#c7168c]"
+          className="h-[20px] w-[20px] cursor-pointer accent-[#c7168c] sm:h-[16px] sm:w-[16px]"
         />
         <span className="text-[13px] font-semibold text-tinta">
           {item.talento}
@@ -269,7 +269,7 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
           disabled={gravando}
           onClick={() => marcar(naoFechado ? 'pendente' : 'não fechado')}
           aria-pressed={naoFechado}
-          className={`h-[26px] rounded-full border px-2.5 text-[11px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
+          className={`h-[32px] sm:h-[26px] rounded-full border px-2.5 text-[11px] font-semibold enabled:cursor-pointer disabled:opacity-40 ${
             naoFechado
               ? 'border-erro-borda bg-erro-fundo text-erro'
               : 'border-borda-forte bg-white text-tinta-4'
@@ -306,7 +306,7 @@ function LinhaDoTalento({ item }: { item: ItemDoProjeto }) {
                 (evento.target.value || null) as MotivoNaoFechou | null,
               )
             }
-            className="h-[26px] rounded-lg border border-borda-forte bg-white px-2 text-[11.5px] text-tinta"
+            className="h-[32px] sm:h-[26px] rounded-lg border border-borda-forte bg-white px-2 text-[11.5px] text-tinta"
           >
             <option value="">não informado</option>
             {MOTIVOS_NAO_FECHOU.map((motivo) => (

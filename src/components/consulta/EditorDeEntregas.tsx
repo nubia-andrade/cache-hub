@@ -185,7 +185,7 @@ export function EditorDeEntregas({
                               ),
                         })
                       }
-                      className={`h-[28px] cursor-pointer rounded-full border px-2.5 text-[11.5px] font-semibold ${
+                      className={`h-[34px] sm:h-[28px] cursor-pointer rounded-full border px-2.5 text-[11.5px] font-semibold ${
                         marcada
                           ? 'border-magenta bg-magenta-suave text-magenta'
                           : 'border-borda-forte bg-white text-tinta-4'

@@ -69,7 +69,7 @@ export function AcoesDaCatraca({
         <>
           <Link
             href={`/projeto/${projetoId}/ajustar`}
-            className="flex h-[26px] items-center rounded-full border border-magenta bg-white px-2.5 text-[11px] font-semibold text-magenta hover:bg-magenta-suave"
+            className="flex h-[32px] sm:h-[26px] items-center rounded-full border border-magenta bg-white px-2.5 text-[11px] font-semibold text-magenta hover:bg-magenta-suave"
           >
             Ajustar escopo
           </Link>
@@ -85,7 +85,7 @@ export function AcoesDaCatraca({
             type="button"
             disabled={gravando}
             onClick={retirar}
-            className="h-[26px] rounded-full border border-borda-forte bg-white px-2.5 text-[11px] font-semibold text-tinta-3 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-40"
+            className="h-[32px] sm:h-[26px] rounded-full border border-borda-forte bg-white px-2.5 text-[11px] font-semibold text-tinta-3 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-40"
           >
             {gravando ? 'Retirando…' : 'Retirar da fila para ajustar'}
           </button>

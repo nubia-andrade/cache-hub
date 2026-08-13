@@ -66,7 +66,7 @@ export function CartaoProjeto({
           <span
             key={item.id}
             title={item.talento}
-            className="flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white font-titulo text-[10px] font-bold text-white"
+            className="flex h-[32px] sm:h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white font-titulo text-[10px] font-bold text-white"
             style={{
               background: corDoAvatar(indice, posicao),
               marginLeft: posicao > 0 ? '-8px' : 0,

@@ -57,7 +57,7 @@ export function SubstituirTalento({
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="mt-2 h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11px] font-semibold text-tinta-3 hover:border-magenta hover:text-magenta"
+        className="mt-2 h-[32px] sm:h-[26px] cursor-pointer rounded-full border border-borda-forte bg-white px-2.5 text-[11px] font-semibold text-tinta-3 hover:border-magenta hover:text-magenta"
       >
         Substituir talento
       </button>
@@ -133,7 +133,7 @@ export function SubstituirTalento({
           type="button"
           disabled={gravando || !escolhido || Boolean(problema)}
           onClick={confirmar}
-          className="h-[28px] rounded-full bg-magenta px-3 text-[11.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
+          className="h-[34px] sm:h-[28px] rounded-full bg-magenta px-3 text-[11.5px] font-bold text-white enabled:cursor-pointer disabled:opacity-40"
         >
           {gravando ? 'Substituindo…' : 'Confirmar substituição'}
         </button>
@@ -145,7 +145,7 @@ export function SubstituirTalento({
             setEscolhido('');
             setErro(null);
           }}
-          className="h-[28px] cursor-pointer rounded-full border border-borda-forte bg-white px-3 text-[11.5px] font-semibold text-tinta-3"
+          className="h-[34px] sm:h-[28px] cursor-pointer rounded-full border border-borda-forte bg-white px-3 text-[11.5px] font-semibold text-tinta-3"
         >
           Cancelar
         </button>

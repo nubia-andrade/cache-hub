@@ -12,7 +12,7 @@ export default async function PaginaInicio() {
   const primeiroNome = usuario.nome.split(' ')[0];
 
   return (
-    <section className="px-[26px] pb-[30px] pt-6">
+    <section className="px-4 pb-[30px] pt-5 sm:px-[26px] sm:pt-6">
       <div className="mb-[18px] flex flex-wrap items-start justify-between gap-5">
         <div className="flex flex-col gap-1">
           <h1 className="font-titulo text-[25px] font-semibold text-tinta">
