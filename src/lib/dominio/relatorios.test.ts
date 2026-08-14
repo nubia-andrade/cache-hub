@@ -8,8 +8,12 @@ import {
   funil,
   mediana,
   motivosDePerda,
+  periodoAnterior,
+  ranking,
+  resumoDoTopo,
   resumoGeral,
   tempoDeResposta,
+  variacao,
   type LinhaDeAnalise,
 } from './relatorios';
 
@@ -23,9 +27,13 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     equipe: 'Entretenimento',
     segmentoProduto: 'Variedades',
     anunciante: 'Ambev',
+    marca: 'Brahma',
+    programa: 'Big Brother Brasil',
     setorCliente: 'Bebidas alcoólicas',
     area: 'ViU',
     categoria: 'Influenciador',
+    talentoId: `talento-${contador}`,
+    talento: 'Alguém',
     status: 'Orçado',
     conversao: 'pendente',
     foiSubstituido: false,
@@ -339,5 +347,111 @@ describe('talento substituído', () => {
       foiSubstituido: true,
     });
     expect(motivosDePerda([perdido, substituto])).toEqual([]);
+  });
+});
+
+describe('o painel do topo', () => {
+  it('talentos e talentos DISTINTOS respondem coisas diferentes', () => {
+    // 3 consultas de talento podem ser 2 pessoas. Ler só a primeira faz achar
+    // que o Hub movimenta mais gente do que movimenta.
+    const linhas = [
+      linha({ talentoId: 't1' }),
+      linha({ talentoId: 't1' }),
+      linha({ talentoId: 't2' }),
+    ];
+    const topo = resumoDoTopo(linhas, null);
+    expect(topo.talentos).toBe(3);
+    expect(topo.talentosDistintos).toBe(2);
+  });
+
+  it('mede quantos couberam no prazo da área', () => {
+    // ViU responde em 1 dia; Gestão de Elenco, em 2.
+    const dentro = linha({
+      categoria: 'Influenciador',
+      criadoEm: '2026-08-01T00:00:00.000Z',
+      respondidoEm: '2026-08-01T12:00:00.000Z',
+    });
+    const fora = linha({
+      categoria: 'Influenciador',
+      criadoEm: '2026-08-01T00:00:00.000Z',
+      respondidoEm: '2026-08-05T00:00:00.000Z',
+    });
+
+    expect(resumoDoTopo([dentro, fora], null).dentroDoPrazo).toBe(0.5);
+  });
+
+  it('sem nenhuma resposta, prazo e tempo são null e não zero', () => {
+    const topo = resumoDoTopo([linha({ respondidoEm: null })], null);
+    expect(topo.dentroDoPrazo).toBeNull();
+    expect(topo.tempoMedio).toBeNull();
+  });
+});
+
+describe('comparação com o período anterior', () => {
+  const HOJE = new Date('2026-08-31T12:00:00.000Z');
+
+  it('a janela de trás tem a mesma largura', () => {
+    const linhas = [
+      linha({ criadoEm: '2026-08-20T00:00:00.000Z' }), // dentro dos 30
+      linha({ criadoEm: '2026-07-20T00:00:00.000Z' }), // nos 30 anteriores
+      linha({ criadoEm: '2026-05-01T00:00:00.000Z' }), // antes disso
+    ];
+    const antes = periodoAnterior(linhas, '30', HOJE);
+    expect(antes).toHaveLength(1);
+    expect(antes?.[0].criadoEm).toBe('2026-07-20T00:00:00.000Z');
+  });
+
+  it('com "Tudo" não existe período anterior', () => {
+    // E aí a comparação some da tela, em vez de virar 0% — que pareceria
+    // queda total.
+    expect(periodoAnterior([linha()], 'tudo', HOJE)).toBeNull();
+  });
+
+  it('sair do zero não é porcentagem', () => {
+    expect(variacao(10, 0)).toBeNull();
+    expect(variacao(11, 10)).toBeCloseTo(0.1);
+    expect(variacao(5, 10)).toBeCloseTo(-0.5);
+  });
+});
+
+describe('ranking do painel', () => {
+  it('ordena por VALOR, não por quantidade', () => {
+    // O painel de abertura pergunta "onde está o dinheiro"; a tabela de
+    // volumetria, logo abaixo, é que pergunta "onde está o trabalho".
+    const linhas = [
+      linha({ marca: 'Pequena', cache: 900000 }),
+      linha({ marca: 'Muitas', cache: 1000 }),
+      linha({ marca: 'Muitas', cache: 1000 }),
+      linha({ marca: 'Muitas', cache: 1000 }),
+    ];
+    expect(ranking(linhas, 'marca').map((r) => r.rotulo)).toEqual([
+      'Pequena',
+      'Muitas',
+    ]);
+  });
+
+  it('o primeiro enche a barra e os outros medem contra ele', () => {
+    const linhas = [
+      linha({ marca: 'A', cache: 100 }),
+      linha({ marca: 'B', cache: 50 }),
+    ];
+    const r = ranking(linhas, 'marca');
+    expect(r[0].fatia).toBe(1);
+    expect(r[1].fatia).toBe(0.5);
+  });
+
+  it('quem não tem valor orçado fica fora', () => {
+    const linhas = [
+      linha({ marca: 'Com', cache: 100 }),
+      linha({ marca: 'Sem', cache: null }),
+    ];
+    expect(ranking(linhas, 'marca').map((r) => r.rotulo)).toEqual(['Com']);
+  });
+
+  it('corta no número pedido', () => {
+    const linhas = ['A', 'B', 'C', 'D', 'E'].map((marca, i) =>
+      linha({ marca, cache: (5 - i) * 100 }),
+    );
+    expect(ranking(linhas, 'marca', 3)).toHaveLength(3);
   });
 });

@@ -1,6 +1,6 @@
 import { taxaDeConversao, type Conversao } from './conversao';
 import type { StatusSolicitacao } from './solicitacao';
-import type { Categoria } from './categorias';
+import { slaEmDias, type Categoria } from './categorias';
 import type { Area } from './categorias';
 
 /**
@@ -26,10 +26,17 @@ export type LinhaDeAnalise = {
   equipe: string;
   segmentoProduto: string;
   anunciante: string;
+  marca: string;
+  programa: string;
   setorCliente: string;
   /** Dimensões do talento. */
   area: Area;
   categoria: Categoria;
+  /** Quem é o talento. Só para contar pessoas distintas, nunca para agrupar
+   *  — um ranking por talento exporia quanto cada um custa, e isso não é
+   *  informação de painel. */
+  talentoId: string;
+  talento: string;
   status: StatusSolicitacao;
   conversao: Conversao;
   /**
@@ -52,10 +59,12 @@ export type LinhaDeAnalise = {
 
 export const DIMENSOES = [
   { chave: 'equipe', rotulo: 'Equipe' },
+  { chave: 'anunciante', rotulo: 'Anunciante' },
+  { chave: 'marca', rotulo: 'Marca' },
+  { chave: 'programa', rotulo: 'Programa' },
   { chave: 'segmentoProduto', rotulo: 'Segmento do produto' },
   { chave: 'area', rotulo: 'Área responsável' },
   { chave: 'categoria', rotulo: 'Categoria do talento' },
-  { chave: 'anunciante', rotulo: 'Anunciante' },
   { chave: 'setorCliente', rotulo: 'Setor do cliente' },
 ] as const;
 
@@ -302,6 +311,23 @@ const UM_DIA = 1000 * 60 * 60 * 24;
  * lenta. A média fica ao lado, e a diferença entre as duas é justamente o
  * sinal de que existe um caso extremo — por isso a coluna "pior".
  */
+/**
+ * Quantos dias esta linha levou para ser respondida, ou `null`.
+ *
+ * Null cobre três casos que não devem virar zero: não respondida ainda, data
+ * ilegível, e resposta ANTERIOR à abertura. O último é dado sujo — de uma
+ * carga antiga ou de um relógio errado — e deixá-lo entrar como número
+ * negativo puxaria a média do time para baixo sem ninguém entender por quê.
+ */
+export function diasDeResposta(linha: LinhaDeAnalise): number | null {
+  if (!linha.criadoEm || !linha.respondidoEm) return null;
+
+  const dias =
+    (Date.parse(linha.respondidoEm) - Date.parse(linha.criadoEm)) / UM_DIA;
+
+  return Number.isFinite(dias) && dias >= 0 ? dias : null;
+}
+
 export function tempoDeResposta(
   linhas: readonly LinhaDeAnalise[],
   dimensao: Dimensao,
@@ -309,11 +335,8 @@ export function tempoDeResposta(
   const grupos = new Map<string, number[]>();
 
   for (const linha of linhas) {
-    if (!linha.criadoEm || !linha.respondidoEm) continue;
-
-    const dias =
-      (Date.parse(linha.respondidoEm) - Date.parse(linha.criadoEm)) / UM_DIA;
-    if (!Number.isFinite(dias) || dias < 0) continue;
+    const dias = diasDeResposta(linha);
+    if (dias === null) continue;
 
     const chave = valorDaDimensao(linha, dimensao);
     const atual = grupos.get(chave);
@@ -385,7 +408,7 @@ export function desempenhoDosAprovadores(
   return [...grupos.entries()]
     .map(([nome, doGrupo]) => {
       const dias = doGrupo
-        .filter((linha) => linha.criadoEm && linha.respondidoEm)
+        .filter((linha) => diasDeResposta(linha) !== null)
         .map(
           (linha) =>
             (Date.parse(linha.respondidoEm!) - Date.parse(linha.criadoEm!)) /
@@ -428,4 +451,150 @@ export function abreviarReais(valor: number): string {
 export function formatarDias(dias: number | null): string {
   if (dias === null) return '—';
   return `${dias.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} ${dias === 1 ? 'dia' : 'dias'}`;
+}
+
+// --------------------------------------------------------------------------
+// O painel do topo
+// --------------------------------------------------------------------------
+
+/**
+ * A janela ANTERIOR de mesmo tamanho, para o "+12% vs. período anterior".
+ *
+ * Comparar 30 dias com 90 daria um número sem sentido, então a janela de trás
+ * tem exatamente a mesma largura. Com o período "Tudo" não há trás nenhum — e
+ * aí a comparação some da tela em vez de virar 0%, que pareceria queda total.
+ */
+export function periodoAnterior(
+  linhas: readonly LinhaDeAnalise[],
+  periodo: PeriodoChave,
+  hoje: Date = new Date(),
+): LinhaDeAnalise[] | null {
+  const dias = PERIODOS.find((p) => p.chave === periodo)?.dias ?? null;
+  if (dias === null) return null;
+
+  const fim = new Date(hoje);
+  fim.setDate(fim.getDate() - dias);
+  const inicio = new Date(fim);
+  inicio.setDate(inicio.getDate() - dias);
+
+  const de = inicio.toISOString();
+  const ate = fim.toISOString();
+
+  return linhas.filter(
+    (linha) =>
+      linha.criadoEm !== null && linha.criadoEm >= de && linha.criadoEm < ate,
+  );
+}
+
+/**
+ * A variação entre dois períodos, de -1 a +∞.
+ *
+ * `null` quando não havia nada antes: sair de zero para dez não é "+1000%", é
+ * "começou agora", e nenhum dos dois cabe numa seta de porcentagem.
+ */
+export function variacao(agora: number, antes: number): number | null {
+  if (antes === 0) return null;
+  return (agora - antes) / antes;
+}
+
+export function formatarVariacao(valor: number | null): string {
+  if (valor === null) return 'sem base de comparação';
+  const sinal = valor > 0 ? '+' : '';
+  return `${sinal}${Math.round(valor * 100)}% vs. período anterior`;
+}
+
+export type ResumoDoTopo = {
+  solicitacoes: number;
+  variacaoSolicitacoes: number | null;
+  talentos: number;
+  talentosDistintos: number;
+  valorOrcado: number;
+  valorFechado: number;
+  taxa: number | null;
+  /** Mediana dos dias de resposta. Null enquanto ninguém respondeu. */
+  tempoMedio: number | null;
+  /** Fatia dos respondidos que couberam no prazo da área. Null sem respostas. */
+  dentroDoPrazo: number | null;
+};
+
+/**
+ * Os cinco números do alto da tela.
+ *
+ * "Talentos distintos" existe porque as duas contagens respondem coisas
+ * diferentes: 312 consultas de talento podem ser 96 pessoas. A primeira mede
+ * trabalho, a segunda mede alcance do elenco — e quem lê só a primeira acha
+ * que o Hub movimenta três vezes mais gente do que movimenta.
+ */
+export function resumoDoTopo(
+  doPeriodo: readonly LinhaDeAnalise[],
+  anteriores: readonly LinhaDeAnalise[] | null,
+): ResumoDoTopo {
+  const total = resumoGeral(doPeriodo);
+
+  const solicitacoesAntes = anteriores
+    ? new Set(anteriores.map((linha) => linha.solicitacaoId)).size
+    : 0;
+
+  const dias = doPeriodo
+    .map((linha) => ({ linha, dias: diasDeResposta(linha) }))
+    .filter((par): par is { linha: LinhaDeAnalise; dias: number } =>
+      par.dias !== null,
+    );
+
+  const dentro = dias.filter(
+    (par) => par.dias <= slaEmDias(par.linha.categoria),
+  );
+
+  return {
+    solicitacoes: total.projetos,
+    variacaoSolicitacoes: anteriores
+      ? variacao(total.projetos, solicitacoesAntes)
+      : null,
+    talentos: total.talentos,
+    talentosDistintos: new Set(
+      doPeriodo.map((linha) => linha.talentoId || linha.talento),
+    ).size,
+    valorOrcado: total.valorOrcado,
+    valorFechado: total.valorFechado,
+    taxa: total.taxa,
+    tempoMedio: mediana(dias.map((par) => par.dias)),
+    dentroDoPrazo: dias.length === 0 ? null : dentro.length / dias.length,
+  };
+}
+
+/**
+ * Os rankings do painel: uma dimensão, os maiores por valor orçado.
+ *
+ * Por VALOR, e não por talentos — é o corte que o painel de abertura pede:
+ * "onde está o dinheiro". A tabela de volumetria, logo abaixo, continua
+ * ordenando por talentos, que responde "onde está o trabalho". As duas
+ * perguntas são diferentes e as duas têm o seu lugar.
+ */
+export type LinhaDeRanking = {
+  rotulo: string;
+  valor: number;
+  /** De 0 a 1, contra o primeiro colocado. É a largura da barra. */
+  fatia: number;
+};
+
+export function ranking(
+  linhas: readonly LinhaDeAnalise[],
+  dimensao: Dimensao,
+  quantos = 4,
+): LinhaDeRanking[] {
+  const grupos = agrupar(linhas, dimensao)
+    .filter((grupo) => grupo.valorOrcado > 0)
+    .sort((a, b) => b.valorOrcado - a.valorOrcado)
+    .slice(0, quantos);
+
+  const maior = grupos[0]?.valorOrcado ?? 0;
+
+  return grupos.map((grupo) => ({
+    rotulo: grupo.rotulo,
+    valor: grupo.valorOrcado,
+    // O primeiro sempre enche a barra. Comparar com o total faria todas as
+    // barras nascerem curtas, e a diferença entre o segundo e o quarto —
+    // que é o que se lê num ranking — sumiria.
+    fatia: maior === 0 ? 0 : grupo.valorOrcado / maior,
+  }));
 }

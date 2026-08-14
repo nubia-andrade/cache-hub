@@ -26,6 +26,7 @@ type LinhaBruta = {
   id: string;
   equipe: string | null;
   anunciante: string | null;
+  marca: string | null;
   setor_cliente: string | null;
   programa: string | null;
   criado_em: string | null;
@@ -36,6 +37,8 @@ type LinhaBruta = {
     status: string | null;
     conversao: string | null;
     motivo_nao_fechou: string | null;
+    talento_id: string | null;
+    talento: { nome: string; nome_artistico: string | null } | null;
     cache: number | null;
     valor_fechado: number | null;
     substitui_item_id?: string | null;
@@ -46,9 +49,10 @@ type LinhaBruta = {
 
 function consulta(comSubstituicao: boolean): string {
   return `
-  id, equipe, anunciante, setor_cliente, programa, criado_em,
+  id, equipe, anunciante, marca, setor_cliente, programa, criado_em,
   itens:solicitacao_item (
-    id, area, categoria, status, conversao, motivo_nao_fechou,
+    id, area, categoria, status, conversao, motivo_nao_fechou, talento_id,
+    talento ( nome, nome_artistico ),
     cache, valor_fechado, respondido_em${
       comSubstituicao ? ', substitui_item_id' : ''
     },
@@ -115,6 +119,8 @@ export async function lerLinhasDeAnalise(): Promise<{
       equipe: projeto.equipe ?? '',
       segmentoProduto: segmentoPorPrograma.get(projeto.programa ?? '') ?? '',
       anunciante: projeto.anunciante ?? '',
+      marca: projeto.marca ?? '',
+      programa: projeto.programa ?? '',
       setorCliente: projeto.setor_cliente ?? '',
       criadoEm: projeto.criado_em,
     };
@@ -125,6 +131,9 @@ export async function lerLinhasDeAnalise(): Promise<{
         itemId: item.id,
         area: validarArea(item.area),
         categoria: validarCategoria(item.categoria),
+        talentoId: item.talento_id ?? '',
+        talento:
+          item.talento?.nome_artistico ?? item.talento?.nome ?? 'talento',
         status: validarStatus(item.status),
         conversao: validarConversao(item.conversao),
         foiSubstituido: substituidos.has(item.id),

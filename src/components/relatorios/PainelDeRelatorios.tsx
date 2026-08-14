@@ -11,14 +11,21 @@ import {
   filtrarPorPeriodo,
   formatarDias,
   funil,
+  formatarVariacao,
   motivosDePerda,
+  periodoAnterior,
   PERIODOS,
+  ranking,
+  resumoDoTopo,
   resumoGeral,
   tempoDeResposta,
   type Dimensao,
   type LinhaDeAnalise,
+  type LinhaDeRanking,
   type PeriodoChave,
 } from '@/lib/dominio/relatorios';
+import { abasDoRelatorio, nomeDoArquivo } from '@/lib/dominio/exportacao';
+import { baixarXlsx } from '@/lib/dominio/xlsx';
 
 /**
  * Relatórios.
@@ -67,6 +74,28 @@ export function PainelDeRelatorios({
     [doPeriodo],
   );
 
+  const anteriores = useMemo(
+    () => periodoAnterior(linhas, periodo),
+    [linhas, periodo],
+  );
+  const topo = useMemo(
+    () => resumoDoTopo(doPeriodo, anteriores),
+    [doPeriodo, anteriores],
+  );
+
+  // Os quatro rankings do painel de abertura. Sao FIXOS, e nao seguem o
+  // seletor de dimensao: eles respondem "onde esta o dinheiro" de um jeito que
+  // nao muda, e e isso que permite bater o olho e comparar com ontem.
+  const rankings = useMemo(
+    () => [
+      { titulo: 'Por anunciante', linhas: ranking(doPeriodo, 'anunciante') },
+      { titulo: 'Por marca', linhas: ranking(doPeriodo, 'marca') },
+      { titulo: 'Por programa', linhas: ranking(doPeriodo, 'programa') },
+      { titulo: 'Por equipe', linhas: ranking(doPeriodo, 'equipe') },
+    ],
+    [doPeriodo],
+  );
+
   const rotuloDaDimensao =
     DIMENSOES.find((d) => d.chave === dimensao)?.rotulo ?? '';
 
@@ -76,7 +105,7 @@ export function PainelDeRelatorios({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-end gap-4">
+      <div className="flex flex-wrap items-end gap-3">
         <Seletor
           rotulo="Período"
           valor={periodo}
@@ -89,41 +118,85 @@ export function PainelDeRelatorios({
           opcoes={DIMENSOES.map((d) => ({ valor: d.chave, rotulo: d.rotulo }))}
           aoMudar={(valor) => setDimensao(valor as Dimensao)}
         />
-        <p className="ml-auto text-[11.5px] text-tinta-4">
-          Cada linha é um talento. Um projeto com três talentos são três
-          decisões de cachê.
-        </p>
+
+        {/* A exportação leva TUDO, e não o corte aberto na tela — ver
+            [[exportacao]]. Fica ao lado do período porque período é a única
+            coisa da tela que ela respeita. */}
+        <button
+          type="button"
+          onClick={() =>
+            baixarXlsx(
+              nomeDoArquivo(periodo),
+              abasDoRelatorio(doPeriodo, anteriores, periodo),
+            )
+          }
+          disabled={doPeriodo.length === 0}
+          title="Baixa uma planilha com todos os cortes deste período, mais o detalhe linha a linha"
+          className="ml-auto h-[38px] rounded-full border border-borda-forte bg-white px-4 text-[12.5px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-40"
+        >
+          Exportar Excel
+        </button>
       </div>
 
+      {/* Os cinco números do alto. Talentos e talentos DISTINTOS aparecem
+          juntos de propósito: 312 consultas podem ser 96 pessoas, e ler só o
+          primeiro faz achar que o Hub movimenta três vezes mais gente. */}
       <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
         <Numero
-          titulo="Consultas"
-          valor={total.projetos.toLocaleString('pt-BR')}
-        />
-        <Numero
-          titulo="Talentos"
-          valor={total.talentos.toLocaleString('pt-BR')}
-        />
-        <Numero
-          titulo="Orçados"
-          valor={total.orcados.toLocaleString('pt-BR')}
-          nota={`${total.pendentes} sem resposta do cliente`}
-        />
-        <Numero
-          titulo="Conversão"
-          valor={formatarTaxa(total.taxa)}
+          titulo="Solicitações"
+          valor={topo.solicitacoes.toLocaleString('pt-BR')}
           nota={
-            total.taxa === null
-              ? 'ninguém respondeu ainda'
-              : `${total.fechados} de ${total.fechados + total.naoFechados}`
+            topo.variacaoSolicitacoes === null
+              ? undefined
+              : formatarVariacao(topo.variacaoSolicitacoes)
           }
         />
         <Numero
+          titulo="Talentos consultados"
+          valor={topo.talentos.toLocaleString('pt-BR')}
+          nota={`${topo.talentosDistintos} talentos distintos`}
+        />
+        <Numero
+          titulo="Cachê orçado"
+          valor={abreviarReais(topo.valorOrcado)}
+          nota="soma dos orçamentos enviados"
+        />
+        <Numero
           titulo="Fechado"
-          valor={abreviarReais(total.valorFechado)}
-          nota={`de ${abreviarReais(total.valorOrcado)} orçados`}
+          valor={abreviarReais(topo.valorFechado)}
+          nota={
+            topo.taxa === null
+              ? 'ninguém respondeu ainda'
+              : `${formatarTaxa(topo.taxa)} de conversão`
+          }
+        />
+        <Numero
+          titulo="Tempo médio"
+          valor={formatarDias(topo.tempoMedio)}
+          nota={
+            topo.dentroDoPrazo === null
+              ? 'sem respostas no período'
+              : `${Math.round(topo.dentroDoPrazo * 100)}% dentro do prazo`
+          }
         />
       </div>
+
+      {doPeriodo.length > 0 && (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {rankings.map((bloco) => (
+            <Ranking
+              key={bloco.titulo}
+              titulo={bloco.titulo}
+              linhas={bloco.linhas}
+            />
+          ))}
+        </div>
+      )}
+
+      <p className="text-[11.5px] text-tinta-4">
+        Cada linha é um talento. Um projeto com três talentos são três
+        decisões de cachê.
+      </p>
 
       {doPeriodo.length === 0 ? (
         <p className="rounded-cartao border border-dashed border-borda-forte bg-fundo-3 px-4 py-6 text-[13px] text-tinta-3">
@@ -518,5 +591,63 @@ function SemDados() {
         <code className="mx-1 font-mono">seed.sql</code>.
       </p>
     </div>
+  );
+}
+
+/**
+ * Um ranking com barra, no desenho do protótipo.
+ *
+ * A barra mede contra o PRIMEIRO colocado, e não contra o total. Contra o
+ * total, num painel com dezenas de anunciantes, todas as barras nasceriam
+ * curtas e a diferença entre o segundo e o quarto — que é o que se lê num
+ * ranking — sumiria.
+ *
+ * O primeiro é magenta e os outros azuis: a cor diz "este é o maior" sem
+ * precisar de legenda.
+ */
+function Ranking({
+  titulo,
+  linhas,
+}: {
+  titulo: string;
+  linhas: LinhaDeRanking[];
+}) {
+  return (
+    <section className="overflow-hidden rounded-cartao border border-borda bg-white">
+      <p className="border-b border-borda-suave bg-fundo-2 px-4 py-2.5 text-[10.5px] font-bold uppercase tracking-[0.07em] text-tinta-4">
+        {titulo}
+      </p>
+
+      {linhas.length === 0 ? (
+        <p className="px-4 py-5 text-[12.5px] text-tinta-4">
+          Nada com valor orçado no período.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3 px-4 py-3.5">
+          {linhas.map((linha, indice) => (
+            <li key={linha.rotulo} className="flex flex-col gap-1.5">
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="truncate text-[13px] text-tinta">
+                  {linha.rotulo}
+                </span>
+                <span className="shrink-0 font-titulo text-[13px] font-bold text-tinta">
+                  {abreviarReais(linha.valor)}
+                </span>
+              </span>
+              <span className="h-[6px] overflow-hidden rounded-full bg-fundo-2">
+                <span
+                  className={`block h-full rounded-full ${
+                    indice === 0 ? 'bg-magenta' : 'bg-azul'
+                  }`}
+                  // Mínimo de 2%: barra de largura zero parece defeito, e o
+                  // valor está escrito ao lado de qualquer jeito.
+                  style={{ width: `${Math.max(linha.fatia * 100, 2)}%` }}
+                />
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
