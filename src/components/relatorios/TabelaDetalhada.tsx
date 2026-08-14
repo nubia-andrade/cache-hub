@@ -68,7 +68,7 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
             setBusca(evento.target.value);
             setPagina(1);
           }}
-          placeholder="Buscar talento, marca, protocolo, equipe, status…"
+          placeholder="Buscar talento, marca, protocolo, equipe, quem abriu…"
           aria-label="Buscar no detalhe"
           className="h-[34px] min-w-[240px] flex-1 rounded-full border border-borda-forte bg-white px-3.5 text-[12.5px] text-tinta"
         />
@@ -92,7 +92,7 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
       </div>
 
       <div className="overflow-x-auto rounded-cartao border border-borda">
-        <table className="w-full min-w-[1080px] text-[12.5px]">
+        <table className="w-full min-w-[1220px] text-[12.5px]">
           <thead>
             <tr className="border-b border-borda bg-fundo-2 text-left text-[11px] text-tinta-4">
               {COLUNAS_DETALHE.map((definicao) => {
@@ -271,6 +271,45 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
 
                     <td className="whitespace-nowrap px-2.5 py-2 text-tinta-3">
                       {formatarData(linha.criadoEm)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-2.5 py-2">
+                      {linha.precisaAte === null ? (
+                        // Sem data pedida NÃO é urgência nem folga. Dizer
+                        // "sem prazo" evita que a célula vazia seja lida como
+                        // "esqueceram de preencher".
+                        <span className="text-[11px] text-tinta-5">
+                          sem prazo pedido
+                        </span>
+                      ) : (
+                        <>
+                          <span
+                            className={
+                              linha.noPrazo === false
+                                ? 'font-bold text-erro'
+                                : 'text-tinta'
+                            }
+                          >
+                            {formatarData(linha.precisaAte)}
+                          </span>
+                          {/* O prazo que ESTE pedido combinou, que não é o
+                              prazo padrão da área. É a conta que você faria de
+                              cabeça entre "Aberta em" e esta data. */}
+                          <span className="block text-[11px] text-tinta-5">
+                            {linha.prazoDado === null
+                              ? ''
+                              : `${linha.prazoDado} dia${
+                                  linha.prazoDado === 1 ? '' : 's'
+                                } de prazo`}
+                            {linha.noPrazo === false && (
+                              <span className="font-bold text-erro">
+                                {' '}
+                                · fora do prazo
+                              </span>
+                            )}
+                          </span>
+                        </>
+                      )}
                     </td>
 
                     <td className="whitespace-nowrap px-2.5 py-2 text-right tabular-nums text-tinta-3">

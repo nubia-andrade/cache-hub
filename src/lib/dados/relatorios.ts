@@ -32,6 +32,7 @@ type LinhaBruta = {
   setor_cliente: string | null;
   programa: string | null;
   criado_em: string | null;
+  prazo_resposta: string | null;
   itens: {
     id: string;
     area: string | null;
@@ -60,6 +61,7 @@ type LinhaBruta = {
 function consulta(comColunasNovas: boolean): string {
   return `
   id, protocolo, equipe, anunciante, marca, setor_cliente, programa, criado_em,
+  prazo_resposta,
   solicitante:perfil_usuario ( nome ),
   itens:solicitacao_item (
     id, area, categoria, status, conversao, motivo_nao_fechou, talento_id,
@@ -136,6 +138,7 @@ export async function lerLinhasDeAnalise(): Promise<{
       setorCliente: projeto.setor_cliente ?? '',
       abertaPor: projeto.solicitante?.nome ?? '—',
       criadoEm: projeto.criado_em,
+      precisaAte: projeto.prazo_resposta,
     };
 
     for (const item of projeto.itens) {

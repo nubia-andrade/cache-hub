@@ -24,6 +24,10 @@ export type LinhaDetalhada = LinhaDeAnalise & {
   deQuantos: number;
   /** Dias até a primeira resposta, ou null. */
   dias: number | null;
+  /** Dias entre a abertura e a data pedida. Null sem data pedida. */
+  prazoDado: number | null;
+  /** Null = sem data pedida, ou ainda sem resposta. Nenhum dos dois é atraso. */
+  noPrazo: boolean | null;
 };
 
 /**
@@ -52,8 +56,50 @@ export function detalhar(
       posicao,
       deQuantos: total.get(linha.solicitacaoId) ?? 1,
       dias: diasDeResposta(linha),
+      prazoDado: prazoDado(linha),
+      noPrazo: respondeuNoPrazo(linha),
     };
   });
+}
+
+/**
+ * Quantos dias o solicitante deu para a área responder.
+ *
+ * É a distância entre abrir e a data pedida — o SLA que ESTE pedido combinou,
+ * que não é o mesmo que o prazo padrão da área. Um pedido aberto na segunda
+ * para responder na terça deu um dia, mesmo que a área trabalhe com dois.
+ *
+ * Null quando não houve data pedida, e null é a resposta certa: ausência de
+ * prazo não é prazo infinito nem prazo zero.
+ */
+export function prazoDado(linha: {
+  criadoEm: string | null;
+  precisaAte: string | null;
+}): number | null {
+  if (!linha.criadoEm || !linha.precisaAte) return null;
+
+  // Comparação de datas puras, sem hora: o pedido é "até o dia X", e a hora
+  // em que a consulta foi aberta não deve tirar meio dia do prazo.
+  const abertura = Date.parse(`${linha.criadoEm.slice(0, 10)}T00:00:00Z`);
+  const limite = Date.parse(`${linha.precisaAte.slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(abertura) || Number.isNaN(limite)) return null;
+
+  return Math.round((limite - abertura) / 86_400_000);
+}
+
+/**
+ * A resposta chegou dentro da data pedida?
+ *
+ * Três valores, e não sim/não: `null` cobre "não havia data pedida" e "ainda
+ * não respondeu", que não são atraso. Um booleano transformaria os dois em
+ * `false` e encheria o relatório de um atraso que ninguém cometeu.
+ */
+export function respondeuNoPrazo(linha: {
+  precisaAte: string | null;
+  respondidoEm: string | null;
+}): boolean | null {
+  if (!linha.precisaAte || !linha.respondidoEm) return null;
+  return linha.respondidoEm.slice(0, 10) <= linha.precisaAte.slice(0, 10);
 }
 
 export const COLUNAS_DETALHE = [
@@ -68,6 +114,7 @@ export const COLUNAS_DETALHE = [
   { chave: 'conversao', rotulo: 'Conversão' },
   { chave: 'cache', rotulo: 'Cachê' },
   { chave: 'criadoEm', rotulo: 'Aberta em' },
+  { chave: 'precisaAte', rotulo: 'Precisa da resposta até' },
   { chave: 'dias', rotulo: 'Dias' },
 ] as const;
 

@@ -372,7 +372,7 @@ function Briefing({
             )}`}
           />
           <Linha
-            rotulo="Resposta pedida para"
+            rotulo="Precisa da resposta até"
             valor={formatarData(item.projeto.prazoResposta)}
           />
           <Linha rotulo="Anunciante" valor={item.projeto.anunciante} />

@@ -65,6 +65,14 @@ export type LinhaDeAnalise = {
   valorFechado: number | null;
   /** ISO. `respondidoEm` é nulo enquanto ninguém respondeu. */
   criadoEm: string | null;
+  /**
+   * Até quando o solicitante pediu a resposta. Nulo é o caso comum.
+   *
+   * Nulo NÃO é urgência nem folga: é ausência de pedido. Quem trata como
+   * "para ontem" enche a fila de vermelho falso; quem trata como "pode
+   * demorar" ignora o item para sempre.
+   */
+  precisaAte: string | null;
   respondidoEm: string | null;
   respondidoPor: string | null;
 };

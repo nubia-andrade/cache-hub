@@ -44,6 +44,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     cache: 10000,
     valorFechado: null,
     criadoEm: '2026-08-01T10:00:00.000Z',
+    precisaAte: null,
     respondidoEm: null,
     respondidoPor: null,
     ...campos,

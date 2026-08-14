@@ -1,3 +1,4 @@
+import { prazoDado } from './detalhe';
 import {
   diasDeResposta,
   PERIODOS,
@@ -44,6 +45,8 @@ const CABECALHOS_DETALHE = [
   'Cachê orçado',
   'Valor fechado',
   'Aberta em',
+  'Precisa da resposta até',
+  'Prazo dado (dias)',
   'Respondida em',
   'Dias até responder',
   'Respondida por',
@@ -82,6 +85,8 @@ function detalhe(linhas: readonly LinhaDeAnalise[]): Aba {
         linha.cache,
         linha.valorFechado,
         dataBR(linha.criadoEm),
+        dataBR(linha.precisaAte),
+        prazoDado(linha),
         dataBR(linha.respondidoEm),
         // Arredondado para uma casa: o Excel receberia 1.9999999 e mostraria
         // isso na célula, o que faz um relatório parecer errado.

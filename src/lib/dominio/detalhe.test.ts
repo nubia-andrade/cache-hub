@@ -4,6 +4,8 @@ import {
   filtrarDetalhe,
   ordemPadrao,
   ordenarDetalhe,
+  prazoDado,
+  respondeuNoPrazo,
 } from './detalhe';
 import type { LinhaDeAnalise } from './relatorios';
 
@@ -34,6 +36,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     cache: 10000,
     valorFechado: null,
     criadoEm: '2026-08-01T10:00:00.000Z',
+    precisaAte: null,
     respondidoEm: null,
     respondidoPor: null,
     ...campos,
@@ -182,5 +185,85 @@ describe('as colunas novas', () => {
     expect(
       ordenarDetalhe(linhas, 'devolucoes', true).map((l) => l.devolucoes),
     ).toEqual([0, 2]);
+  });
+});
+
+/**
+ * O prazo DADO é o que este pedido combinou, e não o prazo padrão da área.
+ */
+describe('prazo pedido', () => {
+  it('conta os dias entre a abertura e a data pedida', () => {
+    expect(
+      prazoDado({
+        criadoEm: '2026-08-01T18:00:00.000Z',
+        precisaAte: '2026-08-08',
+      }),
+    ).toBe(7);
+  });
+
+  it('a hora da abertura não come meio dia do prazo', () => {
+    // O pedido é "até o dia X". Abrir às 23h não dá menos prazo que abrir às 8h.
+    expect(
+      prazoDado({
+        criadoEm: '2026-08-01T23:59:00.000Z',
+        precisaAte: '2026-08-02',
+      }),
+    ).toBe(1);
+  });
+
+  it('sem data pedida é null, e não zero', () => {
+    // Ausência de prazo não é prazo zero nem prazo infinito.
+    expect(prazoDado({ criadoEm: '2026-08-01T00:00:00Z', precisaAte: null }))
+      .toBeNull();
+  });
+
+  it('detalhar já traz o prazo calculado', () => {
+    const [uma] = detalhar([
+      linha({
+        criadoEm: '2026-08-01T10:00:00.000Z',
+        precisaAte: '2026-08-05',
+      }),
+    ]);
+    expect(uma.prazoDado).toBe(4);
+  });
+});
+
+describe('respondeu no prazo', () => {
+  it('respondeu antes da data: dentro', () => {
+    expect(
+      respondeuNoPrazo({
+        precisaAte: '2026-08-10',
+        respondidoEm: '2026-08-08T14:00:00.000Z',
+      }),
+    ).toBe(true);
+  });
+
+  it('respondeu no próprio dia ainda é dentro', () => {
+    expect(
+      respondeuNoPrazo({
+        precisaAte: '2026-08-10',
+        respondidoEm: '2026-08-10T23:00:00.000Z',
+      }),
+    ).toBe(true);
+  });
+
+  it('respondeu depois: fora', () => {
+    expect(
+      respondeuNoPrazo({
+        precisaAte: '2026-08-10',
+        respondidoEm: '2026-08-11T01:00:00.000Z',
+      }),
+    ).toBe(false);
+  });
+
+  it('sem data pedida ou sem resposta é null, e null não é atraso', () => {
+    // Um booleano transformaria os dois em `false` e encheria o relatório de
+    // um atraso que ninguém cometeu.
+    expect(
+      respondeuNoPrazo({ precisaAte: null, respondidoEm: '2026-08-11T00:00:00Z' }),
+    ).toBeNull();
+    expect(
+      respondeuNoPrazo({ precisaAte: '2026-08-10', respondidoEm: null }),
+    ).toBeNull();
   });
 });

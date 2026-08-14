@@ -188,7 +188,7 @@ export function PassoCabecalho({
         />
       </Campo>
 
-      <Campo rotulo="Preciso da resposta até" className="sm:col-span-2">
+      <Campo rotulo="Precisa da resposta até" className="sm:col-span-2">
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="date"
