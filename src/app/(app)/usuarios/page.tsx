@@ -1,13 +1,20 @@
 import { redirect } from 'next/navigation';
 import { PainelDeUsuarios } from '@/components/usuarios/PainelDeUsuarios';
 import { listarUsuarios } from '@/lib/dados/usuarios';
+import { lerListas } from '@/lib/dados/listas';
 import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
 export default async function PaginaUsuarios() {
   const usuario = await obterUsuarioLogado();
   if (!usuario) redirect('/login');
 
-  const usuarios = await listarUsuarios();
+  // As equipes vêm da lista administrável, e não de uma constante no código.
+  // Se viessem do código, editar "Equipes" em Listas mudaria os relatórios e
+  // não mudaria o cadastro — duas verdades sobre a mesma coisa.
+  const [usuarios, listas] = await Promise.all([
+    listarUsuarios(),
+    lerListas(['equipes']),
+  ]);
 
   const contagem = (estado: string) =>
     usuarios.filter((item) => item.estado === estado).length;
@@ -27,7 +34,11 @@ export default async function PaginaUsuarios() {
         </p>
       </div>
 
-      <PainelDeUsuarios usuarios={usuarios} quemAdministra={usuario} />
+      <PainelDeUsuarios
+        usuarios={usuarios}
+        quemAdministra={usuario}
+        equipes={listas.equipes}
+      />
     </section>
   );
 }

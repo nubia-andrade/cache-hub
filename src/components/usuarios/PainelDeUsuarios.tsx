@@ -23,7 +23,6 @@ import {
 import { paginar } from '@/lib/dominio/paginacao';
 import { mudarCadastro, mudarEstado, mudarPerfis } from '@/lib/administracao';
 import { bloqueioDoConvite } from '@/lib/dominio/convite';
-import { EQUIPES } from '@/data/usuarios-seed';
 import { NovoUsuario } from './NovoUsuario';
 
 const CORES_ESTADO: Record<EstadoAcesso, string> = {
@@ -51,9 +50,12 @@ const POR_PAGINA = 10;
 export function PainelDeUsuarios({
   usuarios,
   quemAdministra,
+  equipes,
 }: {
   usuarios: Usuario[];
   quemAdministra: Usuario;
+  /** Vem da lista administrável em Listas, e não de constante no código. */
+  equipes: string[];
 }) {
   const [busca, setBusca] = useState('');
   const [aberto, setAberto] = useState<string | null>(null);
@@ -128,6 +130,7 @@ export function PainelDeUsuarios({
           buscando={termo.length > 0}
           quemAdministra={quemAdministra}
           todos={usuarios}
+          equipes={equipes}
           aberto={aberto}
           aoAbrir={setAberto}
         />
@@ -144,6 +147,7 @@ function GrupoDeUsuarios({
   buscando,
   quemAdministra,
   todos,
+  equipes,
   aberto,
   aoAbrir,
 }: {
@@ -154,6 +158,7 @@ function GrupoDeUsuarios({
   buscando: boolean;
   quemAdministra: Usuario;
   todos: Usuario[];
+  equipes: string[];
   aberto: string | null;
   aoAbrir: (id: string | null) => void;
 }) {
@@ -192,6 +197,7 @@ function GrupoDeUsuarios({
                 usuario={usuario}
                 quemAdministra={quemAdministra}
                 todos={todos}
+                equipes={equipes}
                 expandido={aberto === usuario.id}
                 aoAlternar={() =>
                   aoAbrir(aberto === usuario.id ? null : usuario.id)
@@ -259,12 +265,14 @@ function LinhaDoUsuario({
   usuario,
   quemAdministra,
   todos,
+  equipes,
   expandido,
   aoAlternar,
 }: {
   usuario: Usuario;
   quemAdministra: Usuario;
   todos: Usuario[];
+  equipes: string[];
   expandido: boolean;
   aoAlternar: () => void;
 }) {
@@ -372,6 +380,7 @@ function LinhaDoUsuario({
         <div className="border-t border-borda-suave bg-fundo-3 px-3 py-3">
           <EditorDoCadastro
             usuario={usuario}
+            equipes={equipes}
             gravando={gravando}
             aoSalvar={(mudancas) =>
               aplicar(() => mudarCadastro(usuario.id, mudancas))
@@ -499,11 +508,13 @@ function ListaTruncada() {
  */
 function EditorDoCadastro({
   usuario,
+  equipes,
   gravando,
   aoSalvar,
   aoErrar,
 }: {
   usuario: Usuario;
+  equipes: string[];
   gravando: boolean;
   aoSalvar: (mudancas: Partial<CadastroEditavel>) => void;
   aoErrar: (mensagem: string | null) => void;
@@ -516,11 +527,24 @@ function EditorDoCadastro({
 
   const [rascunho, setRascunho] = useState<CadastroEditavel>(original);
 
+  /**
+   * A equipe ATUAL entra na lista mesmo quando não está mais em Listas.
+   *
+   * Sem isto, mexer no cargo de alguém cuja equipe foi renomeada trocaria a
+   * equipe dele em silêncio: o `select` não acha o valor, mostra a primeira
+   * opção, e é essa que seria gravada. A pessoa mudaria de time sem ninguém
+   * pedir — e o relatório por equipe mentiria a partir daí.
+   */
+  const opcoesDeEquipe =
+    original.equipe && !equipes.includes(original.equipe)
+      ? [original.equipe, ...equipes]
+      : equipes;
+
   const mudancas = mudancasDoCadastro(original, rascunho);
   const temMudanca = Object.keys(mudancas).length > 0;
 
   function salvar() {
-    const problema = problemaDoCadastro(rascunho, EQUIPES);
+    const problema = problemaDoCadastro(rascunho, opcoesDeEquipe);
     if (problema) {
       aoErrar(problema);
       return;
@@ -559,9 +583,10 @@ function EditorDoCadastro({
               entrar. Sem ela, a tela mostraria a primeira equipe da lista
               como se alguém a tivesse escolhido. */}
           <option value="">— sem equipe —</option>
-          {EQUIPES.map((equipe) => (
+          {opcoesDeEquipe.map((equipe) => (
             <option key={equipe} value={equipe}>
               {equipe}
+              {!equipes.includes(equipe) && ' (fora da lista atual)'}
             </option>
           ))}
         </select>

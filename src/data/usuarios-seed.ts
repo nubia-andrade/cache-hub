@@ -29,21 +29,16 @@ export type UsuarioSeed = {
 
 export const USUARIOS_SEED = dados as UsuarioSeed[];
 
-/**
- * Equipes usadas no formulário de "solicitar acesso".
+/*
+ * Havia aqui uma constante EQUIPES, cópia da lista `equipes` do seed.
  *
- * Precisa espelhar a lista `equipes` do seed (`scripts/gerar-seed.mjs`). Um
- * dia isso deve vir do banco, junto com as outras listas configuráveis — por
- * enquanto está aqui porque a tela de login roda antes de haver sessão, e sem
- * sessão o RLS não deixa ler `lista_item`.
+ * Ela existia para o formulário de "solicitar acesso", que rodava antes de
+ * haver sessão — e o próprio comentário dizia "um dia isso deve vir do
+ * banco". O formulário saiu do ar, a constante ficou, e foi reaproveitada no
+ * cadastro de Usuários. Resultado: editar Equipes em Listas mudava os
+ * relatórios e não mudava o select do cadastro.
+ *
+ * A lição vale para o próximo: lista de opções que a pessoa administra vem de
+ * `lista_item`, sempre. Uma cópia no código é uma segunda verdade esperando
+ * para divergir.
  */
-export const EQUIPES = [
-  'Entretenimento',
-  'Entretenimento Digital',
-  'Esportes',
-  'Notícias Digital',
-  'Notícias Linear',
-  'Territórios',
-  'Regionais',
-  'Planejamento & Portfólio',
-] as const;
