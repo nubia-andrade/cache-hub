@@ -24,6 +24,7 @@ import { mapaDeSegmentoPorPrograma } from './listas';
 
 type LinhaBruta = {
   id: string;
+  protocolo: string | null;
   equipe: string | null;
   anunciante: string | null;
   marca: string | null;
@@ -49,7 +50,7 @@ type LinhaBruta = {
 
 function consulta(comSubstituicao: boolean): string {
   return `
-  id, equipe, anunciante, marca, setor_cliente, programa, criado_em,
+  id, protocolo, equipe, anunciante, marca, setor_cliente, programa, criado_em,
   itens:solicitacao_item (
     id, area, categoria, status, conversao, motivo_nao_fechou, talento_id,
     talento ( nome, nome_artistico ),
@@ -116,6 +117,7 @@ export async function lerLinhasDeAnalise(): Promise<{
   for (const projeto of data ?? []) {
     const comuns = {
       solicitacaoId: projeto.id,
+      protocolo: projeto.protocolo ?? '—',
       equipe: projeto.equipe ?? '',
       segmentoProduto: segmentoPorPrograma.get(projeto.programa ?? '') ?? '',
       anunciante: projeto.anunciante ?? '',

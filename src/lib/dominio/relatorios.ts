@@ -22,6 +22,8 @@ import type { Area } from './categorias';
 export type LinhaDeAnalise = {
   itemId: string;
   solicitacaoId: string;
+  /** O número que a pessoa reconhece: #ORC-2026-0431. */
+  protocolo: string;
   /** Dimensões do projeto, copiadas para a linha do talento. */
   equipe: string;
   segmentoProduto: string;

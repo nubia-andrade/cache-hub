@@ -26,6 +26,7 @@ import {
 } from '@/lib/dominio/relatorios';
 import { abasDoRelatorio, nomeDoArquivo } from '@/lib/dominio/exportacao';
 import { baixarXlsx } from '@/lib/dominio/xlsx';
+import { TabelaDetalhada } from './TabelaDetalhada';
 
 /**
  * Relatórios.
@@ -377,6 +378,16 @@ export function PainelDeRelatorios({
               )}
             </Bloco>
           )}
+
+          {/* A base, por último. Os cartões acima dizem "Ambev, R$ 1,9 mi"; a
+              pergunta que vem depois é sempre "quais consultas formam isso?",
+              e até agora a resposta exigia exportar a planilha. */}
+          <Bloco
+            titulo="Consultas, linha a linha"
+            explicacao="Uma linha por talento. Consulta com três talentos aparece três vezes, com a marca e o programa repetidos — é o que permite ordenar e filtrar sem a linha perder o dono. Clique no protocolo para abrir o projeto."
+          >
+            <TabelaDetalhada linhas={doPeriodo} />
+          </Bloco>
         </>
       )}
     </div>

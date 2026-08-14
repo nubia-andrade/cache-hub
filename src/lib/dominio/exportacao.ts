@@ -35,7 +35,7 @@ import type { Aba } from './xlsx';
  */
 
 const CABECALHOS_DETALHE = [
-  'Protocolo interno',
+  'Protocolo',
   'Talento',
   'Categoria',
   'Área',
@@ -71,7 +71,7 @@ function detalhe(linhas: readonly LinhaDeAnalise[]): Aba {
     linhas: linhas.map((linha) => {
       const dias = diasDeResposta(linha);
       return [
-        linha.solicitacaoId,
+        linha.protocolo,
         linha.talento,
         linha.categoria,
         linha.area,

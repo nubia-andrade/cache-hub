@@ -24,6 +24,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
   return {
     itemId: `item-${contador}`,
     solicitacaoId: 'projeto-1',
+    protocolo: '#ORC-2026-0001',
     equipe: 'Entretenimento',
     segmentoProduto: 'Variedades',
     anunciante: 'Ambev',
