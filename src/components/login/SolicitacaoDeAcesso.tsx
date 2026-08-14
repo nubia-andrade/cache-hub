@@ -55,6 +55,7 @@ export function FormularioSolicitacao({
 
   return (
     <form
+      method="post"
       className="flex flex-col gap-[18px]"
       onSubmit={(evento) => {
         evento.preventDefault();

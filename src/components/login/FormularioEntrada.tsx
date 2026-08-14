@@ -43,8 +43,18 @@ export function FormularioEntrada({
   const emailComErro = erro !== null && ERROS_DO_CAMPO_EMAIL.has(erro.codigo);
   const erroEhGrave = erro?.gravidade === 'grave';
 
+  /*
+   * `method="post"` num formulário que o React controla parece inútil — e é
+   * justamente o contrário. Ele é o cinto de segurança para o dia em que o
+   * JavaScript não carregar: sem ninguém atender o `onSubmit`, o navegador
+   * envia o formulário sozinho, e o padrão do HTML é GET, que põe TUDO o que
+   * foi digitado na barra de endereço. Foi assim que uma senha foi parar no
+   * histórico e nos logs do servidor. Com POST, o mesmo acidente manda os
+   * dados no corpo do pedido, onde ninguém os lê por cima do ombro.
+   */
   return (
     <form
+      method="post"
       className="flex flex-col gap-5"
       onSubmit={(evento) => {
         evento.preventDefault();
