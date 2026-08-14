@@ -1,8 +1,14 @@
+import { redirect } from 'next/navigation';
 import { PainelTalentos } from '@/components/talentos/PainelTalentos';
+import { BotaoNovoTalento } from '@/components/talentos/BotaoNovoTalento';
 import { listarTalentos } from '@/lib/dados/talentos';
 import { hojeISO, restricoesVigentes } from '@/lib/dominio/restricoes';
+import { obterUsuarioLogado } from '@/lib/sessao-servidor';
 
 export default async function PaginaTalentos() {
+  const usuario = await obterUsuarioLogado();
+  if (!usuario) redirect('/login');
+
   const talentos = await listarTalentos();
 
   // "Hoje" é decidido aqui, no servidor, e desce pronto. Se cada componente
@@ -37,17 +43,15 @@ export default async function PaginaTalentos() {
           </p>
         </div>
 
-        {/* Cadastrar talento é escrita, e não existe policy de INSERT no banco
-            ainda. O botão fica visível para não sumir do layout, e desligado
-            para não prometer o que não faz. */}
-        <button
-          type="button"
-          disabled
-          title="O cadastro de talentos chega junto com as permissões de escrita no banco."
-          className="h-[42px] cursor-not-allowed rounded-full bg-magenta px-[22px] text-[14px] font-bold text-white opacity-50"
-        >
-          + Novo talento
-        </button>
+        {/* Quem cadastra é a área que responde pela categoria na fila — a
+            mesma divisão, e não uma segunda lista que possa divergir. O
+            próprio botão explica quando não dá. */}
+        <BotaoNovoTalento
+          perfis={usuario.perfis}
+          existentes={talentos.map((talento) => ({
+            nomeArtistico: talento.nomeArtistico,
+          }))}
+        />
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">

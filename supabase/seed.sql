@@ -1485,6 +1485,68 @@ create trigger ao_gravar_marca
 
 
 -- ----------------------------------------------------------------------
+-- Parte 2e — Cadastro de talentos, por categoria da área
+-- ----------------------------------------------------------------------
+-- Também existe solto em supabase/cadastro-de-talentos.sql. Mantenha os dois
+-- iguais.
+--
+-- Aqui a regra é diferente da de marcas e programas, que são do Proprietário e
+-- ponto. Talento é conhecimento de ÁREA: quem sabe o nome artístico certo, o @
+-- do Instagram e o que o contrato permite é quem responde por aquela categoria
+-- na fila.
+--
+-- Por isso o cadastro segue a MESMA divisão da fila, pela função
+-- `categorias_que_respondo()` da Parte 1b. Reaproveitá-la é o que garante que
+-- a regra não vá divergir no dia em que uma área mudar de escopo.
+
+-- Ler continua liberado para qualquer pessoa autenticada: escolher talento é
+-- o começo de toda consulta, e um solicitante precisa ver a base inteira.
+-- (Essa policy já existe; a linha abaixo só garante que ela está lá.)
+drop policy if exists "ver talentos" on talento;
+create policy "ver talentos" on talento
+  for select to authenticated
+  using (true);
+
+drop policy if exists "cadastrar talento da minha area" on talento;
+create policy "cadastrar talento da minha area" on talento
+  for insert to authenticated
+  with check (categoria = any(public.categorias_que_respondo()));
+
+-- Editar exige a categoria nos DOIS lados: a de antes, para provar que o
+-- talento é seu, e a de depois, para impedir que alguém mova um talento para
+-- fora do próprio alcance e o edite à vontade em seguida.
+drop policy if exists "editar talento da minha area" on talento;
+create policy "editar talento da minha area" on talento
+  for update to authenticated
+  using (categoria = any(public.categorias_que_respondo()))
+  with check (categoria = any(public.categorias_que_respondo()));
+
+-- NÃO existe policy de DELETE, de propósito.
+--
+-- Apagar um talento que já apareceu em consulta levaria junto o histórico de
+-- cachê dele — e é justamente esse histórico que alimenta a tabela de
+-- referência. Quem saiu do elenco vira INATIVO: some das buscas novas e
+-- continua respondendo pelo passado.
+
+-- O nome artístico não se repete.
+--
+-- Dois "Manu" na lista fazem quem monta a consulta escolher no chute, e o
+-- erro só aparece quando a área recebe o pedido do talento errado. É `unique`
+-- e não conferência de tela porque a tela não é a única porta.
+create unique index if not exists talento_nome_artistico_unico
+  on talento (lower(btrim(coalesce(nome_artistico, nome))));
+
+-- Contagem de seguidores não é negativa. Um sinal de menos digitado por
+-- engano mudaria o tamanho de audiência e, com ele, a faixa de preço.
+alter table talento drop constraint if exists seguidores_nao_negativos;
+alter table talento add constraint seguidores_nao_negativos check (
+  coalesce(seg_instagram, 0) >= 0
+  and coalesce(seg_tiktok, 0) >= 0
+  and coalesce(seg_x, 0) >= 0
+);
+
+
+-- ----------------------------------------------------------------------
 -- Parte 3 — Catálogo comercial (anunciantes, marcas, programas)
 -- ----------------------------------------------------------------------
 insert into anunciante (nome, setor) values
