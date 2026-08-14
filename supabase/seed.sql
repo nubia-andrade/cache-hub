@@ -1499,18 +1499,26 @@ create trigger ao_gravar_marca
 -- `categorias_que_respondo()` da Parte 1b. Reaproveitá-la é o que garante que
 -- a regra não vá divergir no dia em que uma área mudar de escopo.
 
--- Ler continua liberado para qualquer pessoa autenticada: escolher talento é
--- o começo de toda consulta, e um solicitante precisa ver a base inteira.
--- (Essa policy já existe; a linha abaixo só garante que ela está lá.)
+-- LER não se mexe aqui, e a razão é importante.
+--
+-- A leitura de `talento` já é coberta pela policy "leitura de membro ativo",
+-- criada na Parte 1, que exige cadastro ATIVO no Hub. Acrescentar aqui uma
+-- segunda policy de select com `using (true)` não substituiria aquela: as
+-- policies do Postgres são ADITIVAS, e basta uma passar. O resultado seria
+-- abrir a base de talentos para qualquer conta autenticada, inclusive as
+-- pendentes e as suspensas.
+--
+-- Este `drop` existe só para desfazer essa policy caso uma versão anterior
+-- deste arquivo a tenha criado. Se ela nunca existiu, não faz nada.
 drop policy if exists "ver talentos" on talento;
-create policy "ver talentos" on talento
-  for select to authenticated
-  using (true);
 
+-- `categoria::text` e não `categoria`: a coluna é um enum (talento_categoria)
+-- e a função devolve text[]. O Postgres não compara os dois sem o cast, e o
+-- erro só aparece na hora de criar a policy — não ao usá-la.
 drop policy if exists "cadastrar talento da minha area" on talento;
 create policy "cadastrar talento da minha area" on talento
   for insert to authenticated
-  with check (categoria = any(public.categorias_que_respondo()));
+  with check (categoria::text = any(public.categorias_que_respondo()));
 
 -- Editar exige a categoria nos DOIS lados: a de antes, para provar que o
 -- talento é seu, e a de depois, para impedir que alguém mova um talento para
@@ -1518,8 +1526,8 @@ create policy "cadastrar talento da minha area" on talento
 drop policy if exists "editar talento da minha area" on talento;
 create policy "editar talento da minha area" on talento
   for update to authenticated
-  using (categoria = any(public.categorias_que_respondo()))
-  with check (categoria = any(public.categorias_que_respondo()));
+  using (categoria::text = any(public.categorias_que_respondo()))
+  with check (categoria::text = any(public.categorias_que_respondo()));
 
 -- NÃO existe policy de DELETE, de propósito.
 --
