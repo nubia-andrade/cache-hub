@@ -27,8 +27,6 @@ export type ErroLogin = {
   texto: string;
   /** Grave pinta de vermelho; aviso pinta de amarelo. */
   gravidade: 'grave' | 'aviso';
-  /** Se true, mostramos o botão "Solicitar acesso com este e-mail". */
-  ofereceSolicitar: boolean;
 };
 
 const DEFINICOES: Record<CodigoErroLogin, Omit<ErroLogin, 'codigo'>> = {
@@ -36,28 +34,24 @@ const DEFINICOES: Record<CodigoErroLogin, Omit<ErroLogin, 'codigo'>> = {
     titulo: 'Informe seu e-mail',
     texto: 'Use o e-mail corporativo Globo cadastrado no Hub.',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   dominio: {
     titulo: 'E-mail fora do domínio Globo',
     texto: 'O Cachê Hub aceita apenas endereços @globo.com ou @g.globo.',
     gravidade: 'grave',
-    ofereceSolicitar: false,
   },
   senha: {
     titulo: 'Informe sua senha',
     texto: 'A senha da rede Globo é obrigatória para concluir a entrada.',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   // O Supabase não diz se foi o e-mail ou a senha que não conferiu, e isso é
   // proposital: contar qual dos dois errou entrega quem tem conta no sistema.
   credenciais: {
     titulo: 'E-mail ou senha não conferem',
     texto:
-      'Verifique os dois campos e tente de novo. Se você nunca definiu uma senha para o Hub, solicite acesso.',
+      'Verifique os dois campos e tente de novo. Se você nunca teve senha do Hub, peça acesso ao Proprietário — é ele quem cadastra.',
     gravidade: 'grave',
-    ofereceSolicitar: true,
   },
   // Este o Supabase diz na lata, e é uma causa comum de confusão: a conta
   // existe e a senha está certa, mas ninguém marcou "Auto Confirm User".
@@ -66,48 +60,41 @@ const DEFINICOES: Record<CodigoErroLogin, Omit<ErroLogin, 'codigo'>> = {
     texto:
       'A conta existe, mas o e-mail não foi confirmado. No painel do Supabase, em Authentication > Users, abra este usuário e confirme o e-mail — ou recrie marcando "Auto Confirm User".',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   'conta-existe': {
     titulo: 'Este e-mail já tem conta',
     texto:
       'Não precisa criar de novo — é só entrar com a senha que você definiu. Se esqueceu, apague o usuário em Authentication > Users e crie outra vez.',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   'senha-curta': {
     titulo: 'Senha muito curta',
     texto: 'O Supabase exige pelo menos 6 caracteres.',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   inexistente: {
     titulo: 'E-mail sem acesso ao Hub',
     texto:
-      'Não encontramos este e-mail entre os acessos liberados. Solicite acesso e o Proprietário definirá seus perfis.',
+      'Não encontramos este e-mail entre os acessos liberados. Fale com o Proprietário do Hub: ele cadastra o acesso e define os perfis.',
     gravidade: 'grave',
-    ofereceSolicitar: true,
   },
   pendente: {
     titulo: 'Solicitação em análise',
     texto:
       'Seu pedido de acesso já foi enviado e aguarda aprovação do Proprietário. Você receberá um e-mail na liberação.',
     gravidade: 'aviso',
-    ofereceSolicitar: false,
   },
   suspenso: {
     titulo: 'Acesso suspenso',
     texto:
       'Este acesso está suspenso. Procure o Proprietário do Cachê Hub para reativar.',
     gravidade: 'grave',
-    ofereceSolicitar: false,
   },
   falha: {
     titulo: 'Não consegui falar com o servidor',
     texto:
       'Pode ser a conexão ou o Supabase fora do ar. Tente de novo em alguns instantes.',
     gravidade: 'grave',
-    ofereceSolicitar: false,
   },
 };
 

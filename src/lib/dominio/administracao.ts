@@ -166,3 +166,72 @@ export function agruparPorAcesso(
     usuarios: ordenados.filter((usuario) => usuario.estado === grupo.estado),
   }));
 }
+
+// --------------------------------------------------------------------------
+// O cadastro que o Proprietário preenche
+// --------------------------------------------------------------------------
+
+/**
+ * REGRA CRÍTICA — quem entra sozinho não traz nome, cargo nem equipe.
+ *
+ * O Hub deduz um nome do e-mail (`nubia.andrade@g.globo` vira `Nubia
+ * Andrade`) só para a linha não nascer vazia. Cargo e equipe ficam em branco,
+ * e não há como o próprio usuário preenchê-los — de propósito: equipe é
+ * dimensão de relatório, e deixar cada um escolher a sua faria a volumetria
+ * por equipe virar ficção no primeiro mês.
+ *
+ * Por isso estes três campos são do administrador. É ele quem sabe em que
+ * equipe a pessoa está de verdade.
+ */
+
+export const MOTIVOS_CADASTRO = {
+  semNome:
+    'O nome não pode ficar em branco — é ele que aparece na fila, no histórico e nos relatórios.',
+  nomeCurto: 'Escreva o nome como as pessoas o reconhecem, não só a inicial.',
+  equipeDesconhecida:
+    'Escolha uma das equipes da lista. Equipe digitada à mão não cruza com os relatórios.',
+} as const;
+
+export type CadastroEditavel = {
+  nome: string;
+  cargo: string;
+  equipe: string;
+};
+
+/**
+ * O que impede salvar, ou `null`.
+ *
+ * Cargo pode ficar vazio: ele é informativo, aparece no passar do mouse sobre
+ * o avatar e em nenhuma conta. Equipe vazia também passa — é melhor que uma
+ * equipe errada, e a tela de Relatórios já sabe mostrar "Não informado".
+ */
+export function problemaDoCadastro(
+  cadastro: CadastroEditavel,
+  equipesConhecidas: readonly string[],
+): string | null {
+  const nome = cadastro.nome.trim();
+  if (!nome) return MOTIVOS_CADASTRO.semNome;
+  if (nome.length < 2) return MOTIVOS_CADASTRO.nomeCurto;
+
+  const equipe = cadastro.equipe.trim();
+  if (equipe && !equipesConhecidas.includes(equipe)) {
+    return MOTIVOS_CADASTRO.equipeDesconhecida;
+  }
+
+  return null;
+}
+
+/** Só o que mudou, para não reescrever campo que ninguém tocou. */
+export function mudancasDoCadastro(
+  antes: CadastroEditavel,
+  depois: CadastroEditavel,
+): Partial<CadastroEditavel> {
+  const mudancas: Partial<CadastroEditavel> = {};
+  if (antes.nome.trim() !== depois.nome.trim())
+    mudancas.nome = depois.nome.trim();
+  if (antes.cargo.trim() !== depois.cargo.trim())
+    mudancas.cargo = depois.cargo.trim();
+  if (antes.equipe.trim() !== depois.equipe.trim())
+    mudancas.equipe = depois.equipe.trim();
+  return mudancas;
+}

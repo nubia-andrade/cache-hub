@@ -4,7 +4,10 @@ import {
   bloqueioDaAlteracao,
   estadosPossiveis,
   MOTIVOS_BLOQUEIO,
+  MOTIVOS_CADASTRO,
+  mudancasDoCadastro,
   ordenarParaAdministracao,
+  problemaDoCadastro,
   proprietariosAtivos,
 } from './administracao';
 import type { Usuario } from './perfis';
@@ -223,5 +226,63 @@ describe('grupos de acesso', () => {
     const grupos = agruparPorAcesso([usuario({ id: '1' })]);
     expect(grupos).toHaveLength(3);
     expect(grupos.map((grupo) => grupo.usuarios.length)).toEqual([0, 1, 0]);
+  });
+});
+
+/**
+ * Quem entra sozinho não traz nome, cargo nem equipe — o administrador é que
+ * sabe em que equipe a pessoa está de verdade.
+ */
+describe('o cadastro que o administrador preenche', () => {
+  const EQUIPES = ['Entretenimento', 'Esportes', 'Jornalismo'];
+  const base = { nome: 'Nubia Andrade', cargo: 'Analista', equipe: 'Esportes' };
+
+  it('nome em branco não passa', () => {
+    // É o nome que aparece na fila, no histórico e nos relatórios.
+    expect(problemaDoCadastro({ ...base, nome: '  ' }, EQUIPES)).toBe(
+      MOTIVOS_CADASTRO.semNome,
+    );
+  });
+
+  it('uma letra só não é nome', () => {
+    expect(problemaDoCadastro({ ...base, nome: 'N' }, EQUIPES)).toBe(
+      MOTIVOS_CADASTRO.nomeCurto,
+    );
+  });
+
+  it('equipe fora da lista é recusada', () => {
+    // Equipe digitada à mão não cruza com os relatórios.
+    expect(problemaDoCadastro({ ...base, equipe: 'Esporte' }, EQUIPES)).toBe(
+      MOTIVOS_CADASTRO.equipeDesconhecida,
+    );
+  });
+
+  it('cargo e equipe em branco passam', () => {
+    // Equipe vazia é melhor que equipe errada: o relatório sabe dizer
+    // "Não informado", mas não sabe desfazer um número atribuído ao time errado.
+    expect(problemaDoCadastro({ nome: 'Alguém', cargo: '', equipe: '' }, EQUIPES))
+      .toBeNull();
+  });
+
+  it('cadastro completo passa', () => {
+    expect(problemaDoCadastro(base, EQUIPES)).toBeNull();
+  });
+});
+
+describe('só o que mudou é gravado', () => {
+  const antes = { nome: 'Nubia', cargo: 'Analista', equipe: 'Esportes' };
+
+  it('devolve apenas os campos alterados', () => {
+    expect(mudancasDoCadastro(antes, { ...antes, cargo: 'Gerente' })).toEqual({
+      cargo: 'Gerente',
+    });
+  });
+
+  it('espaço a mais não conta como mudança', () => {
+    expect(mudancasDoCadastro(antes, { ...antes, nome: ' Nubia ' })).toEqual({});
+  });
+
+  it('nada mudou, nada a gravar', () => {
+    expect(mudancasDoCadastro(antes, { ...antes })).toEqual({});
   });
 });

@@ -4,16 +4,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PainelDaMarca } from './PainelApresentacao';
 import { FormularioEntrada } from './FormularioEntrada';
-import {
-  FormularioSolicitacao,
-  SolicitacaoEnviada,
-} from './SolicitacaoDeAcesso';
 import { BoasVindas } from './BoasVindas';
 import { criarContaDeTeste, entrarComEmailESenha } from '@/lib/autenticacao';
 import { erroDeLogin, type ErroLogin } from '@/lib/dominio/login';
 import type { Usuario } from '@/lib/dominio/perfis';
 
-type Tela = 'login' | 'solicitar' | 'enviado' | 'entrando';
+type Tela = 'login' | 'entrando';
 
 /** Quanto tempo a tela de boas-vindas fica antes de abrir o Hub. */
 const ESPERA_BOAS_VINDAS_MS = 900;
@@ -26,7 +22,6 @@ export function TelaLogin() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<ErroLogin | null>(null);
   const [entrando, setEntrando] = useState(false);
-  const [emailSolicitado, setEmailSolicitado] = useState('');
   const [usuarioEntrando, setUsuarioEntrando] = useState<Usuario | null>(null);
 
   // Depois das boas-vindas, a raiz decide para onde ir.
@@ -73,17 +68,6 @@ export function TelaLogin() {
     }
   }
 
-  function irParaSolicitacao() {
-    setErro(null);
-    setTela('solicitar');
-  }
-
-  function voltarAoLogin() {
-    setErro(null);
-    setSenha('');
-    setTela('login');
-  }
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-fundo p-3 sm:p-8">
       <div className="grid w-full max-w-[1180px] overflow-hidden rounded-[22px] bg-white shadow-[0_30px_70px_rgba(18,17,90,0.22)] lg:grid-cols-[1.15fr_1fr]">
@@ -106,25 +90,6 @@ export function TelaLogin() {
               }}
               aoEntrar={() => tentar(entrarComEmailESenha)}
               aoCriarConta={() => tentar(criarContaDeTeste)}
-              aoPedirAcesso={irParaSolicitacao}
-            />
-          )}
-
-          {tela === 'solicitar' && (
-            <FormularioSolicitacao
-              emailInicial={email}
-              aoVoltar={voltarAoLogin}
-              aoEnviar={(emailDoPedido) => {
-                setEmailSolicitado(emailDoPedido);
-                setTela('enviado');
-              }}
-            />
-          )}
-
-          {tela === 'enviado' && (
-            <SolicitacaoEnviada
-              email={emailSolicitado}
-              aoVoltar={voltarAoLogin}
             />
           )}
 

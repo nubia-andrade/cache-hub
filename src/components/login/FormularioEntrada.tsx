@@ -13,7 +13,6 @@ type Props = {
   aoMudarEmail: (valor: string) => void;
   aoMudarSenha: (valor: string) => void;
   aoEntrar: () => void;
-  aoPedirAcesso: () => void;
   aoCriarConta: () => void;
 };
 
@@ -35,7 +34,6 @@ export function FormularioEntrada({
   aoMudarEmail,
   aoMudarSenha,
   aoEntrar,
-  aoPedirAcesso,
   aoCriarConta,
 }: Props) {
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -142,15 +140,6 @@ export function FormularioEntrada({
             <p className="text-[12.5px] leading-[1.5] text-tinta-2">
               {erro.texto}
             </p>
-            {erro.ofereceSolicitar && !MODO_TESTE_SEM_APROVACAO && (
-              <button
-                type="button"
-                onClick={aoPedirAcesso}
-                className="mt-1 h-[34px] cursor-pointer self-start rounded-full border border-magenta-vivo bg-white px-[15px] text-[12.5px] font-bold text-magenta hover:bg-magenta-suave"
-              >
-                Solicitar acesso com este e-mail
-              </button>
-            )}
           </div>
         )}
 
@@ -162,14 +151,17 @@ export function FormularioEntrada({
           {entrando ? 'Entrando…' : 'Entrar no Cachê Hub'}
         </button>
 
-        <div className="flex items-center gap-3 py-0.5">
-          <span className="h-px flex-1 bg-borda-clara" />
-          <span className="text-[11.5px] text-tinta-5">ou</span>
-          <span className="h-px flex-1 bg-borda-clara" />
-        </div>
-
+        {/* Não existe auto-atendimento de acesso, e a tela não finge que
+            existe: quem cadastra é o Proprietário, em Usuários. Um botão que
+            só abria um formulário sem destino era pior que a ausência dele —
+            prometia um pedido que ninguém recebia. */}
         {MODO_TESTE_SEM_APROVACAO ? (
           <>
+            <div className="flex items-center gap-3 py-0.5">
+              <span className="h-px flex-1 bg-borda-clara" />
+              <span className="text-[11.5px] text-tinta-5">ou</span>
+              <span className="h-px flex-1 bg-borda-clara" />
+            </div>
             <button
               type="button"
               onClick={aoCriarConta}
@@ -184,13 +176,9 @@ export function FormularioEntrada({
             </p>
           </>
         ) : (
-          <button
-            type="button"
-            onClick={aoPedirAcesso}
-            className="h-[46px] cursor-pointer rounded-full border-[1.5px] border-azul bg-white text-[14px] font-bold text-azul hover:bg-azul-suave"
-          >
-            Ainda não tenho acesso — solicitar
-          </button>
+          <p className="text-center text-[12px] leading-[1.55] text-tinta-4">
+            Ainda não tem acesso? Quem cadastra é o Proprietário do Hub.
+          </p>
         )}
       </div>
 

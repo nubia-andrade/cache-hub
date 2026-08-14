@@ -16,10 +16,14 @@ import {
   estadosPossiveis,
   proprietariosAtivos,
   ROTULO_ACAO,
+  mudancasDoCadastro,
+  problemaDoCadastro,
+  type CadastroEditavel,
 } from '@/lib/dominio/administracao';
 import { paginar } from '@/lib/dominio/paginacao';
-import { mudarEstado, mudarPerfis } from '@/lib/administracao';
+import { mudarCadastro, mudarEstado, mudarPerfis } from '@/lib/administracao';
 import { bloqueioDoConvite } from '@/lib/dominio/convite';
+import { EQUIPES } from '@/data/usuarios-seed';
 import { NovoUsuario } from './NovoUsuario';
 
 const CORES_ESTADO: Record<EstadoAcesso, string> = {
@@ -366,10 +370,14 @@ function LinhaDoUsuario({
 
       {expandido && (
         <div className="border-t border-borda-suave bg-fundo-3 px-3 py-3">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-tinta-3">
-            {usuario.cargo && <span>{usuario.cargo}</span>}
-            <span className="lg:hidden">{usuario.equipe || 'sem equipe'}</span>
-          </div>
+          <EditorDoCadastro
+            usuario={usuario}
+            gravando={gravando}
+            aoSalvar={(mudancas) =>
+              aplicar(() => mudarCadastro(usuario.id, mudancas))
+            }
+            aoErrar={setErro}
+          />
 
           {erro && (
             <p
@@ -475,5 +483,124 @@ function ListaTruncada() {
         . Ele é curto e termina mostrando um diagnóstico do que ficou faltando.
       </p>
     </div>
+  );
+}
+
+/**
+ * Nome, cargo e equipe — o que quem entra sozinho não traz.
+ *
+ * Fica dentro da linha expandida, e não numa tela à parte: administrar acesso
+ * e completar o cadastro acontecem no mesmo momento, quando o Proprietário
+ * abre a pessoa para liberar. Separar em duas telas garantiria que a segunda
+ * nunca fosse visitada, e a equipe ficaria em branco para sempre.
+ *
+ * Salva só o que mudou. Reescrever os três campos a cada clique faria o
+ * histórico do banco registrar alterações que ninguém fez.
+ */
+function EditorDoCadastro({
+  usuario,
+  gravando,
+  aoSalvar,
+  aoErrar,
+}: {
+  usuario: Usuario;
+  gravando: boolean;
+  aoSalvar: (mudancas: Partial<CadastroEditavel>) => void;
+  aoErrar: (mensagem: string | null) => void;
+}) {
+  const original: CadastroEditavel = {
+    nome: usuario.nome,
+    cargo: usuario.cargo,
+    equipe: usuario.equipe,
+  };
+
+  const [rascunho, setRascunho] = useState<CadastroEditavel>(original);
+
+  const mudancas = mudancasDoCadastro(original, rascunho);
+  const temMudanca = Object.keys(mudancas).length > 0;
+
+  function salvar() {
+    const problema = problemaDoCadastro(rascunho, EQUIPES);
+    if (problema) {
+      aoErrar(problema);
+      return;
+    }
+    aoErrar(null);
+    aoSalvar(mudancas);
+  }
+
+  return (
+    <div className="mb-3 flex flex-wrap items-end gap-2 border-b border-borda-suave pb-3">
+      <Campo
+        rotulo="Nome"
+        valor={rascunho.nome}
+        largura="min-w-[170px] flex-1"
+        aoMudar={(nome) => setRascunho((atual) => ({ ...atual, nome }))}
+      />
+      <Campo
+        rotulo="Cargo"
+        valor={rascunho.cargo}
+        largura="min-w-[150px] flex-1"
+        dica="Ex.: analista comercial"
+        aoMudar={(cargo) => setRascunho((atual) => ({ ...atual, cargo }))}
+      />
+
+      <label className="flex min-w-[160px] flex-1 flex-col gap-1">
+        <span className="text-[11px] font-bold text-tinta-2">Equipe</span>
+        <select
+          value={rascunho.equipe}
+          aria-label={`Equipe de ${usuario.nome}`}
+          onChange={(evento) =>
+            setRascunho((atual) => ({ ...atual, equipe: evento.target.value }))
+          }
+          className="h-[34px] rounded-[9px] border border-borda-forte bg-white px-2 text-[12.5px] text-tinta"
+        >
+          {/* A opção vazia existe porque é o estado real de quem acabou de
+              entrar. Sem ela, a tela mostraria a primeira equipe da lista
+              como se alguém a tivesse escolhido. */}
+          <option value="">— sem equipe —</option>
+          {EQUIPES.map((equipe) => (
+            <option key={equipe} value={equipe}>
+              {equipe}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <button
+        type="button"
+        disabled={gravando || !temMudanca}
+        onClick={salvar}
+        className="h-[34px] rounded-full bg-tinta px-3.5 text-[12px] font-bold text-white enabled:cursor-pointer disabled:opacity-30"
+      >
+        {gravando ? 'Salvando…' : 'Salvar cadastro'}
+      </button>
+    </div>
+  );
+}
+
+function Campo({
+  rotulo,
+  valor,
+  largura,
+  dica,
+  aoMudar,
+}: {
+  rotulo: string;
+  valor: string;
+  largura: string;
+  dica?: string;
+  aoMudar: (valor: string) => void;
+}) {
+  return (
+    <label className={`flex flex-col gap-1 ${largura}`}>
+      <span className="text-[11px] font-bold text-tinta-2">{rotulo}</span>
+      <input
+        value={valor}
+        placeholder={dica}
+        onChange={(evento) => aoMudar(evento.target.value)}
+        className="h-[34px] rounded-[9px] border border-borda-forte bg-white px-2.5 text-[12.5px] text-tinta"
+      />
+    </label>
   );
 }

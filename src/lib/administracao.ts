@@ -28,6 +28,22 @@ export async function mudarPerfis(
   return gravar(usuarioId, { perfis });
 }
 
+/**
+ * Nome, cargo e equipe — os campos que quem entra sozinho não traz.
+ *
+ * Passam pelo mesmo caminho de gravação, mas por uma porta diferente do
+ * banco: o gatilho `proteger_administracao` só vigia estado e perfis, e
+ * deixa estes três livres. É a distinção certa — errar a equipe de alguém
+ * atrapalha um relatório; errar o perfil dá acesso indevido a valor de cachê.
+ */
+export async function mudarCadastro(
+  usuarioId: string,
+  cadastro: Partial<{ nome: string; cargo: string; equipe: string }>,
+): Promise<ResultadoAdministracao> {
+  if (Object.keys(cadastro).length === 0) return { ok: true };
+  return gravar(usuarioId, cadastro);
+}
+
 async function gravar(
   usuarioId: string,
   mudanca: Record<string, unknown>,
