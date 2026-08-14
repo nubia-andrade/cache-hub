@@ -26,6 +26,7 @@ type LinhaBruta = {
   id: string;
   protocolo: string | null;
   equipe: string | null;
+  solicitante: { nome: string | null } | null;
   anunciante: string | null;
   marca: string | null;
   setor_cliente: string | null;
@@ -38,6 +39,7 @@ type LinhaBruta = {
     status: string | null;
     conversao: string | null;
     motivo_nao_fechou: string | null;
+    devolucoes?: number | null;
     talento_id: string | null;
     talento: { nome: string; nome_artistico: string | null } | null;
     cache: number | null;
@@ -48,14 +50,22 @@ type LinhaBruta = {
   }[];
 };
 
-function consulta(comSubstituicao: boolean): string {
+/**
+ * As colunas que só existem depois dos SQL desta fase viajam juntas.
+ *
+ * O `select` do Supabase falha INTEIRO quando qualquer coluna não existe, e
+ * uma tentativa por coluna cresceria sem fim. Uma consulta a menos, e o
+ * relatório abre mesmo com o banco atrasado — só sem esses dois números.
+ */
+function consulta(comColunasNovas: boolean): string {
   return `
   id, protocolo, equipe, anunciante, marca, setor_cliente, programa, criado_em,
+  solicitante:perfil_usuario ( nome ),
   itens:solicitacao_item (
     id, area, categoria, status, conversao, motivo_nao_fechou, talento_id,
     talento ( nome, nome_artistico ),
     cache, valor_fechado, respondido_em${
-      comSubstituicao ? ', substitui_item_id' : ''
+      comColunasNovas ? ', substitui_item_id, devolucoes' : ''
     },
     respondido_por:perfil_usuario!solicitacao_item_respondido_por_fkey ( nome )
   )
@@ -79,10 +89,10 @@ export async function lerLinhasDeAnalise(): Promise<{
 }> {
   const supabase = await criarClienteNoServidor();
 
-  const ler = (comSubstituicao: boolean) =>
+  const ler = (comColunasNovas: boolean) =>
     supabase
       .from('solicitacao')
-      .select(consulta(comSubstituicao))
+      .select(consulta(comColunasNovas))
       .overrideTypes<LinhaBruta[]>();
 
   const [primeira, segmentoPorPrograma] = await Promise.all([
@@ -90,8 +100,8 @@ export async function lerLinhasDeAnalise(): Promise<{
     mapaDeSegmentoPorPrograma(),
   ]);
 
-  // Sem `supabase/substituicao-de-talento.sql`, a coluna não existe e o select
-  // inteiro falha. O relatório volta sem ela em vez de vir vazio.
+  // Sem os SQL desta fase, as colunas não existem e o select inteiro falha.
+  // O relatório volta sem elas em vez de vir vazio.
   const { data, error } = primeira.error ? await ler(false) : primeira;
 
   if (error) {
@@ -124,6 +134,7 @@ export async function lerLinhasDeAnalise(): Promise<{
       marca: projeto.marca ?? '',
       programa: projeto.programa ?? '',
       setorCliente: projeto.setor_cliente ?? '',
+      abertaPor: projeto.solicitante?.nome ?? '—',
       criadoEm: projeto.criado_em,
     };
 
@@ -140,6 +151,7 @@ export async function lerLinhasDeAnalise(): Promise<{
         conversao: validarConversao(item.conversao),
         foiSubstituido: substituidos.has(item.id),
         motivoNaoFechou: item.motivo_nao_fechou,
+        devolucoes: item.devolucoes ?? 0,
         cache: item.cache,
         valorFechado: item.valor_fechado,
         respondidoEm: item.respondido_em,

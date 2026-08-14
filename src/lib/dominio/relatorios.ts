@@ -31,6 +31,8 @@ export type LinhaDeAnalise = {
   marca: string;
   programa: string;
   setorCliente: string;
+  /** Quem abriu a consulta. Responde "com quem falo sobre isto". */
+  abertaPor: string;
   /** Dimensões do talento. */
   area: Area;
   categoria: Categoria;
@@ -51,6 +53,14 @@ export type LinhaDeAnalise = {
    */
   foiSubstituido: boolean;
   motivoNaoFechou: string | null;
+  /**
+   * Quantas vezes este talento voltou para ajuste.
+   *
+   * Contado pelo banco a cada ida para Devolvido — ver
+   * supabase/contar-devolucoes.sql. Item que volta três vezes não é item
+   * lento: é briefing que não fecha, e são problemas diferentes.
+   */
+  devolucoes: number;
   cache: number | null;
   valorFechado: number | null;
   /** ISO. `respondidoEm` é nulo enquanto ninguém respondeu. */

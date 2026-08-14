@@ -1102,6 +1102,59 @@ create trigger ao_mudar_item
 
 
 -- ----------------------------------------------------------------------
+-- Parte 1f — Quantas vezes cada talento foi devolvido
+-- ----------------------------------------------------------------------
+-- Também existe solto em supabase/contar-devolucoes.sql. Mantenha os dois
+-- iguais.
+--
+-- A linha do tempo registra "Fulano devolveu Manu Gavassi", mas o evento leva
+-- o id da SOLICITAÇÃO, não o do item. Contar devoluções por talento dali
+-- exigiria procurar o nome do talento dentro do título do evento, e no dia em
+-- que dois talentos tiverem nome parecido — ou o texto do gatilho mudar — o
+-- número passa a mentir sem nenhum erro que denuncie.
+--
+-- Um item que volta três vezes não é um item lento: é um briefing que não
+-- fecha. É a diferença entre cobrar prazo da área e arrumar o formulário.
+
+alter table solicitacao_item
+  add column if not exists devolucoes integer not null default 0;
+
+-- Conta a IDA para Devolvido, e não o estado.
+--
+-- Um item devolvido, ajustado, reenviado e devolvido de novo tem duas
+-- devoluções — e no fim das duas ele pode até estar Orçado. Olhar só o status
+-- atual perderia a história inteira, que é justamente o que se quer medir.
+create or replace function public.contar_devolucoes()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = 'Devolvido' and old.status is distinct from 'Devolvido' then
+    new.devolucoes := coalesce(old.devolucoes, 0) + 1;
+  end if;
+
+  return new;
+end $$;
+
+drop trigger if exists ao_devolver_contar on solicitacao_item;
+create trigger ao_devolver_contar
+  before update on solicitacao_item
+  for each row execute function public.contar_devolucoes();
+
+-- O que já está devolvido agora tem pelo menos uma devolução.
+--
+-- É o único resgate honesto possível: as devoluções anteriores a esta coluna
+-- não deixaram rastro por item. Quem foi devolvido, ajustado e reenviado antes
+-- de hoje aparece com zero, e isso é melhor que um número inventado a partir
+-- do texto dos eventos.
+update solicitacao_item
+   set devolucoes = 1
+ where status = 'Devolvido' and devolucoes = 0;
+
+
+-- ----------------------------------------------------------------------
 -- Parte 2 — Criar o cadastro do Hub junto com o usuário de autenticação
 -- ----------------------------------------------------------------------
 -- O schema não tem isto, e sem isto quem se cadastra no Supabase Auth não

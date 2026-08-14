@@ -21,6 +21,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     marca: 'Brahma',
     programa: 'Big Brother Brasil',
     setorCliente: 'Bebidas alcoólicas',
+    abertaPor: 'Nubia Andrade',
     area: 'ViU',
     categoria: 'Influenciador',
     talentoId: `t-${contador}`,
@@ -29,6 +30,7 @@ function linha(campos: Partial<LinhaDeAnalise> = {}): LinhaDeAnalise {
     conversao: 'pendente',
     foiSubstituido: false,
     motivoNaoFechou: null,
+    devolucoes: 0,
     cache: 10000,
     valorFechado: null,
     criadoEm: '2026-08-01T10:00:00.000Z',
@@ -154,5 +156,31 @@ describe('busca', () => {
 
   it('acha pelo protocolo', () => {
     expect(filtrarDetalhe(linhas, '0001')).toHaveLength(2);
+  });
+});
+
+describe('as colunas novas', () => {
+  it('aberta por e devoluções entram na busca e na ordenação', () => {
+    const linhas = detalhar([
+      linha({ abertaPor: 'Mariana Vasques', devolucoes: 0 }),
+      linha({ abertaPor: 'Ricardo Alencar', devolucoes: 3 }),
+    ]);
+
+    expect(filtrarDetalhe(linhas, 'mariana')).toHaveLength(1);
+    expect(
+      ordenarDetalhe(linhas, 'devolucoes', false).map((l) => l.devolucoes),
+    ).toEqual([3, 0]);
+  });
+
+  it('zero devoluções não é ausência — fica no começo do crescente', () => {
+    // Diferente de cachê nulo: aqui zero é uma resposta de verdade, "nunca
+    // voltou", e não "ainda não sabemos".
+    const linhas = detalhar([
+      linha({ devolucoes: 2 }),
+      linha({ devolucoes: 0 }),
+    ]);
+    expect(
+      ordenarDetalhe(linhas, 'devolucoes', true).map((l) => l.devolucoes),
+    ).toEqual([0, 2]);
   });
 });

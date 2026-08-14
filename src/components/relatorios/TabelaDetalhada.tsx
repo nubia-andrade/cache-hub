@@ -92,13 +92,15 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
       </div>
 
       <div className="overflow-x-auto rounded-cartao border border-borda">
-        <table className="w-full min-w-[900px] text-[12.5px]">
+        <table className="w-full min-w-[1080px] text-[12.5px]">
           <thead>
             <tr className="border-b border-borda bg-fundo-2 text-left text-[11px] text-tinta-4">
               {COLUNAS_DETALHE.map((definicao) => {
                 const ativa = coluna === definicao.chave;
                 const numerica =
-                  definicao.chave === 'cache' || definicao.chave === 'dias';
+                  definicao.chave === 'cache' ||
+                  definicao.chave === 'dias' ||
+                  definicao.chave === 'devolucoes';
 
                 return (
                   <th
@@ -197,6 +199,9 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
                     <td className="max-w-[140px] truncate px-2.5 py-2 text-tinta-2">
                       {linha.equipe || '—'}
                     </td>
+                    <td className="max-w-[140px] truncate px-2.5 py-2 text-tinta-2">
+                      {linha.abertaPor || '—'}
+                    </td>
 
                     <td className="px-2.5 py-2">
                       <span
@@ -211,6 +216,26 @@ export function TabelaDetalhada({ linhas }: { linhas: LinhaDeAnalise[] }) {
                           className="ml-1 whitespace-nowrap rounded-full bg-fundo-2 px-1.5 py-0.5 text-[10px] font-bold text-tinta-4"
                         >
                           substituído
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="whitespace-nowrap px-2.5 py-2 text-right tabular-nums">
+                      {/* Zero fica apagado: a coluna existe para os que voltam,
+                          e uma parede de zeros escuraria os poucos que têm 2 ou
+                          3 — que são justamente os que pedem atenção. */}
+                      {linha.devolucoes === 0 ? (
+                        <span className="text-tinta-5">0</span>
+                      ) : (
+                        <span
+                          title="Cada volta para ajuste conta uma. Item que volta muito costuma ser briefing que não fecha, e não área lenta."
+                          className={
+                            linha.devolucoes >= 2
+                              ? 'font-bold text-erro'
+                              : 'font-semibold text-aviso'
+                          }
+                        >
+                          {linha.devolucoes}
                         </span>
                       )}
                     </td>

@@ -128,11 +128,11 @@ export function PainelDeRelatorios({
           onClick={() =>
             baixarXlsx(
               nomeDoArquivo(periodo),
-              abasDoRelatorio(doPeriodo, anteriores, periodo),
+              abasDoRelatorio(doPeriodo),
             )
           }
           disabled={doPeriodo.length === 0}
-          title="Baixa uma planilha com todos os cortes deste período, mais o detalhe linha a linha"
+          title="Baixa a base do período: uma linha por talento, com todas as colunas"
           className="ml-auto h-[38px] rounded-full border border-borda-forte bg-white px-4 text-[12.5px] font-semibold text-tinta-2 enabled:cursor-pointer enabled:hover:border-magenta enabled:hover:text-magenta disabled:opacity-40"
         >
           Exportar Excel
