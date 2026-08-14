@@ -111,3 +111,96 @@ export function prazoEmTexto(dias: number | null): string {
   }
   return `em ${dias} dias`;
 }
+
+/**
+ * O painel de números da fila.
+ *
+ * REGRA CRÍTICA — os quatro baldes são EXCLUDENTES, e a ordem em que se
+ * pergunta é o que define cada um.
+ *
+ * Um item vencido também vence "nesta semana", e um respondido também tem
+ * prazo. Se cada balde contasse por conta própria, a soma passaria do total e
+ * o painel perderia a serventia: ninguém consegue planejar o dia com números
+ * que se sobrepõem. Aqui cada item cai em um balde só, e a soma fecha.
+ *
+ * A pergunta é feita nesta ordem, da mais decisiva para a menos:
+ *   1. já foi respondido?  -> saiu da fila, não tem prazo a cobrar
+ *   2. o prazo já passou?  -> vencida
+ *   3. vence hoje?         -> hoje
+ *   4. vence em até 7 dias -> na semana
+ *
+ * Quem não tem prazo pedido não entra em nenhum balde de prazo. Ausência de
+ * data não é folga nem urgência — é ausência, e inventar qualquer um dos dois
+ * faria o painel mentir.
+ */
+export type ResumoDaFila = {
+  vencidas: number;
+  vencemHoje: number;
+  naSemana: number;
+  respondidas: number;
+  /** Sem prazo pedido. Some do painel, mas continua na lista. */
+  semPrazo: number;
+};
+
+/** Até quantos dias à frente conta como "na semana". */
+export const DIAS_DA_SEMANA = 7;
+
+export type ItemParaResumo = {
+  status: StatusSolicitacao;
+  prazoResposta: string | null;
+};
+
+export function resumoDaFila(
+  itens: readonly ItemParaResumo[],
+  hojeISO: string,
+): ResumoDaFila {
+  const resumo: ResumoDaFila = {
+    vencidas: 0,
+    vencemHoje: 0,
+    naSemana: 0,
+    respondidas: 0,
+    semPrazo: 0,
+  };
+
+  for (const item of itens) {
+    if (item.status === 'Orçado' || item.status === 'Rejeitado') {
+      resumo.respondidas += 1;
+      continue;
+    }
+
+    const dias = diasAteOPrazo(item.prazoResposta, hojeISO);
+
+    if (dias === null) resumo.semPrazo += 1;
+    else if (dias < 0) resumo.vencidas += 1;
+    else if (dias === 0) resumo.vencemHoje += 1;
+    else if (dias <= DIAS_DA_SEMANA) resumo.naSemana += 1;
+    else resumo.semPrazo += 1;
+  }
+
+  return resumo;
+}
+
+/**
+ * A frase de abertura da fila — o que fazer agora, em uma linha.
+ *
+ * Vencida ganha de "vence hoje" porque já falhou com alguém; o resto do painel
+ * mostra os números, e esta linha só diz por onde começar.
+ */
+export function chamadaDaFila(resumo: ResumoDaFila): string {
+  if (resumo.vencidas > 0) {
+    return resumo.vencidas === 1
+      ? '1 consulta passou do prazo — comece por ela.'
+      : `${resumo.vencidas} consultas passaram do prazo — comece por elas.`;
+  }
+  if (resumo.vencemHoje > 0) {
+    return resumo.vencemHoje === 1
+      ? '1 consulta precisa de resposta hoje — comece pela primeira da fila.'
+      : `${resumo.vencemHoje} consultas precisam de resposta hoje — comece pela primeira da fila.`;
+  }
+  if (resumo.naSemana > 0) {
+    return `Nada vence hoje. ${resumo.naSemana} ${
+      resumo.naSemana === 1 ? 'consulta vence' : 'consultas vencem'
+    } nos próximos ${DIAS_DA_SEMANA} dias.`;
+  }
+  return 'Nada com prazo apertado agora.';
+}
