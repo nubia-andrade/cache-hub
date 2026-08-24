@@ -2,6 +2,7 @@
 
 import { TIPOS_PROJETO } from '@/lib/dominio/precos';
 import {
+  MODELOS_SOLICITACAO,
   TIPOS_MIDIA,
   periodoValido,
   type CabecalhoConsulta,
@@ -41,6 +42,10 @@ export function PassoCabecalho({
         <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
         <Derivado rotulo="Programa" valor={cabecalho.programa} />
         <Derivado rotulo="Tipo de mídia" valor={cabecalho.tipoMidia} />
+        <Derivado
+          rotulo="Modelo de solicitação"
+          valor={cabecalho.modeloSolicitacao}
+        />
         <Derivado rotulo="Tipo de projeto" valor={cabecalho.tipoProjeto} />
         <Derivado
           rotulo="Exibição"
@@ -141,6 +146,29 @@ export function PassoCabecalho({
           ))}
         </select>
       </Campo>
+
+      {(cabecalho.tipoMidia === 'TV' || cabecalho.tipoMidia === 'Ambos') && (
+        <Campo rotulo="Modelo de solicitação" obrigatorio>
+          <select
+            value={cabecalho.modeloSolicitacao}
+            onChange={(evento) =>
+              aoMudar({
+                ...cabecalho,
+                modeloSolicitacao: evento.target
+                  .value as CabecalhoConsulta['modeloSolicitacao'],
+              })
+            }
+            className="h-[38px] w-full rounded-[9px] border border-borda-forte bg-white px-2.5 text-[13px] text-tinta"
+          >
+            <option value="">Escolha…</option>
+            {MODELOS_SOLICITACAO.map((modelo) => (
+              <option key={modelo} value={modelo}>
+                {modelo}
+              </option>
+            ))}
+          </select>
+        </Campo>
+      )}
 
       <Campo rotulo="Tipo de projeto" obrigatorio>
         <select
