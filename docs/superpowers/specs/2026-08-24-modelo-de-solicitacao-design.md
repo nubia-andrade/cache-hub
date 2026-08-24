@@ -93,7 +93,7 @@ export function camposDaMidia(
   (só aparecem os campos de `CAMPOS_DIGITAL`) até o modelo ser escolhido.
 - `midia === 'Digital' | 'Social'`: sem mudança, `modelo` é ignorado.
 
-### Chamadores a atualizar (7 pontos)
+### Chamadores a atualizar (6 pontos)
 
 Todos hoje chamam `camposDaMidia(tipoMidia)` sem o segundo argumento — cada
 um precisa passar o `modeloSolicitacao` do cabeçalho/projeto correspondente:
@@ -164,12 +164,19 @@ que nada se perca em relatórios ou na regra crítica de dispensa de cachê
 | `diariasNum` | Diárias de gravação | num | Gravação | igual a `CAMPOS_TV` |
 | `qtdHoras` | Quantidade de horas | num | Gravação | igual a `CAMPOS_TV` |
 | `exclusividade` | Exclusividade | bool | Verba e adicionais | igual a `CAMPOS_TV` |
-| `makeHair` | Make e cabelo | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV` |
+| `makeHair` | Make e hair | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV`, rótulo mantido |
 | `figurino` | Figurino | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV` |
 | `maisInfo` | Mais informações | area, largo | Observações | igual a `CAMPOS_TV` |
 
 Removidos de `CAMPOS_TV` (não fazem parte deste modelo): `vertical`,
 `direcaoRedacao`.
+
+**Nota sobre o rótulo de `makeHair`:** o pedido original chamava o campo de
+"Make e Cabelo", mas o rótulo gravado continua "Make e hair" — o mesmo que
+`CAMPOS_TV` já usa hoje. A mesclagem de mídia `Ambos` casa campos pelo
+RÓTULO (não pela chave); renomear faria este campo parar de casar com o
+`makeHair` de `CAMPOS_DIGITAL`, e os dois apareceriam juntos na tela editando
+a mesma chave sob rótulos diferentes.
 
 ### `CAMPOS_ACAO_DE_CONTEUDO` (Ação de Conteúdo + Interveniência, por alias)
 
@@ -189,7 +196,7 @@ Removidos de `CAMPOS_TV` (não fazem parte deste modelo): `vertical`,
 | `captacaoExterna` | Captação externa? | bool | Gravação | **novo** |
 | `redesSociaisViu` | Teremos ViU? | bool | Distribuição | **novo** (mesma chave do outro conjunto) |
 | `responsavelDigital` | Responsável no digital | texto | Distribuição | **novo** (`dep: redesSociaisViu`) |
-| `makeHair` | Make e cabelo | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV` |
+| `makeHair` | Make e hair | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV`, rótulo mantido (ver nota acima) |
 | `figurino` | Figurino | select (Globo/Talento) | Responsabilidades | igual a `CAMPOS_TV` |
 | `logistica` | Logística | select (Creator/Talento, ViU, Linear) | Responsabilidades | igual a `CAMPOS_DIGITAL`, mesmas opções |
 | `maisInfo` | Mais informações | area, largo | Observações | igual a `CAMPOS_TV` |
