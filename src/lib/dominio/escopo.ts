@@ -306,6 +306,87 @@ export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
   },
 ];
 
+/**
+ * Ação de Conteúdo — e, por ora, Interveniência também: o negócio ainda não
+ * mapeou os campos dela, então ela usa exatamente este conjunto (ver
+ * `camposDaMidia`). Sem "Formato": nesse modelo o formato já é "Ação" por
+ * definição, perguntar de novo só repetiria o que o modelo já diz.
+ */
+export const CAMPOS_ACAO_DE_CONTEUDO: readonly DefinicaoCampo[] = [
+  {
+    chave: 'direitoDeUso', secao: 'Distribuição',
+    rotulo: 'Direito de uso de imagem',
+    tipo: 'multi',
+    opcoes: CESSIONARIOS,
+    nota: 'quem pode repostar e impulsionar',
+  },
+  {
+    chave: 'prazoDeUso', secao: 'Distribuição',
+    rotulo: 'Por quanto tempo',
+    tipo: 'select',
+    opcoes: PRAZOS_DE_USO,
+    dep: 'direitoDeUso',
+  },
+  {
+    chave: 'natureza', secao: 'Verba e adicionais',
+    rotulo: 'Natureza da ação',
+    tipo: 'select',
+    opcoes: NATUREZAS_DA_ACAO,
+    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+  },
+  {
+    chave: 'verba', secao: 'Verba e adicionais',
+    rotulo: 'Verba disponível',
+    tipo: 'moeda',
+    nota: 'temos a verba do cliente?',
+  },
+  { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
+  { chave: 'quantidadeAcoes', secao: 'Formato e produção', rotulo: 'Quantidade de ações', tipo: 'num' },
+  { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Criativo', tipo: 'num' },
+  {
+    chave: 'duracaoProjeto', secao: 'Formato e produção',
+    rotulo: 'Período do projeto',
+    tipo: 'num',
+    nota: 'quantidade de dias',
+  },
+  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantas exibições', tipo: 'num' },
+  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de captação', tipo: 'num' },
+  { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
+  { chave: 'captacaoExterna', secao: 'Gravação', rotulo: 'Captação externa?', tipo: 'bool' },
+  { chave: 'redesSociaisViu', secao: 'Distribuição', rotulo: 'Teremos ViU?', tipo: 'bool' },
+  {
+    chave: 'responsavelDigital', secao: 'Distribuição',
+    rotulo: 'Responsável no digital',
+    tipo: 'texto',
+    dep: 'redesSociaisViu',
+  },
+  {
+    chave: 'makeHair', secao: 'Responsabilidades',
+    rotulo: 'Make e hair',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TV,
+  },
+  {
+    chave: 'figurino', secao: 'Responsabilidades',
+    rotulo: 'Figurino',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TV,
+  },
+  {
+    chave: 'logistica', secao: 'Responsabilidades',
+    rotulo: 'Logística',
+    tipo: 'select',
+    opcoes: RESPONSAVEIS,
+  },
+  {
+    chave: 'maisInfo', secao: 'Observações',
+    rotulo: 'Mais informações',
+    tipo: 'area',
+    largo: true,
+    dica: 'informar o que será feito na diária',
+  },
+];
+
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   {
     chave: 'direitoDeUso', secao: 'Distribuição',

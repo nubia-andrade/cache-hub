@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   agruparEmSecoes,
+  CAMPOS_ACAO_DE_CONTEUDO,
   CAMPOS_BREAK_PROGRAMETE_CHAMADA,
   CAMPOS_DIGITAL,
   CAMPOS_TV,
@@ -374,5 +375,34 @@ describe('campos de Break, Programete e Chamada', () => {
       }),
     );
     expect(visiveisCom).toContain('Responsável no digital');
+  });
+});
+
+describe('campos de Ação de Conteúdo', () => {
+  it('traz os rótulos do modelo, na íntegra', () => {
+    expect(rotulos(CAMPOS_ACAO_DE_CONTEUDO)).toEqual([
+      'Direito de uso de imagem',
+      'Por quanto tempo',
+      'Natureza da ação',
+      'Verba disponível',
+      'Impulsionamento',
+      'Quantidade de ações',
+      'Criativo',
+      'Período do projeto',
+      'Quantas exibições',
+      'Diárias de captação',
+      'Quantidade de horas',
+      'Captação externa?',
+      'Teremos ViU?',
+      'Responsável no digital',
+      'Make e hair',
+      'Figurino',
+      'Logística',
+      'Mais informações',
+    ]);
+  });
+
+  it('não pergunta formato — nesse modelo ele já é Ação', () => {
+    expect(rotulos(CAMPOS_ACAO_DE_CONTEUDO)).not.toContain('Formato');
   });
 });
