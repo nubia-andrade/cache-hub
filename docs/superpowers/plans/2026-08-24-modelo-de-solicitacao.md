@@ -1229,9 +1229,26 @@ git commit -m "feat: persiste e lê o modelo de solicitação"
 - Modify: `src/components/projeto/PainelDeAjuste.tsx:70`
 - Modify: `src/app/(app)/projeto/[id]/page.tsx:65,145`
 - Modify: `src/components/fila/PainelDeResposta.tsx:69-72`
+- Modify: `src/app/(app)/projeto/[id]/ajustar/page.tsx` (o cabeçalho de `CabecalhoConsulta` que esta página monta à mão, para o `PainelDeAjuste`)
 
 **Interfaces:**
 - Consumes: `camposDaMidia(midia, modelo)` (Task 5), `cabecalho.modeloSolicitacao` / `projeto.modeloSolicitacao` / `item.projeto.modeloSolicitacao` (Task 8).
+
+- [ ] **Step 0: `ajustar/page.tsx` — ler o valor real, substituindo o placeholder da Task 2**
+
+Esta página monta um `CabecalhoConsulta` à mão a partir de `projeto` (o retorno de `lerProjeto`, Task 8) para passar ao `PainelDeAjuste`. Na Task 2, para o build não quebrar antes de a persistência existir, esse objeto ganhou um placeholder literal `modeloSolicitacao: ''`. Agora que a Task 8 já lê `projeto.modeloSolicitacao` de verdade, trocar o placeholder pelo valor lido:
+
+```ts
+    modeloSolicitacao: '',
+```
+
+por:
+
+```ts
+    modeloSolicitacao: validarModeloSolicitacao(projeto.modeloSolicitacao),
+```
+
+Acrescentar `validarModeloSolicitacao` ao import de `'@/lib/dominio/consulta'` no topo do arquivo (ele já importa `validarTipoMidia` do mesmo módulo — juntar os dois no mesmo `import`).
 
 - [ ] **Step 1: `PainelDeAjuste.tsx`**
 
