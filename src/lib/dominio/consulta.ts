@@ -113,13 +113,19 @@ const OBRIGATORIOS: {
   { campo: 'anunciante', rotulo: 'Anunciante' },
   { campo: 'marca', rotulo: 'Marca' },
   { campo: 'setorCliente', rotulo: 'Setor do cliente' },
-  { campo: 'programa', rotulo: 'Programa' },
   { campo: 'tipoMidia', rotulo: 'Tipo de mídia' },
   {
     campo: 'modeloSolicitacao',
     rotulo: 'Modelo de solicitação',
     quando: (cabecalho) =>
       cabecalho.tipoMidia === 'TV' || cabecalho.tipoMidia === 'Ambos',
+  },
+  {
+    campo: 'programa',
+    rotulo: 'Programa',
+    // Interveniência não é vinculada a um produto Globo — cobrar um programa
+    // que não existe faria a pessoa inventar um só para destravar a tela.
+    quando: (cabecalho) => cabecalho.modeloSolicitacao !== 'Interveniência',
   },
   { campo: 'tipoProjeto', rotulo: 'Tipo de projeto' },
   { campo: 'exibicaoInicio', rotulo: 'Início do período' },

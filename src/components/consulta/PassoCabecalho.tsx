@@ -40,7 +40,6 @@ export function PassoCabecalho({
         <Derivado rotulo="Anunciante" valor={cabecalho.anunciante} />
         <Derivado rotulo="Setor do cliente" valor={cabecalho.setorCliente} />
         <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
-        <Derivado rotulo="Programa" valor={cabecalho.programa} />
         <Derivado rotulo="Tipo de mídia" valor={cabecalho.tipoMidia} />
         {(cabecalho.tipoMidia === 'TV' || cabecalho.tipoMidia === 'Ambos') && (
           <Derivado
@@ -48,6 +47,7 @@ export function PassoCabecalho({
             valor={cabecalho.modeloSolicitacao}
           />
         )}
+        <Derivado rotulo="Programa" valor={cabecalho.programa} />
         <Derivado rotulo="Tipo de projeto" valor={cabecalho.tipoProjeto} />
         <Derivado
           rotulo="Exibição"
@@ -109,26 +109,6 @@ export function PassoCabecalho({
       <Derivado rotulo="Setor do cliente" valor={cabecalho.setorCliente} />
       <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
 
-      <Campo rotulo="Programa" obrigatorio comoDiv>
-        <CampoDeBusca
-          id="programa"
-          valor={cabecalho.programa}
-          placeholder="Escolha o programa…"
-          opcoes={catalogo.programas.map((programa) => ({
-            valor: programa.nome,
-            rotulo: programa.nome,
-            detalhe: programa.segmentoProduto,
-          }))}
-          aoEscolher={escolherPrograma}
-        />
-      </Campo>
-
-      <Derivado
-        rotulo="Segmento do produto"
-        valor={cabecalho.segmentoProduto}
-        className="sm:col-span-2"
-      />
-
       <Campo rotulo="Tipo de mídia" obrigatorio>
         <select
           value={cabecalho.tipoMidia}
@@ -180,6 +160,32 @@ export function PassoCabecalho({
           </select>
         </Campo>
       )}
+
+      <Campo
+        rotulo="Programa"
+        // Interveniência não é vinculada a um produto Globo — não faz
+        // sentido cobrar um programa que não existe.
+        obrigatorio={cabecalho.modeloSolicitacao !== 'Interveniência'}
+        comoDiv
+      >
+        <CampoDeBusca
+          id="programa"
+          valor={cabecalho.programa}
+          placeholder="Escolha o programa…"
+          opcoes={catalogo.programas.map((programa) => ({
+            valor: programa.nome,
+            rotulo: programa.nome,
+            detalhe: programa.segmentoProduto,
+          }))}
+          aoEscolher={escolherPrograma}
+        />
+      </Campo>
+
+      <Derivado
+        rotulo="Segmento do produto"
+        valor={cabecalho.segmentoProduto}
+        className="sm:col-span-2"
+      />
 
       <Campo rotulo="Tipo de projeto" obrigatorio>
         <select

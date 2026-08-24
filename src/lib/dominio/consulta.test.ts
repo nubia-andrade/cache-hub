@@ -30,8 +30,8 @@ describe('campos obrigatórios do cabeçalho', () => {
       'Anunciante',
       'Marca',
       'Setor do cliente',
-      'Programa',
       'Tipo de mídia',
+      'Programa',
       'Tipo de projeto',
       'Início do período',
       'Fim do período',
@@ -48,7 +48,7 @@ describe('campos obrigatórios do cabeçalho', () => {
 
   it('aponta só o que falta', () => {
     expect(camposFaltando({ ...COMPLETO, programa: '', tipoMidia: '' })).toEqual(
-      ['Programa', 'Tipo de mídia'],
+      ['Tipo de mídia', 'Programa'],
     );
   });
 
@@ -82,6 +82,30 @@ describe('campos obrigatórios do cabeçalho', () => {
         modeloSolicitacao: 'Break',
       }),
     ).toEqual([]);
+  });
+
+  it('programa não é obrigatório quando o modelo é Interveniência', () => {
+    // Interveniência não é vinculada a um produto Globo — não há programa
+    // para escolher.
+    expect(
+      camposFaltando({
+        ...COMPLETO,
+        programa: '',
+        tipoMidia: 'TV',
+        modeloSolicitacao: 'Interveniência',
+      }),
+    ).toEqual([]);
+  });
+
+  it('outros modelos continuam exigindo programa', () => {
+    expect(
+      camposFaltando({
+        ...COMPLETO,
+        programa: '',
+        tipoMidia: 'TV',
+        modeloSolicitacao: 'Break',
+      }),
+    ).toEqual(['Programa']);
   });
 });
 
