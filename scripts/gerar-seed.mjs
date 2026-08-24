@@ -543,6 +543,14 @@ alter table solicitacao_item alter column verba type numeric(12,2);
 -- pela mesma coluna, distorcendo o valor de referência de um deles.
 alter table solicitacao_item add column if not exists tipo_projeto tipo_projeto;
 
+-- ---- Modelo de solicitação, dentro de TV --------------------------------
+--
+-- Break, Programete, Chamada, Ação de Conteúdo ou Interveniência — decide
+-- qual conjunto de campos dinâmicos o escopo de cada talento usa quando a
+-- mídia é TV. Texto livre, como tipo_midia já é: nenhum enum a validar aqui,
+-- quem valida é a tela (\`validarModeloSolicitacao\`, em consulta.ts).
+alter table solicitacao add column if not exists modelo_solicitacao text;
+
 -- Os projetos de exemplo são recriados do zero na Parte 9, já com os status e
 -- as conversões novas. Não há nada a converter aqui.`,
   ),
