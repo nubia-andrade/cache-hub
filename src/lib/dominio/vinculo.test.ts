@@ -16,6 +16,7 @@ function projeto(campos: Partial<ProjetoVinculavel> = {}): ProjetoVinculavel {
     programa: 'Big Brother Brasil',
     equipe: 'Entretenimento',
     tipoMidia: 'Social',
+    modeloSolicitacao: '',
     tipoProjeto: 'Sob demanda',
     exibicaoInicio: '2026-08-20',
     exibicaoFim: '2026-09-30',
@@ -51,6 +52,20 @@ describe('cabeçalho vindo do vínculo', () => {
 
   it('o segmento do produto não vem do projeto — ele sai do programa', () => {
     expect(cabecalhoDoVinculo(projeto()).segmentoProduto).toBe('');
+  });
+
+  it('traz o modelo de solicitação', () => {
+    const cabecalho = cabecalhoDoVinculo(
+      projeto({ tipoMidia: 'TV', modeloSolicitacao: 'Break' }),
+    );
+    expect(cabecalho.modeloSolicitacao).toBe('Break');
+  });
+
+  it('valor inesperado de modelo não vira tipo inválido', () => {
+    const cabecalho = cabecalhoDoVinculo(
+      projeto({ modeloSolicitacao: 'Novela' }),
+    );
+    expect(cabecalho.modeloSolicitacao).toBe('');
   });
 });
 

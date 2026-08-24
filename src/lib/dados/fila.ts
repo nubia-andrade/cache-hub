@@ -51,6 +51,7 @@ type LinhaItem = {
     programa: string | null;
     equipe: string | null;
     tipo_midia: string | null;
+    modelo_solicitacao: string | null;
     exibicao_inicio: string | null;
     exibicao_fim: string | null;
     prazo_resposta: string | null;
@@ -65,6 +66,7 @@ const CONSULTA = `
   talento ( nome, nome_artistico, cidade, uf, seg_instagram, seg_tiktok, seg_x ),
   solicitacao (
     protocolo, marca, anunciante, setor_cliente, programa, equipe, tipo_midia,
+    modelo_solicitacao,
     exibicao_inicio, exibicao_fim, prazo_resposta, criado_em,
     solicitante:perfil_usuario ( nome )
   )
@@ -131,6 +133,7 @@ export async function listarFila(perfis: Perfil[]): Promise<ItemDaFila[]> {
       programa: linha.solicitacao?.programa ?? '',
       equipe: linha.solicitacao?.equipe ?? '',
       tipoMidia: linha.solicitacao?.tipo_midia ?? '',
+      modeloSolicitacao: linha.solicitacao?.modelo_solicitacao ?? '',
       exibicaoInicio: linha.solicitacao?.exibicao_inicio ?? null,
       exibicaoFim: linha.solicitacao?.exibicao_fim ?? null,
       criadoEm: linha.solicitacao?.criado_em ?? null,

@@ -45,6 +45,7 @@ export type ItemDaFila = {
     programa: string;
     equipe: string;
     tipoMidia: string;
+    modeloSolicitacao: string;
     exibicaoInicio: string | null;
     exibicaoFim: string | null;
     criadoEm: string | null;

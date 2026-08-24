@@ -81,6 +81,7 @@ export async function criarRascunho(
       programa: cabecalho.programa,
       equipe: equipeDoSolicitante,
       tipo_midia: cabecalho.tipoMidia,
+      modelo_solicitacao: cabecalho.modeloSolicitacao,
       tipo_projeto: cabecalho.tipoProjeto,
       exibicao_inicio: cabecalho.exibicaoInicio,
       exibicao_fim: cabecalho.exibicaoFim,

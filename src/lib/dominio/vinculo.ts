@@ -1,5 +1,6 @@
 import {
   CABECALHO_VAZIO,
+  validarModeloSolicitacao,
   type CabecalhoConsulta,
   type TipoMidia,
 } from './consulta';
@@ -28,6 +29,7 @@ export type ProjetoVinculavel = {
   programa: string;
   equipe: string;
   tipoMidia: string;
+  modeloSolicitacao: string;
   tipoProjeto: string;
   exibicaoInicio: string;
   exibicaoFim: string;
@@ -56,6 +58,7 @@ export function cabecalhoDoVinculo(
     segmentoMarca: projeto.segmentoMarca,
     programa: projeto.programa,
     tipoMidia: validarMidia(projeto.tipoMidia),
+    modeloSolicitacao: validarModeloSolicitacao(projeto.modeloSolicitacao),
     tipoProjeto: validarTipoProjeto(projeto.tipoProjeto),
     exibicaoInicio: projeto.exibicaoInicio,
     exibicaoFim: projeto.exibicaoFim,
