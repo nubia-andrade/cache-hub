@@ -26,6 +26,32 @@ export function validarTipoMidia(valor: string | null): TipoMidia | '' {
   return TIPOS_MIDIA.includes(valor as TipoMidia) ? (valor as TipoMidia) : '';
 }
 
+/**
+ * O modelo de solicitação, só relevante quando o tipo de mídia é TV.
+ *
+ * Interveniência ainda não tem campos próprios mapeados pelo negócio — por
+ * ora ela usa o mesmo conjunto de Ação de Conteúdo (ver `camposDaMidia` em
+ * `escopo.ts`), mas já entra como opção própria porque é assim que aparece
+ * para quem preenche, e porque o dia em que o negócio mapear os campos dela
+ * a mudança fica isolada num conjunto novo, sem mexer neste tipo.
+ */
+export const MODELOS_SOLICITACAO = [
+  'Break',
+  'Programete',
+  'Chamada',
+  'Ação de Conteúdo',
+  'Interveniência',
+] as const;
+export type ModeloSolicitacao = (typeof MODELOS_SOLICITACAO)[number];
+
+export function validarModeloSolicitacao(
+  valor: string | null,
+): ModeloSolicitacao | '' {
+  return MODELOS_SOLICITACAO.includes(valor as ModeloSolicitacao)
+    ? (valor as ModeloSolicitacao)
+    : '';
+}
+
 export type CabecalhoConsulta = {
   anunciante: string;
   marca: string;
@@ -34,6 +60,8 @@ export type CabecalhoConsulta = {
   programa: string;
   segmentoProduto: string;
   tipoMidia: TipoMidia | '';
+  /** Só relevante quando `tipoMidia` é 'TV' ou 'Ambos' — ver `camposFaltando`. */
+  modeloSolicitacao: ModeloSolicitacao | '';
   tipoProjeto: TipoProjeto | '';
   exibicaoInicio: string;
   exibicaoFim: string;
@@ -50,6 +78,7 @@ export const CABECALHO_VAZIO: CabecalhoConsulta = {
   programa: '',
   segmentoProduto: '',
   tipoMidia: '',
+  modeloSolicitacao: '',
   tipoProjeto: '',
   exibicaoInicio: '',
   exibicaoFim: '',
@@ -75,12 +104,23 @@ export function escopoVazioPara(tipoProjeto: TipoProjeto): EscopoDoTalento {
 }
 
 /** Os campos sem os quais o passo 2 não faz sentido, com o rótulo da tela. */
-const OBRIGATORIOS: { campo: keyof CabecalhoConsulta; rotulo: string }[] = [
+const OBRIGATORIOS: {
+  campo: keyof CabecalhoConsulta;
+  rotulo: string;
+  /** Só entra na lista quando esta condição bate — ver `modeloSolicitacao`. */
+  quando?: (cabecalho: CabecalhoConsulta) => boolean;
+}[] = [
   { campo: 'anunciante', rotulo: 'Anunciante' },
   { campo: 'marca', rotulo: 'Marca' },
   { campo: 'setorCliente', rotulo: 'Setor do cliente' },
   { campo: 'programa', rotulo: 'Programa' },
   { campo: 'tipoMidia', rotulo: 'Tipo de mídia' },
+  {
+    campo: 'modeloSolicitacao',
+    rotulo: 'Modelo de solicitação',
+    quando: (cabecalho) =>
+      cabecalho.tipoMidia === 'TV' || cabecalho.tipoMidia === 'Ambos',
+  },
   { campo: 'tipoProjeto', rotulo: 'Tipo de projeto' },
   { campo: 'exibicaoInicio', rotulo: 'Início do período' },
   { campo: 'exibicaoFim', rotulo: 'Fim do período' },
@@ -88,9 +128,9 @@ const OBRIGATORIOS: { campo: keyof CabecalhoConsulta; rotulo: string }[] = [
 
 /** O que ainda falta preencher, na ordem em que aparece no formulário. */
 export function camposFaltando(cabecalho: CabecalhoConsulta): string[] {
-  return OBRIGATORIOS.filter(({ campo }) => !cabecalho[campo]).map(
-    ({ rotulo }) => rotulo,
-  );
+  return OBRIGATORIOS.filter(
+    ({ campo, quando }) => (!quando || quando(cabecalho)) && !cabecalho[campo],
+  ).map(({ rotulo }) => rotulo);
 }
 
 /**

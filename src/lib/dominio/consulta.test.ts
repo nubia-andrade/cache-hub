@@ -17,6 +17,7 @@ const COMPLETO: CabecalhoConsulta = {
   programa: 'Big Brother Brasil',
   segmentoProduto: 'Realities',
   tipoMidia: 'Social',
+  modeloSolicitacao: '',
   tipoProjeto: 'Sob demanda',
   exibicaoInicio: '2026-08-20',
   exibicaoFim: '2026-09-30',
@@ -49,6 +50,38 @@ describe('campos obrigatórios do cabeçalho', () => {
     expect(camposFaltando({ ...COMPLETO, programa: '', tipoMidia: '' })).toEqual(
       ['Programa', 'Tipo de mídia'],
     );
+  });
+
+  it('modelo de solicitação só é obrigatório quando a mídia é TV', () => {
+    expect(
+      camposFaltando({ ...COMPLETO, tipoMidia: 'TV', modeloSolicitacao: '' }),
+    ).toEqual(['Modelo de solicitação']);
+
+    expect(
+      camposFaltando({
+        ...COMPLETO,
+        tipoMidia: 'Ambos',
+        modeloSolicitacao: '',
+      }),
+    ).toEqual(['Modelo de solicitação']);
+
+    expect(
+      camposFaltando({
+        ...COMPLETO,
+        tipoMidia: 'Digital',
+        modeloSolicitacao: '',
+      }),
+    ).toEqual([]);
+  });
+
+  it('mídia TV com modelo escolhido não tem pendência', () => {
+    expect(
+      camposFaltando({
+        ...COMPLETO,
+        tipoMidia: 'TV',
+        modeloSolicitacao: 'Break',
+      }),
+    ).toEqual([]);
   });
 });
 
@@ -113,6 +146,7 @@ describe('o que impede enviar', () => {
     programa: 'Big Brother Brasil',
     segmentoProduto: 'Realities',
     tipoMidia: 'Social',
+    modeloSolicitacao: '',
     tipoProjeto: 'Pacote',
     exibicaoInicio: '2026-09-01',
     exibicaoFim: '2026-09-30',
