@@ -57,7 +57,7 @@ export function PassoEntregas({
   aoMudarEscopo: (talentoId: string, escopo: EscopoDoTalento) => void;
   aoCopiar: (de: string, para: string) => void;
 }) {
-  const definicoes = camposDaMidia(cabecalho.tipoMidia);
+  const definicoes = camposDaMidia(cabecalho.tipoMidia, cabecalho.modeloSolicitacao);
 
   return (
     <div className="flex flex-col gap-4">

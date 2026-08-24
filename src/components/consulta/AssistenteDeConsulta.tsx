@@ -95,7 +95,7 @@ export function AssistenteDeConsulta({
   const cabecalhoOk = cabecalhoCompleto(cabecalho);
   const selecionados = talentos.filter((talento) => escolhidos.has(talento.id));
 
-  const definicoes = camposDaMidia(cabecalho.tipoMidia);
+  const definicoes = camposDaMidia(cabecalho.tipoMidia, cabecalho.modeloSolicitacao);
 
   /** Quem ainda tem campo obrigatório em branco no passo 3, e quais campos. */
   const talentosPendentes = escoposPendentes(

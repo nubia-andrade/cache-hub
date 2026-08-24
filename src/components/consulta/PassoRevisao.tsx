@@ -49,7 +49,7 @@ export function PassoRevisao({
   hoje: string;
   equipe: string;
 }) {
-  const definicoes = camposDaMidia(cabecalho.tipoMidia);
+  const definicoes = camposDaMidia(cabecalho.tipoMidia, cabecalho.modeloSolicitacao);
   const projeto = {
     setorCliente: cabecalho.setorCliente,
     anunciante: cabecalho.anunciante,
@@ -78,6 +78,10 @@ export function PassoRevisao({
           />
           <Linha rotulo="Equipe" valor={equipe} />
           <Linha rotulo="Tipo de mídia" valor={cabecalho.tipoMidia} />
+          <Linha
+            rotulo="Modelo de solicitação"
+            valor={cabecalho.modeloSolicitacao}
+          />
           <Linha rotulo="Tipo de projeto" valor={cabecalho.tipoProjeto} />
           <Linha
             rotulo="Exibição"
