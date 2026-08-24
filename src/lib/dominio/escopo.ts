@@ -1,4 +1,4 @@
-import type { TipoMidia } from './consulta';
+import type { TipoMidia, ModeloSolicitacao } from './consulta';
 import { NATUREZAS_DA_ACAO } from './dispensa';
 
 /**
@@ -507,20 +507,42 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
 ];
 
 /**
+ * O conjunto de campos de TV depende também do modelo de solicitação — ver
+ * `camposDaMidia`. Sem modelo escolhido ainda, não mostra nada: mesma lógica
+ * de "sem mídia escolhida, nenhum campo".
+ */
+function camposDoModeloTV(
+  modelo: ModeloSolicitacao | '',
+): readonly DefinicaoCampo[] {
+  if (modelo === 'Break' || modelo === 'Programete' || modelo === 'Chamada') {
+    return CAMPOS_BREAK_PROGRAMETE_CHAMADA;
+  }
+  if (modelo === 'Ação de Conteúdo' || modelo === 'Interveniência') {
+    return CAMPOS_ACAO_DE_CONTEUDO;
+  }
+  return [];
+}
+
+/**
  * Quais campos o projeto pede.
  *
- * Em `Ambos`, a união dos dois — mas casando pelo RÓTULO, não pela chave.
- * "Make e hair" existe nos dois conjuntos com opções diferentes (na TV a
- * pergunta é de quem é a responsabilidade; no digital, quem executa), e o
- * digital vence. Duplicar o campo faria a mesma pergunta duas vezes com
- * respostas incompatíveis.
+ * Em `TV`, o modelo de solicitação escolhe entre os dois conjuntos — ver
+ * `camposDoModeloTV`. Em `Ambos`, a união dos dois — mas casando pelo
+ * RÓTULO, não pela chave. "Make e hair" existe nos dois conjuntos com opções
+ * diferentes (na TV a pergunta é de quem é a responsabilidade; no digital,
+ * quem executa), e o digital vence. Duplicar o campo faria a mesma pergunta
+ * duas vezes com respostas incompatíveis.
  */
-export function camposDaMidia(midia: TipoMidia | ''): readonly DefinicaoCampo[] {
-  if (midia === 'TV') return CAMPOS_TV;
+export function camposDaMidia(
+  midia: TipoMidia | '',
+  modelo: ModeloSolicitacao | '' = '',
+): readonly DefinicaoCampo[] {
+  if (midia === 'TV') return camposDoModeloTV(modelo);
   if (midia === 'Digital' || midia === 'Social') return CAMPOS_DIGITAL;
   if (midia !== 'Ambos') return [];
 
-  const unidos = CAMPOS_TV.map(
+  const doLadoTV = camposDoModeloTV(modelo);
+  const unidos = doLadoTV.map(
     (campo) =>
       CAMPOS_DIGITAL.find((outro) => outro.rotulo === campo.rotulo) ?? campo,
   );

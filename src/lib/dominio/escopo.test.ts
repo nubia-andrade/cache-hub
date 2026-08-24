@@ -20,14 +20,42 @@ const rotulos = (campos: readonly DefinicaoCampo[]) =>
   campos.map((campo) => campo.rotulo);
 
 describe('quais campos cada mídia pede', () => {
-  it('TV e Digital usam o próprio conjunto', () => {
-    expect(camposDaMidia('TV')).toBe(CAMPOS_TV);
+  it('Digital e Social usam o mesmo conjunto, sem depender de modelo', () => {
     expect(camposDaMidia('Digital')).toBe(CAMPOS_DIGITAL);
     expect(camposDaMidia('Social')).toBe(CAMPOS_DIGITAL);
   });
 
   it('sem mídia escolhida, nenhum campo', () => {
     expect(camposDaMidia('')).toEqual([]);
+  });
+
+  it('TV sem modelo escolhido ainda não mostra nada', () => {
+    expect(camposDaMidia('TV')).toEqual([]);
+    expect(camposDaMidia('TV', '')).toEqual([]);
+  });
+
+  it('TV com Break, Programete ou Chamada usa o mesmo conjunto', () => {
+    expect(camposDaMidia('TV', 'Break')).toBe(
+      CAMPOS_BREAK_PROGRAMETE_CHAMADA,
+    );
+    expect(camposDaMidia('TV', 'Programete')).toBe(
+      CAMPOS_BREAK_PROGRAMETE_CHAMADA,
+    );
+    expect(camposDaMidia('TV', 'Chamada')).toBe(
+      CAMPOS_BREAK_PROGRAMETE_CHAMADA,
+    );
+  });
+
+  it('TV com Ação de Conteúdo usa o conjunto de ações', () => {
+    expect(camposDaMidia('TV', 'Ação de Conteúdo')).toBe(
+      CAMPOS_ACAO_DE_CONTEUDO,
+    );
+  });
+
+  it('Interveniência é um alias do conjunto de Ação de Conteúdo', () => {
+    expect(camposDaMidia('TV', 'Interveniência')).toBe(
+      CAMPOS_ACAO_DE_CONTEUDO,
+    );
   });
 });
 
@@ -37,32 +65,38 @@ describe('quais campos cada mídia pede', () => {
  * incompatíveis na mesma solicitação.
  */
 describe('mídia Ambos', () => {
-  const ambos = camposDaMidia('Ambos');
+  it('sem modelo escolhido, só o lado digital aparece', () => {
+    const ambos = camposDaMidia('Ambos');
+    expect(rotulos(ambos)).toEqual(rotulos(CAMPOS_DIGITAL));
+  });
 
-  it('não repete nenhum rótulo', () => {
+  it('com modelo escolhido, une TV e digital sem repetir rótulo', () => {
+    const ambos = camposDaMidia('Ambos', 'Break');
     const vistos = rotulos(ambos);
     expect(new Set(vistos).size).toBe(vistos.length);
   });
 
-  it('traz tudo o que existe nos dois conjuntos', () => {
-    for (const campo of [...CAMPOS_TV, ...CAMPOS_DIGITAL]) {
+  it('traz tudo o que existe nos dois lados', () => {
+    const ambos = camposDaMidia('Ambos', 'Break');
+    for (const campo of [...CAMPOS_BREAK_PROGRAMETE_CHAMADA, ...CAMPOS_DIGITAL]) {
       expect(rotulos(ambos)).toContain(campo.rotulo);
     }
   });
 
   it('nos rótulos repetidos, a versão digital vence', () => {
+    const ambos = camposDaMidia('Ambos', 'Break');
     const makeHair = ambos.find((campo) => campo.rotulo === 'Make e hair');
     const digital = CAMPOS_DIGITAL.find(
       (campo) => campo.rotulo === 'Make e hair',
     );
     expect(makeHair).toBe(digital);
-    // E a versão de TV, com outras opções, ficou de fora.
     expect(makeHair?.opcoes).not.toContain('Responsabilidade Globo');
   });
 
   it('mantém campos exclusivos de cada lado', () => {
+    const ambos = camposDaMidia('Ambos', 'Break');
     expect(rotulos(ambos)).toContain('Quantas exibições'); // só TV
-    expect(rotulos(ambos)).toContain('Impulsionamento'); // só digital
+    expect(rotulos(ambos)).toContain('Repost'); // só digital
   });
 });
 
@@ -137,13 +171,17 @@ describe('quando um campo está preenchido', () => {
 
 describe('seções recolhíveis', () => {
   it('todo campo tem seção declarada', () => {
-    for (const campo of [...CAMPOS_TV, ...CAMPOS_DIGITAL]) {
+    for (const campo of [
+      ...CAMPOS_BREAK_PROGRAMETE_CHAMADA,
+      ...CAMPOS_ACAO_DE_CONTEUDO,
+      ...CAMPOS_DIGITAL,
+    ]) {
       expect(SECOES).toContain(campo.secao);
     }
   });
 
   it('agrupar não perde nem inventa campo', () => {
-    const definicoes = camposDaMidia('Ambos');
+    const definicoes = camposDaMidia('Ambos', 'Break');
     const agrupados = agruparEmSecoes(definicoes, {}).flatMap(
       (grupo) => grupo.campos,
     );
@@ -160,7 +198,7 @@ describe('seções recolhíveis', () => {
   });
 
   it('mantém a ordem declarada em SECOES', () => {
-    const secoes = agruparEmSecoes(camposDaMidia('Ambos'), {}).map(
+    const secoes = agruparEmSecoes(camposDaMidia('Ambos', 'Break'), {}).map(
       (grupo) => grupo.secao,
     );
     expect(secoes).toEqual([...SECOES].filter((s) => secoes.includes(s)));
