@@ -175,7 +175,7 @@ export function CampoDinamico({
         />
       )}
 
-      {campo.dica && campo.tipo !== 'area' && (
+      {campo.dica && campo.tipo !== 'area' && campo.tipo !== 'texto' && (
         <p className="mt-1 text-[11px] leading-[1.45] text-tinta-4">
           {campo.dica}
         </p>
