@@ -21,7 +21,7 @@ import {
   type AcaoDoAprovador,
 } from '@/lib/dominio/resposta';
 import { camposDaMidia, escopoParaLeitura } from '@/lib/dominio/escopo';
-import { validarTipoMidia } from '@/lib/dominio/consulta';
+import { validarModeloSolicitacao, validarTipoMidia } from '@/lib/dominio/consulta';
 import { diasAteOPrazo, prazoEmTexto } from '@/lib/dominio/fila';
 import { EscopoLido } from '@/components/comum/EscopoLido';
 import { responderItem } from '@/lib/respostas';
@@ -67,7 +67,10 @@ export function PainelDeResposta({
   const [erro, setErro] = useState<string | null>(null);
 
   const escopoLido = escopoParaLeitura(
-    camposDaMidia(validarTipoMidia(item.projeto.tipoMidia)),
+    camposDaMidia(
+      validarTipoMidia(item.projeto.tipoMidia),
+      validarModeloSolicitacao(item.projeto.modeloSolicitacao),
+    ),
     item.campos,
   );
 

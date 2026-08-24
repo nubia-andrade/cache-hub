@@ -9,6 +9,7 @@ import { estaAberto } from '@/lib/dominio/catraca';
 import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 import { TIPOS_PROJETO, type TipoProjeto } from '@/lib/dominio/precos';
 import {
+  validarModeloSolicitacao,
   validarTipoMidia,
   type CabecalhoConsulta,
 } from '@/lib/dominio/consulta';
@@ -71,7 +72,7 @@ export default async function PaginaDeAjuste({
     programa: projeto.programa,
     segmentoProduto: projeto.segmentoProduto,
     tipoMidia: validarTipoMidia(projeto.tipoMidia),
-    modeloSolicitacao: '',
+    modeloSolicitacao: validarModeloSolicitacao(projeto.modeloSolicitacao),
     tipoProjeto: validarTipoProjeto(projeto.tipoProjeto),
     exibicaoInicio: projeto.exibicaoInicio ?? '',
     exibicaoFim: projeto.exibicaoFim ?? '',

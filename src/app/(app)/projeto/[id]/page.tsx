@@ -11,7 +11,7 @@ import {
   escopoParaLeitura,
   type SecaoLida,
 } from '@/lib/dominio/escopo';
-import { validarTipoMidia } from '@/lib/dominio/consulta';
+import { validarModeloSolicitacao, validarTipoMidia } from '@/lib/dominio/consulta';
 import { EscopoLido } from '@/components/comum/EscopoLido';
 import {
   formatarTaxa,
@@ -62,7 +62,10 @@ export default async function PaginaProjeto({
 
   // Uma vez para o projeto inteiro: os campos do escopo dependem do tipo de
   // mídia, que é do projeto, não do talento.
-  const definicoes = camposDaMidia(validarTipoMidia(projeto.tipoMidia));
+  const definicoes = camposDaMidia(
+    validarTipoMidia(projeto.tipoMidia),
+    validarModeloSolicitacao(projeto.modeloSolicitacao),
+  );
 
   const paraSubstituir: ItemParaSubstituir[] =
     projeto.itens.map(paraTroca);
@@ -143,6 +146,10 @@ export default async function PaginaProjeto({
               />
               <Dado rotulo="Equipe" valor={projeto.equipe} />
               <Dado rotulo="Tipo de mídia" valor={projeto.tipoMidia} />
+              <Dado
+                rotulo="Modelo de solicitação"
+                valor={projeto.modeloSolicitacao}
+              />
               <Dado
                 rotulo="Exibição"
                 valor={`${formatarData(projeto.exibicaoInicio)} a ${formatarData(

@@ -67,7 +67,7 @@ export function PainelDeAjuste({
     itens.some((item) => item.talentoId === talento.id),
   );
 
-  const definicoes = camposDaMidia(cabecalho.tipoMidia);
+  const definicoes = camposDaMidia(cabecalho.tipoMidia, cabecalho.modeloSolicitacao);
 
   // Com os campos, e não só o nome: "falta campo obrigatório em Manu Ferraz"
   // manda a pessoa abrir o bloco dela e conferir seção por seção.
