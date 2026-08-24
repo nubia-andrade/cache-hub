@@ -255,8 +255,12 @@ export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
   { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
   { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantos criativos', tipo: 'num' },
   {
+    // Mesmo rótulo do campo de mesma chave em CAMPOS_DIGITAL, de propósito: a
+    // união da mídia `Ambos` casa por RÓTULO, e rótulos diferentes na mesma
+    // chave fariam os dois entrarem — a mesma pergunta duas vezes, `key`
+    // repetida no React, e dois controles editando um valor só.
     chave: 'contextoProjeto', secao: 'Verba e adicionais',
-    rotulo: 'Escopo da demanda',
+    rotulo: 'Contexto do projeto',
     tipo: 'area',
     largo: true,
   },
@@ -508,8 +512,13 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
 
 /**
  * O conjunto de campos de TV depende também do modelo de solicitação — ver
- * `camposDaMidia`. Sem modelo escolhido ainda, não mostra nada: mesma lógica
- * de "sem mídia escolhida, nenhum campo".
+ * `camposDaMidia`.
+ *
+ * Sem modelo (ou com um desconhecido) cai em `CAMPOS_TV`, o conjunto que
+ * existia antes desta feature. Não é chute: todo projeto TV/Ambos gravado
+ * ANTES dela tem `modelo_solicitacao` nulo, e devolver `[]` faria a ficha, o
+ * ajuste e a resposta do aprovador perderem TODAS as definições de campo —
+ * exatamente a regra do "nada que foi preenchido pode sumir da leitura".
  */
 function camposDoModeloTV(
   modelo: ModeloSolicitacao | '',
@@ -520,7 +529,7 @@ function camposDoModeloTV(
   if (modelo === 'Ação de Conteúdo' || modelo === 'Interveniência') {
     return CAMPOS_ACAO_DE_CONTEUDO;
   }
-  return [];
+  return CAMPOS_TV;
 }
 
 /**

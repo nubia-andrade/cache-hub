@@ -15,6 +15,7 @@ import {
   SECOES,
   type DefinicaoCampo,
 } from './escopo';
+import { MODELOS_SOLICITACAO } from './consulta';
 
 const rotulos = (campos: readonly DefinicaoCampo[]) =>
   campos.map((campo) => campo.rotulo);
@@ -29,9 +30,11 @@ describe('quais campos cada mídia pede', () => {
     expect(camposDaMidia('')).toEqual([]);
   });
 
-  it('TV sem modelo escolhido ainda não mostra nada', () => {
-    expect(camposDaMidia('TV')).toEqual([]);
-    expect(camposDaMidia('TV', '')).toEqual([]);
+  it('TV sem modelo cai no conjunto de antes da feature', () => {
+    // Projeto TV gravado ANTES do modelo de solicitação existir tem o campo
+    // nulo. Devolver [] faria a leitura e o ajuste perderem todos os campos.
+    expect(camposDaMidia('TV')).toBe(CAMPOS_TV);
+    expect(camposDaMidia('TV', '')).toBe(CAMPOS_TV);
   });
 
   it('TV com Break, Programete ou Chamada usa o mesmo conjunto', () => {
@@ -65,9 +68,12 @@ describe('quais campos cada mídia pede', () => {
  * incompatíveis na mesma solicitação.
  */
 describe('mídia Ambos', () => {
-  it('sem modelo escolhido, só o lado digital aparece', () => {
+  it('sem modelo, o lado TV entra com o conjunto de antes da feature', () => {
     const ambos = camposDaMidia('Ambos');
-    expect(rotulos(ambos)).toEqual(rotulos(CAMPOS_DIGITAL));
+    const vistos = rotulos(ambos);
+    expect(vistos).toContain('Quantas exibições'); // só CAMPOS_TV
+    expect(vistos).toContain('Repost'); // só digital
+    expect(new Set(vistos).size).toBe(vistos.length);
   });
 
   it('com modelo escolhido, une TV e digital sem repetir rótulo', () => {
@@ -97,6 +103,21 @@ describe('mídia Ambos', () => {
     const ambos = camposDaMidia('Ambos', 'Break');
     expect(rotulos(ambos)).toContain('Quantas exibições'); // só TV
     expect(rotulos(ambos)).toContain('Repost'); // só digital
+  });
+});
+
+/**
+ * A união casa por RÓTULO. Dois campos com a MESMA chave e rótulos diferentes
+ * entrariam os dois na lista — a mesma pergunta duas vezes, `key` repetida no
+ * React, e dois controles editando o mesmo valor.
+ */
+describe('mídia Ambos não duplica chave', () => {
+  it('nenhum modelo produz chave repetida na união', () => {
+    for (const modelo of MODELOS_SOLICITACAO) {
+      const definicoes = camposDaMidia('Ambos', modelo);
+      const chaves = definicoes.map((campo) => campo.chave);
+      expect(new Set(chaves).size).toBe(chaves.length);
+    }
   });
 });
 
@@ -384,7 +405,7 @@ describe('campos de Break, Programete e Chamada', () => {
       'Impulsionamento',
       'Formato',
       'Quantos criativos',
-      'Escopo da demanda',
+      'Contexto do projeto',
       'Duração do vídeo',
       'Duração do projeto',
       'Conteúdo dos vídeos',

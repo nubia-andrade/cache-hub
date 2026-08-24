@@ -85,6 +85,83 @@ describe('campos obrigatórios do cabeçalho', () => {
   });
 });
 
+/**
+ * No vínculo a um projeto JÁ EXISTENTE o cabeçalho é só leitura — não existe
+ * controle na tela para escolher o modelo, e todo projeto TV/Ambos criado
+ * antes desta feature tem o campo nulo no banco. Cobrar o modelo ali travaria
+ * o passo 1 e o envio para sempre, sem nenhuma ação possível para destravar.
+ */
+describe('vínculo a projeto existente ignora o modelo de solicitação', () => {
+  const LEGADO: CabecalhoConsulta = {
+    ...COMPLETO,
+    tipoMidia: 'TV',
+    modeloSolicitacao: '',
+  };
+
+  it('com a opção, o modelo não entra nos faltantes', () => {
+    expect(
+      camposFaltando(LEGADO, { ignorarModeloSolicitacao: true }),
+    ).not.toContain('Modelo de solicitação');
+    expect(camposFaltando(LEGADO, { ignorarModeloSolicitacao: true })).toEqual(
+      [],
+    );
+  });
+
+  it('vale também para a mídia Ambos', () => {
+    expect(
+      camposFaltando(
+        { ...LEGADO, tipoMidia: 'Ambos' },
+        { ignorarModeloSolicitacao: true },
+      ),
+    ).toEqual([]);
+  });
+
+  it('sem a opção, o comportamento antigo fica intacto', () => {
+    expect(camposFaltando(LEGADO)).toContain('Modelo de solicitação');
+    expect(camposFaltando(LEGADO, {})).toContain('Modelo de solicitação');
+    expect(
+      camposFaltando(LEGADO, { ignorarModeloSolicitacao: false }),
+    ).toContain('Modelo de solicitação');
+  });
+
+  it('a opção não perdoa nenhum outro campo', () => {
+    expect(
+      camposFaltando(
+        { ...LEGADO, programa: '' },
+        { ignorarModeloSolicitacao: true },
+      ),
+    ).toEqual(['Programa']);
+  });
+
+  it('cabecalhoCompleto respeita a mesma regra', () => {
+    expect(cabecalhoCompleto(LEGADO)).toBe(false);
+    expect(cabecalhoCompleto(LEGADO, { ignorarModeloSolicitacao: true })).toBe(
+      true,
+    );
+    // E continua exigindo período coerente.
+    expect(
+      cabecalhoCompleto(
+        { ...LEGADO, exibicaoFim: '2026-01-01' },
+        { ignorarModeloSolicitacao: true },
+      ),
+    ).toBe(false);
+  });
+
+  it('impedimentosParaEnviar respeita a mesma regra', () => {
+    const entrada = {
+      cabecalho: LEGADO,
+      quantidadeDeTalentos: 1,
+      talentosComEscopoIncompleto: [],
+    };
+    expect(impedimentosParaEnviar(entrada)[0]).toContain(
+      'Modelo de solicitação',
+    );
+    expect(
+      impedimentosParaEnviar({ ...entrada, ignorarModeloSolicitacao: true }),
+    ).toEqual([]);
+  });
+});
+
 describe('período de exibição', () => {
   it('aceita fim depois do início', () => {
     expect(periodoValido('2026-08-20', '2026-09-30')).toBe(true);

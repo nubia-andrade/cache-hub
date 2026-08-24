@@ -126,11 +126,27 @@ const OBRIGATORIOS: {
   { campo: 'exibicaoFim', rotulo: 'Fim do período' },
 ];
 
-/** O que ainda falta preencher, na ordem em que aparece no formulário. */
-export function camposFaltando(cabecalho: CabecalhoConsulta): string[] {
+/**
+ * O que ainda falta preencher, na ordem em que aparece no formulário.
+ *
+ * `ignorarModeloSolicitacao` existe para o vínculo a um projeto JÁ EXISTENTE:
+ * ali o cabeçalho é só leitura, não há controle na tela para escolher o
+ * modelo, e todo projeto TV/Ambos criado antes desta feature tem o campo nulo
+ * no banco. Cobrá-lo travaria o passo 1 e o envio para sempre, sem nenhuma
+ * ação possível para destravar.
+ */
+export function camposFaltando(
+  cabecalho: CabecalhoConsulta,
+  opcoes?: { ignorarModeloSolicitacao?: boolean },
+): string[] {
   return OBRIGATORIOS.filter(
-    ({ campo, quando }) => (!quando || quando(cabecalho)) && !cabecalho[campo],
-  ).map(({ rotulo }) => rotulo);
+    ({ campo }) =>
+      !(campo === 'modeloSolicitacao' && opcoes?.ignorarModeloSolicitacao),
+  )
+    .filter(
+      ({ campo, quando }) => (!quando || quando(cabecalho)) && !cabecalho[campo],
+    )
+    .map(({ rotulo }) => rotulo);
 }
 
 /**
@@ -145,9 +161,12 @@ export function periodoValido(inicio: string, fim: string): boolean {
   return inicio <= fim;
 }
 
-export function cabecalhoCompleto(cabecalho: CabecalhoConsulta): boolean {
+export function cabecalhoCompleto(
+  cabecalho: CabecalhoConsulta,
+  opcoes?: { ignorarModeloSolicitacao?: boolean },
+): boolean {
   return (
-    camposFaltando(cabecalho).length === 0 &&
+    camposFaltando(cabecalho, opcoes).length === 0 &&
     periodoValido(cabecalho.exibicaoInicio, cabecalho.exibicaoFim)
   );
 }
@@ -169,10 +188,14 @@ export function impedimentosParaEnviar(entrada: {
   quantidadeDeTalentos: number;
   /** Quem está pendente, e o que falta em cada um. */
   talentosComEscopoIncompleto: readonly EscopoPendente[];
+  /** Vínculo a projeto existente — ver `camposFaltando`. */
+  ignorarModeloSolicitacao?: boolean;
 }): string[] {
   const motivos: string[] = [];
 
-  const faltamNoCabecalho = camposFaltando(entrada.cabecalho);
+  const faltamNoCabecalho = camposFaltando(entrada.cabecalho, {
+    ignorarModeloSolicitacao: entrada.ignorarModeloSolicitacao,
+  });
   if (faltamNoCabecalho.length > 0) {
     motivos.push(`Cabeçalho incompleto: ${faltamNoCabecalho.join(', ')}.`);
   } else if (

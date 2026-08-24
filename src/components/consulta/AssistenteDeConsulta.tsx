@@ -91,8 +91,14 @@ export function AssistenteDeConsulta({
     setCabecalho(CABECALHO_VAZIO);
   }
 
-  const faltando = camposFaltando(cabecalho);
-  const cabecalhoOk = cabecalhoCompleto(cabecalho);
+  // Vinculado a um projeto existente, o cabeçalho é só leitura: não há como
+  // escolher o modelo de solicitação na tela, e todo projeto TV/Ambos criado
+  // antes desta feature tem o campo nulo. Cobrá-lo travaria o passo 1 e o
+  // envio para sempre.
+  const opcoesDoCabecalho = { ignorarModeloSolicitacao: vinculado !== null };
+
+  const faltando = camposFaltando(cabecalho, opcoesDoCabecalho);
+  const cabecalhoOk = cabecalhoCompleto(cabecalho, opcoesDoCabecalho);
   const selecionados = talentos.filter((talento) => escolhidos.has(talento.id));
 
   const definicoes = camposDaMidia(cabecalho.tipoMidia, cabecalho.modeloSolicitacao);
@@ -125,6 +131,7 @@ export function AssistenteDeConsulta({
     cabecalho,
     quantidadeDeTalentos: selecionados.length,
     talentosComEscopoIncompleto: talentosPendentes,
+    ignorarModeloSolicitacao: vinculado !== null,
   });
 
   function alternarTalento(id: string) {

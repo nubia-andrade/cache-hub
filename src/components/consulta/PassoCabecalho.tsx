@@ -42,10 +42,12 @@ export function PassoCabecalho({
         <Derivado rotulo="Segmento da marca" valor={cabecalho.segmentoMarca} />
         <Derivado rotulo="Programa" valor={cabecalho.programa} />
         <Derivado rotulo="Tipo de mídia" valor={cabecalho.tipoMidia} />
-        <Derivado
-          rotulo="Modelo de solicitação"
-          valor={cabecalho.modeloSolicitacao}
-        />
+        {(cabecalho.tipoMidia === 'TV' || cabecalho.tipoMidia === 'Ambos') && (
+          <Derivado
+            rotulo="Modelo de solicitação"
+            valor={cabecalho.modeloSolicitacao}
+          />
+        )}
         <Derivado rotulo="Tipo de projeto" valor={cabecalho.tipoProjeto} />
         <Derivado
           rotulo="Exibição"
@@ -130,12 +132,21 @@ export function PassoCabecalho({
       <Campo rotulo="Tipo de mídia" obrigatorio>
         <select
           value={cabecalho.tipoMidia}
-          onChange={(evento) =>
+          onChange={(evento) => {
+            const novoTipo = evento.target
+              .value as CabecalhoConsulta['tipoMidia'];
+            // Sair de TV/Ambos limpa o modelo: guardado, ele continuaria
+            // gravado e apareceria na ficha de um projeto Digital, onde a
+            // pergunta nem existe.
             aoMudar({
               ...cabecalho,
-              tipoMidia: evento.target.value as CabecalhoConsulta['tipoMidia'],
-            })
-          }
+              tipoMidia: novoTipo,
+              modeloSolicitacao:
+                novoTipo === 'TV' || novoTipo === 'Ambos'
+                  ? cabecalho.modeloSolicitacao
+                  : '',
+            });
+          }}
           className="h-[38px] w-full rounded-[9px] border border-borda-forte bg-white px-2.5 text-[13px] text-tinta"
         >
           <option value="">Escolha…</option>
