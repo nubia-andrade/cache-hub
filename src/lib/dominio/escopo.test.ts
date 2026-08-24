@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   agruparEmSecoes,
+  CAMPOS_BREAK_PROGRAMETE_CHAMADA,
   CAMPOS_DIGITAL,
   CAMPOS_TV,
   campoPreenchido,
@@ -331,5 +332,47 @@ describe('quais campos estão pendentes', () => {
     expect(
       motivoDoEscopoPendente({ talento: 'Bruna', campos: ['Formato', 'Vertical'] }),
     ).toBe('Bruna: faltam Formato, Vertical.');
+  });
+});
+
+describe('campos de Break, Programete e Chamada', () => {
+  it('traz os rótulos do modelo, na íntegra', () => {
+    expect(rotulos(CAMPOS_BREAK_PROGRAMETE_CHAMADA)).toEqual([
+      'Direito de uso de imagem',
+      'Por quanto tempo',
+      'Natureza da ação',
+      'Verba disponível',
+      'Impulsionamento',
+      'Formato',
+      'Quantos criativos',
+      'Escopo da demanda',
+      'Duração do vídeo',
+      'Duração do projeto',
+      'Conteúdo dos vídeos',
+      'Quantas exibições',
+      'UF de gravação',
+      'Teremos ViU?',
+      'Responsável no digital',
+      'Diárias de gravação',
+      'Quantidade de horas',
+      'Exclusividade',
+      'Make e hair',
+      'Figurino',
+      'Mais informações',
+    ]);
+  });
+
+  it('responsável no digital só aparece com ViU em Sim', () => {
+    const visiveisSem = rotulos(
+      camposVisiveis(CAMPOS_BREAK_PROGRAMETE_CHAMADA, {}),
+    );
+    expect(visiveisSem).not.toContain('Responsável no digital');
+
+    const visiveisCom = rotulos(
+      camposVisiveis(CAMPOS_BREAK_PROGRAMETE_CHAMADA, {
+        redesSociaisViu: 'Sim',
+      }),
+    );
+    expect(visiveisCom).toContain('Responsável no digital');
   });
 });

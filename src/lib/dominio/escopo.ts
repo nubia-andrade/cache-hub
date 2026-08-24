@@ -216,6 +216,96 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
   },
 ];
 
+/**
+ * Break, Programete e Chamada — o modelo de solicitação mais próximo do que
+ * `CAMPOS_TV` já cobria. Fora `vertical` e `direção e redação`, que são mais
+ * editoriais/digitais do que fazem sentido aqui, e trocando o par genérico de
+ * redes sociais pelo par que a Gestão de Elenco realmente usa: se vai ter ViU,
+ * e quem responde por isso.
+ */
+export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
+  {
+    chave: 'direitoDeUso', secao: 'Distribuição',
+    rotulo: 'Direito de uso de imagem',
+    tipo: 'multi',
+    opcoes: CESSIONARIOS,
+    nota: 'quem pode repostar e impulsionar',
+  },
+  {
+    chave: 'prazoDeUso', secao: 'Distribuição',
+    rotulo: 'Por quanto tempo',
+    tipo: 'select',
+    opcoes: PRAZOS_DE_USO,
+    dep: 'direitoDeUso',
+  },
+  {
+    chave: 'natureza', secao: 'Verba e adicionais',
+    rotulo: 'Natureza da ação',
+    tipo: 'select',
+    opcoes: NATUREZAS_DA_ACAO,
+    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+  },
+  {
+    chave: 'verba', secao: 'Verba e adicionais',
+    rotulo: 'Verba disponível',
+    tipo: 'moeda',
+    nota: 'temos a verba do cliente?',
+  },
+  { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
+  { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
+  { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantos criativos', tipo: 'num' },
+  {
+    chave: 'contextoProjeto', secao: 'Verba e adicionais',
+    rotulo: 'Escopo da demanda',
+    tipo: 'area',
+    largo: true,
+  },
+  { chave: 'duracaoVideo', secao: 'Formato e produção', rotulo: 'Duração do vídeo', tipo: 'duracao' },
+  {
+    chave: 'duracaoProjeto', secao: 'Formato e produção',
+    rotulo: 'Duração do projeto',
+    tipo: 'num',
+    nota: 'quantidade de dias',
+  },
+  {
+    chave: 'conteudoVideos', secao: 'Formato e produção',
+    rotulo: 'Conteúdo dos vídeos',
+    tipo: 'area',
+    largo: true,
+  },
+  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantas exibições', tipo: 'num' },
+  { chave: 'ufGravacao', secao: 'Gravação', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
+  { chave: 'redesSociaisViu', secao: 'Distribuição', rotulo: 'Teremos ViU?', tipo: 'bool' },
+  {
+    chave: 'responsavelDigital', secao: 'Distribuição',
+    rotulo: 'Responsável no digital',
+    tipo: 'texto',
+    dep: 'redesSociaisViu',
+  },
+  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'num' },
+  { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
+  { chave: 'exclusividade', secao: 'Verba e adicionais', rotulo: 'Exclusividade', tipo: 'bool' },
+  {
+    chave: 'makeHair', secao: 'Responsabilidades',
+    rotulo: 'Make e hair',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TV,
+  },
+  {
+    chave: 'figurino', secao: 'Responsabilidades',
+    rotulo: 'Figurino',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TV,
+  },
+  {
+    chave: 'maisInfo', secao: 'Observações',
+    rotulo: 'Mais informações',
+    tipo: 'area',
+    largo: true,
+    dica: 'informar o que será feito na diária',
+  },
+];
+
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   {
     chave: 'direitoDeUso', secao: 'Distribuição',
