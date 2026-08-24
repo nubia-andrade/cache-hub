@@ -10,7 +10,6 @@ import { apenasVagasAtuais } from '@/lib/dominio/substituicao';
 import { TIPOS_PROJETO, type TipoProjeto } from '@/lib/dominio/precos';
 import {
   validarTipoMidia,
-  validarModeloSolicitacao,
   type CabecalhoConsulta,
 } from '@/lib/dominio/consulta';
 import {
@@ -72,7 +71,7 @@ export default async function PaginaDeAjuste({
     programa: projeto.programa,
     segmentoProduto: projeto.segmentoProduto,
     tipoMidia: validarTipoMidia(projeto.tipoMidia),
-    modeloSolicitacao: validarModeloSolicitacao(projeto.modeloSolicitacao),
+    modeloSolicitacao: '',
     tipoProjeto: validarTipoProjeto(projeto.tipoProjeto),
     exibicaoInicio: projeto.exibicaoInicio ?? '',
     exibicaoFim: projeto.exibicaoFim ?? '',

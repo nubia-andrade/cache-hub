@@ -17,7 +17,6 @@ type LinhaProjeto = {
   programa: string | null;
   equipe: string | null;
   tipo_midia: string | null;
-  modelo_solicitacao: string | null;
   tipo_projeto: string | null;
   exibicao_inicio: string | null;
   exibicao_fim: string | null;
@@ -63,7 +62,7 @@ type LinhaProjeto = {
 function consulta(comColunasNovas: boolean): string {
   return `
   id, protocolo, marca, anunciante, setor_cliente, segmento_marca, programa,
-  equipe, tipo_midia, modelo_solicitacao, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em,
+  equipe, tipo_midia, tipo_projeto, exibicao_inicio, exibicao_fim, criado_em,
   solicitante_id,
   solicitante:perfil_usuario ( nome ),
   itens:solicitacao_item (
@@ -151,7 +150,6 @@ export async function lerProjeto(
     segmentoProduto: segmentoPorPrograma.get(data.programa ?? '') ?? '',
     equipe: data.equipe ?? '',
     tipoMidia: data.tipo_midia ?? '',
-    modeloSolicitacao: data.modelo_solicitacao,
     tipoProjeto: data.tipo_projeto,
     exibicaoInicio: data.exibicao_inicio,
     exibicaoFim: data.exibicao_fim,

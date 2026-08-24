@@ -53,7 +53,6 @@ export type ProjetoDetalhado = {
   segmentoProduto: string;
   equipe: string;
   tipoMidia: string;
-  modeloSolicitacao: string | null;
   tipoProjeto: string | null;
   exibicaoInicio: string | null;
   exibicaoFim: string | null;
