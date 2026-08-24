@@ -4,6 +4,7 @@ import {
   CAMPOS_ACAO_DE_CONTEUDO,
   CAMPOS_BREAK_PROGRAMETE_CHAMADA,
   CAMPOS_DIGITAL,
+  CAMPOS_INTERVENIENCIA,
   CAMPOS_TV,
   campoPreenchido,
   camposDaMidia,
@@ -55,15 +56,16 @@ describe('quais campos cada mídia pede', () => {
     );
   });
 
-  it('Interveniência é um alias do conjunto de Ação de Conteúdo', () => {
-    expect(camposDaMidia('TV', 'Interveniência')).toBe(
+  it('Interveniência usa o conjunto próprio dela', () => {
+    expect(camposDaMidia('TV', 'Interveniência')).toBe(CAMPOS_INTERVENIENCIA);
+    expect(camposDaMidia('TV', 'Interveniência')).not.toBe(
       CAMPOS_ACAO_DE_CONTEUDO,
     );
   });
 });
 
 /**
- * A união casa por RÓTULO, não por chave. "Make e hair" existe nos dois
+ * A união casa por RÓTULO, não por chave. "Figurino" existe nos dois
  * conjuntos com opções diferentes, e perguntar duas vezes daria respostas
  * incompatíveis na mesma solicitação.
  */
@@ -91,17 +93,17 @@ describe('mídia Ambos', () => {
 
   it('nos rótulos repetidos, a versão digital vence', () => {
     const ambos = camposDaMidia('Ambos', 'Break');
-    const makeHair = ambos.find((campo) => campo.rotulo === 'Make e hair');
+    const figurino = ambos.find((campo) => campo.rotulo === 'Figurino');
     const digital = CAMPOS_DIGITAL.find(
-      (campo) => campo.rotulo === 'Make e hair',
+      (campo) => campo.rotulo === 'Figurino',
     );
-    expect(makeHair).toBe(digital);
-    expect(makeHair?.opcoes).not.toContain('Responsabilidade Globo');
+    expect(figurino).toBe(digital);
+    expect(figurino?.opcoes).not.toContain('Responsabilidade Globo');
   });
 
   it('mantém campos exclusivos de cada lado', () => {
     const ambos = camposDaMidia('Ambos', 'Break');
-    expect(rotulos(ambos)).toContain('Quantas exibições'); // só TV
+    expect(rotulos(ambos)).toContain('Quantidade de exibições'); // só TV
     expect(rotulos(ambos)).toContain('Repost'); // só digital
   });
 });
@@ -195,6 +197,7 @@ describe('seções recolhíveis', () => {
     for (const campo of [
       ...CAMPOS_BREAK_PROGRAMETE_CHAMADA,
       ...CAMPOS_ACAO_DE_CONTEUDO,
+      ...CAMPOS_INTERVENIENCIA,
       ...CAMPOS_DIGITAL,
     ]) {
       expect(SECOES).toContain(campo.secao);
@@ -404,19 +407,19 @@ describe('campos de Break, Programete e Chamada', () => {
       'Verba disponível',
       'Impulsionamento',
       'Formato',
-      'Quantos criativos',
-      'Contexto do projeto',
-      'Duração do vídeo',
+      'Quantidade de criativos',
+      'Escopo da demanda',
+      'Duração de cada vídeo',
       'Duração do projeto',
       'Conteúdo dos vídeos',
-      'Quantas exibições',
-      'UF de gravação',
+      'Quantidade de exibições',
+      'Local de gravação',
       'Teremos ViU?',
-      'Responsável no digital',
-      'Diárias de gravação',
-      'Quantidade de horas',
+      'Responsável pelo digital',
+      'Quantidade de diárias',
+      'Duração da diária',
       'Exclusividade',
-      'Make e hair',
+      'Make e cabelo',
       'Figurino',
       'Mais informações',
     ]);
@@ -426,14 +429,14 @@ describe('campos de Break, Programete e Chamada', () => {
     const visiveisSem = rotulos(
       camposVisiveis(CAMPOS_BREAK_PROGRAMETE_CHAMADA, {}),
     );
-    expect(visiveisSem).not.toContain('Responsável no digital');
+    expect(visiveisSem).not.toContain('Responsável pelo digital');
 
     const visiveisCom = rotulos(
       camposVisiveis(CAMPOS_BREAK_PROGRAMETE_CHAMADA, {
         redesSociaisViu: 'Sim',
       }),
     );
-    expect(visiveisCom).toContain('Responsável no digital');
+    expect(visiveisCom).toContain('Responsável pelo digital');
   });
 });
 
@@ -448,13 +451,13 @@ describe('campos de Ação de Conteúdo', () => {
       'Quantidade de ações',
       'Criativo',
       'Período do projeto',
-      'Quantas exibições',
-      'Diárias de captação',
+      'Quantidade de exibições',
+      'Quantidade de diárias',
       'Quantidade de horas',
       'Captação externa?',
       'Teremos ViU?',
-      'Responsável no digital',
-      'Make e hair',
+      'Responsável pelo digital',
+      'Make e cabelo',
       'Figurino',
       'Logística',
       'Mais informações',
@@ -463,5 +466,43 @@ describe('campos de Ação de Conteúdo', () => {
 
   it('não pergunta formato — nesse modelo ele já é Ação', () => {
     expect(rotulos(CAMPOS_ACAO_DE_CONTEUDO)).not.toContain('Formato');
+  });
+});
+
+describe('campos de Interveniência', () => {
+  it('traz os rótulos do modelo, na íntegra', () => {
+    expect(rotulos(CAMPOS_INTERVENIENCIA)).toEqual([
+      'Direito de uso de imagem',
+      'Por quanto tempo',
+      'Natureza da ação',
+      'Impulsionamento',
+      'Período',
+      'Meios',
+      'Território',
+      'Exclusividade',
+      'Período da exclusividade',
+      'Segmento da exclusividade',
+      'Captação',
+      'Edição',
+      'Sobre a ação',
+      'Conteúdos sob responsabilidade da marca ou do talento',
+      'Informações adicionais',
+    ]);
+  });
+
+  it('período e segmento da exclusividade só aparecem com Exclusividade em Sim', () => {
+    const visiveisSem = rotulos(camposVisiveis(CAMPOS_INTERVENIENCIA, {}));
+    expect(visiveisSem).not.toContain('Período da exclusividade');
+    expect(visiveisSem).not.toContain('Segmento da exclusividade');
+
+    const visiveisCom = rotulos(
+      camposVisiveis(CAMPOS_INTERVENIENCIA, { exclusividade: 'Sim' }),
+    );
+    expect(visiveisCom).toContain('Período da exclusividade');
+    expect(visiveisCom).toContain('Segmento da exclusividade');
+  });
+
+  it('não é mais o mesmo conjunto de Ação de Conteúdo', () => {
+    expect(CAMPOS_INTERVENIENCIA).not.toBe(CAMPOS_ACAO_DE_CONTEUDO);
   });
 });

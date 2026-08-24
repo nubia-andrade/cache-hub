@@ -217,11 +217,15 @@ export const CAMPOS_TV: readonly DefinicaoCampo[] = [
 ];
 
 /**
- * Break, Programete e Chamada — o modelo de solicitação mais próximo do que
- * `CAMPOS_TV` já cobria. Fora `vertical` e `direção e redação`, que são mais
- * editoriais/digitais do que fazem sentido aqui, e trocando o par genérico de
- * redes sociais pelo par que a Gestão de Elenco realmente usa: se vai ter ViU,
- * e quem responde por isso.
+ * Break, Programete e Chamada — validado pela Gestão de Elenco.
+ *
+ * `ufGravacao`/`qtdHoras` teriam a mesma chave que o campo equivalente em
+ * `CAMPOS_DIGITAL`, mas o rótulo aqui é outro ("Local de gravação", "Duração
+ * da diária") — por isso viram `localGravacao`/`duracaoDiaria`, chaves
+ * próprias. Sem chave própria, a união de `Ambos` casaria por rótulo,
+ * falharia (rótulos diferentes), e os dois campos sobrariam na lista com a
+ * MESMA chave — dois controles editando um valor só. Ver o mesmo raciocínio
+ * em `makeCabelo`.
  */
 export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
   {
@@ -253,18 +257,14 @@ export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
   },
   { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
   { chave: 'formato', secao: 'Formato e produção', rotulo: 'Formato', tipo: 'select', lista: 'formatos' },
-  { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantos criativos', tipo: 'num' },
+  { chave: 'criativos', secao: 'Formato e produção', rotulo: 'Quantidade de criativos', tipo: 'num' },
   {
-    // Mesmo rótulo do campo de mesma chave em CAMPOS_DIGITAL, de propósito: a
-    // união da mídia `Ambos` casa por RÓTULO, e rótulos diferentes na mesma
-    // chave fariam os dois entrarem — a mesma pergunta duas vezes, `key`
-    // repetida no React, e dois controles editando um valor só.
-    chave: 'contextoProjeto', secao: 'Verba e adicionais',
-    rotulo: 'Contexto do projeto',
+    chave: 'escopoDemanda', secao: 'Verba e adicionais',
+    rotulo: 'Escopo da demanda',
     tipo: 'area',
     largo: true,
   },
-  { chave: 'duracaoVideo', secao: 'Formato e produção', rotulo: 'Duração do vídeo', tipo: 'duracao' },
+  { chave: 'duracaoVideo', secao: 'Formato e produção', rotulo: 'Duração de cada vídeo', tipo: 'duracao' },
   {
     chave: 'duracaoProjeto', secao: 'Formato e produção',
     rotulo: 'Duração do projeto',
@@ -277,21 +277,28 @@ export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
     tipo: 'area',
     largo: true,
   },
-  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantas exibições', tipo: 'num' },
-  { chave: 'ufGravacao', secao: 'Gravação', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
+  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantidade de exibições', tipo: 'num' },
+  {
+    chave: 'localGravacao', secao: 'Gravação',
+    rotulo: 'Local de gravação',
+    tipo: 'select',
+    lista: 'ufs',
+    nota: 'RJ ou SP',
+  },
   { chave: 'redesSociaisViu', secao: 'Distribuição', rotulo: 'Teremos ViU?', tipo: 'bool' },
   {
     chave: 'responsavelDigital', secao: 'Distribuição',
-    rotulo: 'Responsável no digital',
+    rotulo: 'Responsável pelo digital',
     tipo: 'texto',
     dep: 'redesSociaisViu',
+    dica: 'ex.: Helena',
   },
-  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'num' },
-  { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
+  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Quantidade de diárias', tipo: 'num' },
+  { chave: 'duracaoDiaria', secao: 'Gravação', rotulo: 'Duração da diária', tipo: 'num' },
   { chave: 'exclusividade', secao: 'Verba e adicionais', rotulo: 'Exclusividade', tipo: 'bool' },
   {
-    chave: 'makeHair', secao: 'Responsabilidades',
-    rotulo: 'Make e hair',
+    chave: 'makeCabelo', secao: 'Responsabilidades',
+    rotulo: 'Make e cabelo',
     tipo: 'select',
     opcoes: RESPONSABILIDADE_TV,
   },
@@ -311,10 +318,9 @@ export const CAMPOS_BREAK_PROGRAMETE_CHAMADA: readonly DefinicaoCampo[] = [
 ];
 
 /**
- * Ação de Conteúdo — e, por ora, Interveniência também: o negócio ainda não
- * mapeou os campos dela, então ela usa exatamente este conjunto (ver
- * `camposDaMidia`). Sem "Formato": nesse modelo o formato já é "Ação" por
- * definição, perguntar de novo só repetiria o que o modelo já diz.
+ * Ação de Conteúdo — validado pela Gestão de Elenco. Sem "Formato": nesse
+ * modelo o formato já é "Ação" por definição, perguntar de novo só repetiria
+ * o que o modelo já diz.
  */
 export const CAMPOS_ACAO_DE_CONTEUDO: readonly DefinicaoCampo[] = [
   {
@@ -353,20 +359,21 @@ export const CAMPOS_ACAO_DE_CONTEUDO: readonly DefinicaoCampo[] = [
     tipo: 'num',
     nota: 'quantidade de dias',
   },
-  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantas exibições', tipo: 'num' },
-  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Diárias de captação', tipo: 'num' },
+  { chave: 'exibicoes', secao: 'Formato e produção', rotulo: 'Quantidade de exibições', tipo: 'num' },
+  { chave: 'diariasNum', secao: 'Gravação', rotulo: 'Quantidade de diárias', tipo: 'num' },
   { chave: 'qtdHoras', secao: 'Gravação', rotulo: 'Quantidade de horas', tipo: 'num' },
   { chave: 'captacaoExterna', secao: 'Gravação', rotulo: 'Captação externa?', tipo: 'bool' },
   { chave: 'redesSociaisViu', secao: 'Distribuição', rotulo: 'Teremos ViU?', tipo: 'bool' },
   {
     chave: 'responsavelDigital', secao: 'Distribuição',
-    rotulo: 'Responsável no digital',
+    rotulo: 'Responsável pelo digital',
     tipo: 'texto',
     dep: 'redesSociaisViu',
+    dica: 'ex.: Helena',
   },
   {
-    chave: 'makeHair', secao: 'Responsabilidades',
-    rotulo: 'Make e hair',
+    chave: 'makeCabelo', secao: 'Responsabilidades',
+    rotulo: 'Make e cabelo',
     tipo: 'select',
     opcoes: RESPONSABILIDADE_TV,
   },
@@ -388,6 +395,88 @@ export const CAMPOS_ACAO_DE_CONTEUDO: readonly DefinicaoCampo[] = [
     tipo: 'area',
     largo: true,
     dica: 'informar o que será feito na diária',
+  },
+];
+
+const RESPONSABILIDADE_TALENTO_MARCA = ['Talento', 'Marca'] as const;
+
+/**
+ * Interveniência — validado pela Gestão de Elenco. Modelo mais solto que os
+ * outros dois: sem tabela de entregas sociais fixas, o essencial é o
+ * enquadramento (período, meios, território) e a divisão de responsabilidade
+ * entre marca e talento pela produção.
+ */
+export const CAMPOS_INTERVENIENCIA: readonly DefinicaoCampo[] = [
+  {
+    chave: 'direitoDeUso', secao: 'Distribuição',
+    rotulo: 'Direito de uso de imagem',
+    tipo: 'multi',
+    opcoes: CESSIONARIOS,
+    nota: 'quem pode repostar e impulsionar',
+  },
+  {
+    chave: 'prazoDeUso', secao: 'Distribuição',
+    rotulo: 'Por quanto tempo',
+    tipo: 'select',
+    opcoes: PRAZOS_DE_USO,
+    dep: 'direitoDeUso',
+  },
+  {
+    chave: 'natureza', secao: 'Verba e adicionais',
+    rotulo: 'Natureza da ação',
+    tipo: 'select',
+    opcoes: NATUREZAS_DA_ACAO,
+    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+  },
+  { chave: 'impulsionamento', secao: 'Distribuição', rotulo: 'Impulsionamento', tipo: 'bool' },
+  { chave: 'periodo', secao: 'Formato e produção', rotulo: 'Período', tipo: 'texto' },
+  { chave: 'meios', secao: 'Formato e produção', rotulo: 'Meios', tipo: 'texto' },
+  { chave: 'territorio', secao: 'Formato e produção', rotulo: 'Território', tipo: 'texto' },
+  { chave: 'exclusividade', secao: 'Verba e adicionais', rotulo: 'Exclusividade', tipo: 'bool' },
+  {
+    chave: 'exclusividadePeriodo', secao: 'Verba e adicionais',
+    rotulo: 'Período da exclusividade',
+    tipo: 'texto',
+    dep: 'exclusividade',
+  },
+  {
+    chave: 'exclusividadeSegmento', secao: 'Verba e adicionais',
+    rotulo: 'Segmento da exclusividade',
+    tipo: 'texto',
+    dep: 'exclusividade',
+  },
+  {
+    chave: 'captacaoResponsavel', secao: 'Responsabilidades',
+    rotulo: 'Captação',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TALENTO_MARCA,
+  },
+  {
+    chave: 'edicaoResponsavel', secao: 'Responsabilidades',
+    rotulo: 'Edição',
+    tipo: 'select',
+    opcoes: RESPONSABILIDADE_TALENTO_MARCA,
+  },
+  {
+    chave: 'sobreAAcao', secao: 'Observações',
+    rotulo: 'Sobre a ação',
+    tipo: 'area',
+    largo: true,
+    dica: 'breve resumo da campanha e do objetivo da marca com a ação',
+  },
+  {
+    chave: 'conteudosResponsabilidade', secao: 'Observações',
+    rotulo: 'Conteúdos sob responsabilidade da marca ou do talento',
+    tipo: 'area',
+    largo: true,
+    dica: 'detalhar as entregas — ex.: 8 Reels em collab, 8 combos de Stories. Se a produção for da marca, informe também as diárias e o período necessário',
+  },
+  {
+    chave: 'informacoesAdicionais', secao: 'Observações',
+    rotulo: 'Informações adicionais',
+    tipo: 'area',
+    largo: true,
+    dica: 'verba disponível, particularidades da ação, produção, logística, viagens — quanto mais completo, mais rápida a resposta',
   },
 ];
 
@@ -526,8 +615,11 @@ function camposDoModeloTV(
   if (modelo === 'Break' || modelo === 'Programete' || modelo === 'Chamada') {
     return CAMPOS_BREAK_PROGRAMETE_CHAMADA;
   }
-  if (modelo === 'Ação de Conteúdo' || modelo === 'Interveniência') {
+  if (modelo === 'Ação de Conteúdo') {
     return CAMPOS_ACAO_DE_CONTEUDO;
+  }
+  if (modelo === 'Interveniência') {
+    return CAMPOS_INTERVENIENCIA;
   }
   return CAMPOS_TV;
 }
