@@ -44,7 +44,8 @@ export type TipoCampo =
   | 'num'
   | 'bool'
   | 'area'
-  | 'duracao';
+  | 'duracao'
+  | 'texto';
 
 /**
  * Separador dos campos de múltipla escolha.

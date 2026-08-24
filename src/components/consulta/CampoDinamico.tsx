@@ -154,6 +154,14 @@ export function CampoDinamico({
             className="h-full w-full min-w-0 rounded-r-[9px] bg-transparent px-1.5 text-right text-[12.5px] text-tinta outline-none"
           />
         </div>
+      ) : campo.tipo === 'texto' ? (
+        <input
+          value={valor}
+          aria-label={campo.rotulo}
+          placeholder={campo.dica}
+          onChange={(evento) => aoMudar(campo.chave, evento.target.value)}
+          className="h-[36px] w-full rounded-[9px] border border-borda-forte bg-white px-2.5 text-[12.5px] text-tinta"
+        />
       ) : (
         <input
           value={valor}

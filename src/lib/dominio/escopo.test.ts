@@ -118,6 +118,19 @@ describe('quando um campo está preenchido', () => {
     expect(campoPreenchido(campo, { verba: '' })).toBe(false);
     expect(campoPreenchido(campo, { verba: '10.000' })).toBe(true);
   });
+
+  it('texto livre conta como qualquer outro campo simples', () => {
+    const campo: DefinicaoCampo = {
+      chave: 'responsavelDigital',
+      rotulo: 'Responsável no digital',
+      tipo: 'texto',
+      secao: 'Distribuição',
+    };
+    expect(campoPreenchido(campo, { responsavelDigital: '' })).toBe(false);
+    expect(campoPreenchido(campo, { responsavelDigital: 'Helena' })).toBe(
+      true,
+    );
+  });
 });
 
 describe('seções recolhíveis', () => {
