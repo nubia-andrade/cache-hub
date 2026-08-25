@@ -480,33 +480,38 @@ export const CAMPOS_INTERVENIENCIA: readonly DefinicaoCampo[] = [
   },
 ];
 
+/**
+ * Direito de uso e natureza da ação fundidos num campo só, a pedido do time
+ * ViU — reúne "quem pode usar" (Grupo Globo, Marca) e "que tipo de conteúdo
+ * é" (recorte, collab, original) na mesma pergunta de múltipla escolha.
+ *
+ * CUSTO DA FUSÃO: a dispensa automática de cachê (`vereditoDeCache`, em
+ * `dispensa.ts`) decide pelo valor exato `natureza === 'Recorte em perfil
+ * Globo'`. Sem um campo `natureza` próprio, esse valor nunca é gravado para
+ * talentos Digital/Social, e a função sempre cai no caminho seguro
+ * ("Conteúdo original sempre precisa de cachê") — o atalho de dispensa
+ * simplesmente não existe mais para essa mídia. Decisão explícita do time
+ * ViU, ciente da troca; os modelos de TV mantêm `natureza` à parte
+ * exatamente para não perder o atalho lá.
+ */
+const DIREITOS_DE_USO_DIGITAL = [
+  ...CESSIONARIOS,
+  ...NATUREZAS_DA_ACAO,
+] as const;
+
 export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   {
     chave: 'direitoDeUso', secao: 'Distribuição',
     rotulo: 'Direito de uso de imagem',
-    // Dois parágrafos explícitos no e-mail de referência, um para o Grupo
-    // Globo e outro para a marca. É cláusula contratual: sem ela, o aprovador
-    // orça sem saber quem poderá repostar e impulsionar o conteúdo depois.
     tipo: 'multi',
-    opcoes: CESSIONARIOS,
-    nota: 'quem pode repostar e impulsionar',
+    opcoes: DIREITOS_DE_USO_DIGITAL,
+    nota: 'quem pode repostar e impulsionar, e que tipo de conteúdo é',
   },
   {
-    chave: 'prazoDeUso', secao: 'Distribuição',
-    rotulo: 'Por quanto tempo',
-    tipo: 'select',
-    opcoes: PRAZOS_DE_USO,
-    dep: 'direitoDeUso',
-  },
-
-  {
-    chave: 'natureza', secao: 'Verba e adicionais',
-    rotulo: 'Natureza da ação',
-    // Por talento, e não no cabeçalho: no mesmo projeto costuma haver recorte
-    // de conteúdo já gravado para uns e gravação nova para outros.
-    tipo: 'select',
-    opcoes: NATUREZAS_DA_ACAO,
-    dica: 'Recorte em perfil Globo, sem collab e sem impulsionamento, pode dispensar o cachê.',
+    chave: 'direitoDeUsoOutro', secao: 'Distribuição',
+    rotulo: 'Outro direito, se houver',
+    tipo: 'texto',
+    dica: 'só preencher se nenhuma das opções acima cobrir o caso',
   },
   {
     chave: 'verba', secao: 'Verba e adicionais',
@@ -545,7 +550,7 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
   },
   {
     chave: 'makeHair', secao: 'Responsabilidades',
-    rotulo: 'Make e hair',
+    rotulo: 'Make e cabelo',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
   },
@@ -554,13 +559,6 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
     rotulo: 'Figurino',
     tipo: 'select',
     opcoes: RESPONSAVEIS,
-  },
-  {
-    chave: 'redesVeiculacao', secao: 'Distribuição',
-    rotulo: 'Redes de veiculação',
-    tipo: 'multi',
-    lista: 'redesSociais',
-    nota: 'inclua as réplicas',
   },
   { chave: 'interacaoProduto', secao: 'Distribuição', rotulo: 'Interação com produto', tipo: 'bool' },
   { chave: 'diariasBool', secao: 'Gravação', rotulo: 'Diárias de gravação', tipo: 'bool' },
@@ -576,7 +574,16 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
     tipo: 'num',
     dep: 'diariasBool',
   },
-  { chave: 'ufGravacao', secao: 'Gravação', rotulo: 'UF de gravação', tipo: 'select', lista: 'ufs' },
+  {
+    // Chave própria, não `ufGravacao`: o rótulo diverge do que `CAMPOS_TV`
+    // usa para o mesmo assunto ("UF de gravação"), e a mescla de mídia
+    // `Ambos` casa por RÓTULO — mesma chave com rótulos diferentes duplicaria
+    // o campo. Ver o mesmo raciocínio em `makeCabelo`, na Task de TV.
+    chave: 'local', secao: 'Gravação',
+    rotulo: 'Local',
+    tipo: 'select',
+    lista: 'ufs',
+  },
   {
     chave: 'logistica', secao: 'Responsabilidades',
     rotulo: 'Logística',
@@ -589,6 +596,13 @@ export const CAMPOS_DIGITAL: readonly DefinicaoCampo[] = [
     tipo: 'area',
     largo: true,
     dica: 'informar o que será feito na diária',
+  },
+  {
+    chave: 'conteudoParaMarca', secao: 'Observações',
+    rotulo: 'Conteúdo para a marca',
+    tipo: 'area',
+    largo: true,
+    dica: 'informar se existe conteúdo exclusivo para a marca — posts collab já estão no escopo indicado acima',
   },
   {
     chave: 'outrasObs', secao: 'Observações',

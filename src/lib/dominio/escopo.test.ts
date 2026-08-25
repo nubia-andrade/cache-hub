@@ -398,6 +398,62 @@ describe('quais campos estão pendentes', () => {
   });
 });
 
+describe('campos de Digital e Social', () => {
+  it('traz os rótulos do modelo, na íntegra', () => {
+    expect(rotulos(CAMPOS_DIGITAL)).toEqual([
+      'Direito de uso de imagem',
+      'Outro direito, se houver',
+      'Verba disponível',
+      'Exclusividade',
+      'Contexto do projeto',
+      'Repost',
+      'Local do repost',
+      'Impulsionamento',
+      'Local do impulsionamento',
+      'Roteiro, produção, captação e edição',
+      'Make e cabelo',
+      'Figurino',
+      'Interação com produto',
+      'Diárias de gravação',
+      'Quantidade de diárias',
+      'Quantidade de horas',
+      'Local',
+      'Logística',
+      'Mais informações',
+      'Conteúdo para a marca',
+      'Outras observações',
+    ]);
+  });
+
+  it('não tem mais Natureza da ação — direito de uso e natureza foram fundidos', () => {
+    expect(CAMPOS_DIGITAL.some((campo) => campo.chave === 'natureza')).toBe(
+      false,
+    );
+  });
+
+  it('direito de uso de imagem reúne quem pode usar e o tipo de conteúdo', () => {
+    const campo = CAMPOS_DIGITAL.find(
+      (campo) => campo.chave === 'direitoDeUso',
+    );
+    expect(campo?.opcoes).toEqual(
+      expect.arrayContaining([
+        'Grupo Globo',
+        'Marca / anunciante',
+        'Recorte em perfil Globo',
+        'Collab com a marca',
+        'Conteúdo original do talento',
+      ]),
+    );
+  });
+
+  it('o campo de outro direito não depende de nenhuma escolha — sempre aparece', () => {
+    const campo = CAMPOS_DIGITAL.find(
+      (campo) => campo.chave === 'direitoDeUsoOutro',
+    );
+    expect(campo?.dep).toBeUndefined();
+  });
+});
+
 describe('campos de Break, Programete e Chamada', () => {
   it('traz os rótulos do modelo, na íntegra', () => {
     expect(rotulos(CAMPOS_BREAK_PROGRAMETE_CHAMADA)).toEqual([
